@@ -63,6 +63,8 @@ typedef struct
 CoAP_Result_t AddBlkOptionToMsg(CoAP_Message_t* msg, CoAP_blockwise_option_t* blkOption);
 CoAP_Result_t GetBlock1OptionFromMsg(CoAP_Message_t* msg, CoAP_blockwise_option_t* BlkOption);
 CoAP_Result_t GetBlock2OptionFromMsg(CoAP_Message_t* msg, CoAP_blockwise_option_t* BlkOption);
+
+CoAP_Result_t _rom RemoveAllBlockOptionsFromMsg(CoAP_Message_t* msg, CoAP_blockwise_option_type_t Type);
 CoAP_Result_t dbgBlkOption(CoAP_blockwise_option_t* blkOption);
 
 int32_t getBlockwiseOffset(uint16_t TotalPayloadSize, CoAP_blockwise_option_t* blkOpt);

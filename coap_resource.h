@@ -22,13 +22,11 @@
 #ifndef SRC_COAP_COAP_RES_H_
 #define SRC_COAP_COAP_RES_H_
 
-
 typedef enum {
 	HANDLER_OK =0,
 	HANDLER_POSTPONE = 1,
 	HANDLER_ERROR = 2
 }CoAP_HandlerResult_t;
-
 
 typedef CoAP_HandlerResult_t (*CoAP_ResourceHandler_fPtr_t)(CoAP_Message_t* pReq, CoAP_Message_t* pResp);
 typedef CoAP_HandlerResult_t (*CoAP_ResourceNotifier_fPtr_t)(CoAP_Observer_t* pListObservers, CoAP_Message_t* pResp);

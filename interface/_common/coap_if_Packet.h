@@ -19,50 +19,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-#ifndef COAP_MAIN_H_
-#define COAP_MAIN_H_
+#ifndef COM_NET_PACKET_H
+#define COM_NET_PACKET_H
 
+typedef enum
+{
+	META_INFO_NONE,
+	META_INFO_RF_PATH
+}MetaInfoType_t;
 
-#define MAX_CONCURRENT_TRANSACTIONS (10)
+typedef struct
+{
+	uint8_t HopCount;
+	int32_t RSSI;
+}MetaInfo_RfPath_t;
 
-#define MAX_FAIL_RETRIES (4)
+typedef union
+{
+	MetaInfo_RfPath_t RfPath;
+}MetaInfoUnion_t;
 
+typedef struct {
+	MetaInfoType_t Type;
+	MetaInfoUnion_t Dat;
+}MetaInfo_t;
 
-#define POSTPONE_WAIT_TIME_SEK (3)
-#define POSTPONE_MAX_WAIT_TIME (30)
+//################################
+// general network packet
+// received in callbacks and sendout
+// in network send routines
+//################################
+typedef struct
+{
+	uint8_t* pData;
+	uint16_t size;
+	NetEp_t Sender;
+	NetEp_t Receiver;
+	MetaInfo_t MetaInfo;
+}NetPacket_t;
+//################################
 
-#define HOLDTIME_AFTER_NON_TRANSACTION_END (0)
-
-#define CLIENT_MAX_RESP_WAIT_TIME (45)
-
-
-#define USE_RFC7641_ADVANCED_TRANSMISSION (1)
-
-#define ACK_TIMEOUT (2)
-#define ACK_RANDOM_FACTOR (1.5)
-#define MAX_RETRANSMIT (4)
-#define NSTART (1)
-#define DEFAULT_LEISURE (5)
-#define PROBING_RATE (1) 		//[client]
-
-
-//#####################
-// Receive of packets
-//#####################
-// This function must be called by network drivers
-// on reception of a new network packets which
-// should be passed to the CoAP stack.
-// "ifID" can be chosen arbitrary by calling network driver,
-// but can be considered constant over runtime.
-void CoAP_onNewPacketHandler( uint8_t ifID, NetPacket_t* pckt);
-
-//#####################
-// Transmit of packets
-//#####################
-//stack uses "NetSocket_t* RetrieveSocket2(uint8_t ifID)" function to get socket / send function inside socket
-
-CoAP_Result_t CoAP_Init();
-void CoAP_doWork();
-
+void PrintRawPacket(NetPacket_t* pckt);
 
 #endif

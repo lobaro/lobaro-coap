@@ -19,9 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-#include "../../../lobaro.h"
+#include "../coap.h"
 
-CoAP_Result_t AddObserveOptionToMsg(CoAP_Message_t* msg, uint32_t val)
+CoAP_Result_t _rom AddObserveOptionToMsg(CoAP_Message_t* msg, uint32_t val)
 {
 	uint8_t wBuf[3];
 	wBuf[2]=val & 0xff;
@@ -45,7 +45,7 @@ CoAP_Result_t AddObserveOptionToMsg(CoAP_Message_t* msg, uint32_t val)
 	}
 }
 
-CoAP_Result_t RemoveObserveOptionFromMsg(CoAP_Message_t* msg){
+CoAP_Result_t _rom RemoveObserveOptionFromMsg(CoAP_Message_t* msg){
 	CoAP_option_t* pOpt;
 	for(pOpt = msg->pOptionsList;pOpt!=NULL;pOpt=pOpt->next) {
 		if(pOpt->Number == OPT_NUM_OBSERVE){
@@ -56,13 +56,13 @@ CoAP_Result_t RemoveObserveOptionFromMsg(CoAP_Message_t* msg){
 return COAP_NOT_FOUND;
 }
 
-CoAP_Result_t UpdateObserveOptionInMsg(CoAP_Message_t* msg, uint32_t val)
+CoAP_Result_t _rom UpdateObserveOptionInMsg(CoAP_Message_t* msg, uint32_t val)
 {
 	RemoveObserveOptionFromMsg(msg);
 	return AddObserveOptionToMsg(msg, val);
 }
 
-CoAP_Result_t GetObserveOptionFromMsg(CoAP_Message_t* msg, uint32_t* val) {
+CoAP_Result_t _rom GetObserveOptionFromMsg(CoAP_Message_t* msg, uint32_t* val) {
 
 	CoAP_option_t* pOpts = msg->pOptionsList;
 	*val = 0;
@@ -92,28 +92,28 @@ CoAP_Result_t GetObserveOptionFromMsg(CoAP_Message_t* msg, uint32_t* val) {
 }
 
 
- CoAP_Observer_t* CoAP_AllocNewObserver()
+ CoAP_Observer_t* _rom CoAP_AllocNewObserver()
 {
-	CoAP_Observer_t* newObserver = (CoAP_Observer_t*)(com_mem_get0(sizeof(CoAP_Observer_t)));
+	CoAP_Observer_t* newObserver = (CoAP_Observer_t*)(coap_mem_get0(sizeof(CoAP_Observer_t)));
 	if(newObserver == NULL) return NULL;
 
 	return newObserver;
 }
 
-CoAP_Result_t CoAP_FreeObserver(CoAP_Observer_t** pObserver)
+CoAP_Result_t _rom CoAP_FreeObserver(CoAP_Observer_t** pObserver)
 {
 	INFO("Releasing pObserver\r\n");
-	com_mem_stats();
+	coap_mem_stats();
 
 	free_OptionList( &((*pObserver)->pOptList));
-	com_mem_release((void*)(*pObserver));
+	coap_mem_release((void*)(*pObserver));
 	*pObserver = NULL;
 
 	return COAP_OK;
 }
 
 //does not copy!
-CoAP_Result_t CoAP_AppendObserverToList(CoAP_Observer_t** pListStart, CoAP_Observer_t* pObserverToAdd)
+CoAP_Result_t _rom CoAP_AppendObserverToList(CoAP_Observer_t** pListStart, CoAP_Observer_t* pObserverToAdd)
 {
 	if(pObserverToAdd == NULL) return COAP_ERR_ARGUMENT;
 
@@ -134,7 +134,7 @@ CoAP_Result_t CoAP_AppendObserverToList(CoAP_Observer_t** pListStart, CoAP_Obser
 	return COAP_OK;
 }
 
-CoAP_Result_t CoAP_UnlinkObserverFromList(CoAP_Observer_t** pListStart, CoAP_Observer_t* pObserverToRemove, bool FreeUnlinked)
+CoAP_Result_t _rom CoAP_UnlinkObserverFromList(CoAP_Observer_t** pListStart, CoAP_Observer_t* pObserverToRemove, bool FreeUnlinked)
 {
 	CoAP_Observer_t* currP;
 	CoAP_Observer_t* prevP;

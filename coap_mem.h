@@ -1,3 +1,24 @@
+/*******************************************************************************
+ * Copyright (c)  2015  Dipl.-Ing. Tobias Rohde, http://www.lobaro.com
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *******************************************************************************/
 //Taken from http://www.fourmilab.ch/bget/
 //"BGET is in the public domain. You can do anything you like with it."
 //Thank you Mr. Walker for your great work!
@@ -38,16 +59,17 @@ int	bpoolv	    _((void *pool));
 //Lobaro:
 //4 byte header + alignment = overhead of allocator
 
+void coap_mem_init();
 
+void coap_mem_stats();
+void coap_mem_defineStaticMem(); //used by coap_mem_stats to calculate "dynamic"=dangerous memory size (which should go to zero in the long term, otherwise we have a memory leak!)
 
-void com_mem_init();
-void com_mem_stats();
-void com_mem_release(void* buf);
-void* com_mem_get(bufsize size); //define in for debug output of each requested mem
-void* com_mem_get0(bufsize size); //get zero initialized buf mem
-int32_t bsize(void* buf);
+void coap_mem_release(void* buf);
+void* coap_mem_get(bufsize size); //define in for debug output of each requested mem
+void* coap_mem_get0(bufsize size); //get zero initialized buf mem
+int32_t bsize(uint8_t* buf);
 
-uint8_t* com_mem_buf_lowEnd();
-uint8_t* com_mem_buf_highEnd();
+uint8_t* coap_mem_buf_lowEnd();
+uint8_t* coap_mem_buf_highEnd();
 
 #endif

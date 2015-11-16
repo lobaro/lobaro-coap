@@ -26,7 +26,7 @@
  *      Author: Tobias
  */
 
-#include "../../lobaro.h"
+#include "coap.h"
 
 uint16_t KNOWN_OPTIONS[KNOWN_OPTIONS_COUNT] = {OPT_NUM_URI_PATH, OPT_BLOCK2, OPT_BLOCK1, OPT_NUM_ETAG, OPT_NUM_CONTENT_FORMAT, OPT_NUM_URI_QUERY};
 
@@ -35,7 +35,7 @@ uint16_t KNOWN_OPTIONS[KNOWN_OPTIONS_COUNT] = {OPT_NUM_URI_PATH, OPT_BLOCK2, OPT
 //### section 3.1 in RFC7252. The option array gets sorted by option numbers first and
 //###  is than packed into the compressed byte array format with its delta encoding.
 //#########################################################################################################
-CoAP_Result_t pack_OptionsFromList(uint8_t* pDestArr, uint16_t* pBytesWritten, CoAP_option_t* pOptionsListBegin)
+CoAP_Result_t _rom pack_OptionsFromList(uint8_t* pDestArr, uint16_t* pBytesWritten, CoAP_option_t* pOptionsListBegin)
 {
   	uint16_t offset = 0;		 //Current "Write" Position while packing the options array to the byte array
   	uint16_t OptStartOffset = 0; //Position of 1st Byte of current packed option
@@ -106,7 +106,8 @@ CoAP_Result_t pack_OptionsFromList(uint8_t* pDestArr, uint16_t* pBytesWritten, C
   	  		}
 
   	  //Option Values
-  	  		for(int t=0; t< optLength; t++)
+  	  		int t;
+  	  		for(t=0; t< optLength; t++)
   	  		{
   	  			pDestArr[offset] = pOption->Value[t];
   	  			offset++;
@@ -123,7 +124,7 @@ CoAP_Result_t pack_OptionsFromList(uint8_t* pDestArr, uint16_t* pBytesWritten, C
 
 
 
-CoAP_Result_t parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uint8_t** pPayloadBeginInSrc, CoAP_option_t** pOptionsListBegin)
+CoAP_Result_t _rom parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uint8_t** pPayloadBeginInSrc, CoAP_option_t** pOptionsListBegin)
 {
 	//srcArr points to the beginning of Option section @ raw datagram byte array
 	//length includes payload marker & payload (if any)
@@ -202,7 +203,7 @@ CoAP_Result_t parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uint8_t*
 }
 
 
-CoAP_Result_t CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, CoAP_option_t* pOptionToRemove)
+CoAP_Result_t _rom CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, CoAP_option_t* pOptionToRemove)
 {
 	CoAP_option_t* currP;
 	CoAP_option_t* prevP;
@@ -226,7 +227,7 @@ CoAP_Result_t CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, CoAP_o
       }
 
       // Deallocate the node.
-      com_mem_release((void*)currP);
+      coap_mem_release((void*)currP);
 
       //Done searching.
       return COAP_OK;
@@ -236,11 +237,11 @@ CoAP_Result_t CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, CoAP_o
 }
 
 
-static CoAP_Result_t append_OptionToListEnd(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length)
+static CoAP_Result_t _rom append_OptionToListEnd(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length)
 {
 	if(*pOptionsListBegin == NULL) //List empty? create new first element
 	{
-		*pOptionsListBegin = (CoAP_option_t*) com_mem_get(sizeof(CoAP_option_t)+length);
+		*pOptionsListBegin = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t)+length);
 		if(*pOptionsListBegin == NULL) return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
 		(*pOptionsListBegin)->next = NULL;
@@ -249,14 +250,14 @@ static CoAP_Result_t append_OptionToListEnd(CoAP_option_t** pOptionsListBegin, u
 		(*pOptionsListBegin)->Length = length;
 		(*pOptionsListBegin)->Number = OptNumber;
 		(*pOptionsListBegin)->Value = ((uint8_t*)(*pOptionsListBegin))+sizeof(CoAP_option_t);
-		memcpy((void*)((*pOptionsListBegin)->Value), (const void*)buf, length);
+		coap_memcpy((void*)((*pOptionsListBegin)->Value), (const void*)buf, length);
 	}
 	else //append new element at end
 	{
 		CoAP_option_t*  pOption = *pOptionsListBegin;
 	    while(pOption->next != NULL) pOption=pOption->next;
 
-		pOption->next = (CoAP_option_t*) com_mem_get(sizeof(CoAP_option_t)+length);
+		pOption->next = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t)+length);
 		if(pOption->next == NULL) return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
 		pOption = pOption->next;
@@ -266,7 +267,7 @@ static CoAP_Result_t append_OptionToListEnd(CoAP_option_t** pOptionsListBegin, u
 		pOption->Length = length;
 		pOption->Number = OptNumber;
 		pOption->Value = ((uint8_t*)pOption)+sizeof(CoAP_option_t);
-		memcpy((void*)(pOption->Value), (const void*)buf, length);
+		coap_memcpy((void*)(pOption->Value), (const void*)buf, length);
 	}
 	return COAP_OK;
 }
@@ -279,7 +280,7 @@ static CoAP_Result_t append_OptionToListEnd(CoAP_option_t** pOptionsListBegin, u
 //this function adds a new option to linked list of options starting at pOptionsListBegin
 //on demand the list gets reordered so that it's sorted ascending by option number (CoAP requirement)
 //copies given buffer to option local buffer
-CoAP_Result_t append_OptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length)
+CoAP_Result_t _rom append_OptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length)
 {
 	if(*pOptionsListBegin == NULL) //List empty? create 1st option in list
 	{
@@ -299,7 +300,7 @@ CoAP_Result_t append_OptionToList(CoAP_option_t** pOptionsListBegin, uint16_t Op
 
 		 //Case 2: new option has smallest number and is therefore the new start of list
 		 else if(pOption == *pOptionsListBegin){
-			 *pOptionsListBegin = (CoAP_option_t*) com_mem_get(sizeof(CoAP_option_t)+length);
+			 *pOptionsListBegin = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t)+length);
 			 if(*pOptionsListBegin == NULL) return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
 			 (*pOptionsListBegin)->next = pOption; //move former list start to 2nd pos
@@ -308,7 +309,7 @@ CoAP_Result_t append_OptionToList(CoAP_option_t** pOptionsListBegin, uint16_t Op
 			 (*pOptionsListBegin)->Length = length;
 			 (*pOptionsListBegin)->Number = OptNumber;
 			 (*pOptionsListBegin)->Value = ((uint8_t*)(*pOptionsListBegin))+sizeof(CoAP_option_t);
-			  memcpy((void*)((*pOptionsListBegin)->Value), (const void*)buf, length);
+			 coap_memcpy((void*)((*pOptionsListBegin)->Value), (const void*)buf, length);
 		 }
 
 		 //Case 3:
@@ -320,7 +321,7 @@ CoAP_Result_t append_OptionToList(CoAP_option_t** pOptionsListBegin, uint16_t Op
 			 CoAP_option_t* pPrev_pOption = *pOptionsListBegin;
 			 while(pPrev_pOption->next != pOption)pPrev_pOption = pPrev_pOption->next; //search predecessor of pOption
 
-			 CoAP_option_t* newOption = (CoAP_option_t*) com_mem_get(sizeof(CoAP_option_t)+length);
+			 CoAP_option_t* newOption = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t)+length);
 			 if(newOption == NULL) return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
 			 pPrev_pOption->next = newOption; //insert new option after predecessor
@@ -330,18 +331,18 @@ CoAP_Result_t append_OptionToList(CoAP_option_t** pOptionsListBegin, uint16_t Op
 			 newOption->Length = length;
 			 newOption->Number = OptNumber;
 			 newOption->Value = ((uint8_t*)newOption)+sizeof(CoAP_option_t);
-			 memcpy((void*)(newOption->Value), (const void*)buf, length);
+			 coap_memcpy((void*)(newOption->Value), (const void*)buf, length);
 		 }
 	}
 	return COAP_OK;
 }
 
-CoAP_Result_t append_OptionToListByCopy(CoAP_option_t** pOptionsListBegin, CoAP_option_t* OptToCopy) {
+CoAP_Result_t _rom append_OptionToListByCopy(CoAP_option_t** pOptionsListBegin, CoAP_option_t* OptToCopy) {
 	return append_OptionToList(pOptionsListBegin, OptToCopy->Number, OptToCopy->Value, OptToCopy->Length);
 }
 
 
-CoAP_Result_t free_OptionList(CoAP_option_t** pOptionsListBegin)
+CoAP_Result_t _rom free_OptionList(CoAP_option_t** pOptionsListBegin)
 {
 	if(*pOptionsListBegin == NULL) return COAP_OK; //any list to delete?
 
@@ -352,17 +353,17 @@ CoAP_Result_t free_OptionList(CoAP_option_t** pOptionsListBegin)
 	{
 			//this unlinks the 2nd element by seting 1st->next to 3rd element
 			(*pOptionsListBegin)->next = (*pOptionsListBegin)->next->next;
-			com_mem_release((void*)pOption1); //free "old" 1st unlinked element
+			coap_mem_release((void*)pOption1); //free "old" 1st unlinked element
 			pOption1 = (*pOptionsListBegin)->next; // (new) 1st element after start
 	}
 
-	com_mem_release((void*)(*pOptionsListBegin));
+	coap_mem_release((void*)(*pOptionsListBegin));
 	*pOptionsListBegin=NULL;
 
 	return COAP_OK;
 }
 
-uint16_t CoAP_CheckForUnknownCriticalOption(CoAP_option_t* pOptionsListBegin)
+uint16_t _rom CoAP_CheckForUnknownCriticalOption(CoAP_option_t* pOptionsListBegin)
 {
 	//uses:
 	//#define KNOWN_OPTIONS_COUNT (3)
@@ -374,7 +375,8 @@ uint16_t CoAP_CheckForUnknownCriticalOption(CoAP_option_t* pOptionsListBegin)
 	do
 	{
 		optKnown = false;
-		for(int j=0; j<KNOWN_OPTIONS_COUNT; j++)
+		int j;
+		for(j=0; j<KNOWN_OPTIONS_COUNT; j++)
 		{
 			if(pOption->Number == KNOWN_OPTIONS[j])
 			{
@@ -398,12 +400,13 @@ uint16_t CoAP_CheckForUnknownCriticalOption(CoAP_option_t* pOptionsListBegin)
 	return 0;
 }
 
-void CoAP_printOptionsList(CoAP_option_t* pOptListBegin)
+void _rom CoAP_printOptionsList(CoAP_option_t* pOptListBegin)
 {
 	while(pOptListBegin != NULL)
 	{
 		INFO("-Option #%u (Length=%u) ->", pOptListBegin->Number, pOptListBegin->Length);
-		for(int j=0; j< pOptListBegin->Length; j++){
+		int j;
+		for(j=0; j< pOptListBegin->Length; j++){
 			if(pOptListBegin->Value[j]) {
 				INFO(" %c[", pOptListBegin->Value[j]);
 				INFO("%02x]", pOptListBegin->Value[j]);
@@ -416,7 +419,7 @@ void CoAP_printOptionsList(CoAP_option_t* pOptListBegin)
 	}
 }
 
-bool CoAP_OptionsAreEqual(CoAP_option_t* OptA, CoAP_option_t* OptB) {
+bool _rom CoAP_OptionsAreEqual(CoAP_option_t* OptA, CoAP_option_t* OptB) {
 	if(OptA == NULL && OptB == NULL) return true;
 	if(OptA == NULL && OptB != NULL) return false;
 	if(OptA != NULL && OptB == NULL) return false;
@@ -424,7 +427,8 @@ bool CoAP_OptionsAreEqual(CoAP_option_t* OptA, CoAP_option_t* OptB) {
 	//check case 4 => both != NULL:
 	if(OptA->Length != OptB->Length) return false;
 	if(OptA->Number != OptB->Number) return false;
-	for(int i=0; i < OptA->Length; i++) {
+	int i;
+	for( i=0; i < OptA->Length; i++) {
 		if(OptA->Value[i] != OptB->Value[i]) return false;
 	}
 	return true;

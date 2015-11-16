@@ -19,32 +19,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-/*
- * coap.h
- *
- *  Created on: 05.11.2014
- *      Author: Tobias
- */
+
 
 #ifndef COAP_H_
 #define COAP_H_
 
-//Standard c-libs
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
-//Interface "glue" to surrounding project/software
-//to use the stack you have to provide some packet send/receive functionality
-//it's up to you which packet format you use e.g. UDP is the most obvious...
-//-> see coap_main.h for more information and adding send/receive interface functions
-#include "interface/coap_if_Endpoint.h"
-#include "interface/coap_if_Packet.h"
-#include "interface/coap_if_Socket.h"
+//"glue" and actual system related functions
+//go there to see what to do adapting the library to your platform
+#include "interface/_common/coap_interface.h"
 
 //Internal stack functions
 typedef enum
@@ -83,10 +65,8 @@ typedef enum
 }CoAP_Result_t;
 
 #include "coap_debug.h"
-
 #define COAP_RAM_TOTAL_BYTES (4096)
 #include "coap_mem.h"
-
 #include "coap_options.h"
 #include "coap_message.h"
 #include "option-types/coap_option_blockwise.h"
@@ -94,7 +74,6 @@ typedef enum
 #include "option-types/coap_option_cf.h"
 #include "option-types/coap_option_uri.h"
 #include "option-types/coap_option_observe.h"
-#include "coap_observe.h"
 #include "coap_resource.h"
 #include "coap_interaction.h"
 #include "coap_main.h"

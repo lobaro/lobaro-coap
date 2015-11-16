@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-#include "../../lobaro.h"
+#include "coap.h"
 
 static CoAP_Res_t* pResList = NULL;
 static uint32_t ResListMembers = 0;
@@ -27,7 +27,7 @@ static uint32_t ResListMembers = 0;
 uint8_t TempPage[2048];
 
 //save resource and observe information as options to non volatile storage
-CoAP_Result_t CoAP_NVsaveObservers(){
+CoAP_Result_t _rom CoAP_NVsaveObservers(){
 	CoAP_Res_t* pList = pResList; //List of internal resources
 	CoAP_option_t* pOptList = NULL;
 	uint8_t* pTempPage = TempPage;
@@ -87,16 +87,16 @@ CoAP_Result_t CoAP_NVsaveObservers(){
 
 	pTempPage = TempPage;
 	INFO("writing: %d bytes to flash\r\n", TotalPageBytes);
-	hal_Flash_writeBuf(pTempPage, TotalPageBytes);
+	hal_nonVolatile_WriteBuf(pTempPage, TotalPageBytes);
 	return COAP_OK;
 }
 
 //attach observe
-CoAP_Result_t CoAP_NVloadObservers() {
+CoAP_Result_t _rom CoAP_NVloadObservers() {
 	CoAP_option_t* pOptList = NULL;
 	CoAP_Res_t* pRes = NULL;
 	CoAP_Res_t* pResTemp = NULL;
-	uint8_t* pRawPage = hal_Flash_GetBufPtr();
+	uint8_t* pRawPage = hal_nonVolatile_GetBufPtr();
 
 	while(parse_OptionsFromRaw(pRawPage, 2048, &pRawPage, &pOptList) == COAP_OK) { //finds "payload-marker" and sets pointer to its beginning. in this context this is the next stored observe dataset
 		INFO("found flash stored options:\r\n");
@@ -128,15 +128,15 @@ CoAP_Result_t CoAP_NVloadObservers() {
 
 			switch(pOpt->Number) {
 				case OPT_NUM_URI_HOST:
-					memcpy( (void*) &(pNewObserver->Ep), pOpt->Value, sizeof(NetEp_t) );
+					coap_memcpy( (void*) &(pNewObserver->Ep), pOpt->Value, sizeof(NetEp_t) );
 					break;
 				case OPT_NUM_URI_PORT: //"hack" netID, remove if netID removal cleanup done!
-					memcpy( (void*) &(pNewObserver->IfID), pOpt->Value, 1 );
+					coap_memcpy( (void*) &(pNewObserver->IfID), pOpt->Value, 1 );
 					break;
 				case OPT_NUM_URI_PATH:
 					break; //dont copy path to observe struct (it's connected to its resource anyway!)
 				case OPT_NUM_LOBARO_TOKEN_SAVE:
-					memcpy( (void*) &(pNewObserver->Token), pOpt->Value, 8 );
+					coap_memcpy( (void*) &(pNewObserver->Token), pOpt->Value, 8 );
 					break;
 				default:
 					append_OptionToListByCopy(&(pNewObserver->pOptList), pOpt);
@@ -158,20 +158,20 @@ CoAP_Result_t CoAP_NVloadObservers() {
 }
 
 
-CoAP_HandlerResult_t WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Message_t* pResp)
+CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Message_t* pResp)
 {
 //	static uint8_t wellknownStr[500];
 //	uint8_t* pWr = wellknownStr;
 
 	if(pReq->Code != REQ_GET) {
-		uint8_t errMsg[] = {"CoAP GET only!"};
+		char errMsg[] = {"CoAP GET only!"};
 		pResp->Code = RESP_ERROR_BAD_REQUEST_4_00;
-		CoAP_DefineGetRespPayload(pReq, pResp, errMsg, (uint16_t)strlen((char*)errMsg), true);
+		CoAP_SetPayloadBlockwise(pReq, pResp, errMsg, (uint16_t)coap_strlen(errMsg), true);
 		return HANDLER_ERROR;
 	}
 
 	CoAP_Res_t* pList = pResList; //List of internal resources
-	uint8_t* pStr = (uint8_t*)com_mem_get0((ResListMembers+1)*64); //first estimation of needed memory
+	uint8_t* pStr = (uint8_t*)coap_mem_get0((ResListMembers+1)*64); //first estimation of needed memory
 	uint8_t* pStrStart = pStr;
 
 	if(pStr==NULL){
@@ -187,16 +187,22 @@ CoAP_HandlerResult_t WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Message_t* 
 
 		*pStr='<'; pStr++;
 		while(pUriOpt != NULL) {
-			memcpy(pStr, pUriOpt->Value, pUriOpt->Length);
+			coap_memcpy(pStr, pUriOpt->Value, pUriOpt->Length);
 			pStr+=pUriOpt->Length;
 			*pStr='/'; pStr++;
 			pUriOpt = pUriOpt->next;
 		}
 		if(pList->Options.Cf == COAP_CF_LINK_FORMAT){
-			pStr+= sprintf((char*)pStr,">,");
+			pStr+= coap_sprintf((char*)pStr,">,");
 		}
 		else {
-			pStr+= sprintf((char*)pStr,">;title=\"%s\";cf=%d,",pList->pDescription, pList->Options.Cf);
+			pStr+= coap_sprintf((char*)pStr,">;title=\"%s\";cf=%d",pList->pDescription, pList->Options.Cf);
+			if(pList->Notifier!=NULL) {
+				pStr+= coap_sprintf((char*)pStr,";obs,");
+			}
+			else {
+				pStr+= coap_sprintf((char*)pStr,",");
+			}
 		}
 
 		pList = pList->next;
@@ -204,20 +210,20 @@ CoAP_HandlerResult_t WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Message_t* 
 		//TODO: implement growing of buf/overwrite check
 	}
 
-	CoAP_DefineGetRespPayload(pReq, pResp, pStrStart, (uint16_t)strlen((char*)pStrStart), true);
-	com_mem_release(pStrStart);
+	CoAP_SetPayloadBlockwise(pReq, pResp, pStrStart, (uint16_t)coap_strlen((char*)pStrStart), true);
+	coap_mem_release(pStrStart);
 
 	AddCfOptionToMsg(pResp,COAP_CF_LINK_FORMAT);
 
 	return HANDLER_OK;
 }
 
-void CoAP_InitResources() {
+void _rom CoAP_InitResources() {
 	CoAP_ResOpts_t Options = {.Cf = COAP_CF_LINK_FORMAT, .Flags = RES_OPT_GET};
 	CoAP_CreateResource("/.well-known/core", "\0", Options, WellKnown_GetHandler,NULL);
 }
 
-static CoAP_Result_t CoAP_AppendResourceToList(CoAP_Res_t** pListStart, CoAP_Res_t* pResToAdd)
+static CoAP_Result_t _rom CoAP_AppendResourceToList(CoAP_Res_t** pListStart, CoAP_Res_t* pResToAdd)
 {
 	if(pResToAdd == NULL) return COAP_ERR_ARGUMENT;
 
@@ -238,12 +244,12 @@ static CoAP_Result_t CoAP_AppendResourceToList(CoAP_Res_t** pListStart, CoAP_Res
 	return COAP_OK;
 }
 
-CoAP_Result_t CoAP_FreeResource(CoAP_Res_t** pResource)
+CoAP_Result_t _rom CoAP_FreeResource(CoAP_Res_t** pResource)
 {
 	free_OptionList(&(*pResource)->pUri);
 
-	com_mem_release((*pResource)->pDescription);
-	com_mem_release((void*)(*pResource));
+	coap_mem_release((*pResource)->pDescription);
+	coap_mem_release((void*)(*pResource));
 	*pResource = NULL;
 	return COAP_OK;
 }
@@ -281,7 +287,7 @@ CoAP_Result_t CoAP_FreeResource(CoAP_Res_t** pResource)
 //  return COAP_OK;
 //}
 
-CoAP_Res_t* CoAP_FindResourceByUri(CoAP_Res_t* pResListToSearchIn, CoAP_option_t* pUriToMatch) {
+CoAP_Res_t* _rom CoAP_FindResourceByUri(CoAP_Res_t* pResListToSearchIn, CoAP_option_t* pUriToMatch) {
 	 CoAP_Res_t* pList = pResList;
 
 	if(pResListToSearchIn!=NULL){
@@ -295,9 +301,9 @@ CoAP_Res_t* CoAP_FindResourceByUri(CoAP_Res_t* pResListToSearchIn, CoAP_option_t
 
 	return NULL;
 }
-CoAP_Res_t* CoAP_CreateResource(char* Uri, char* Descr,CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt, CoAP_ResourceNotifier_fPtr_t pNotifierFkt ){
+CoAP_Res_t* _rom CoAP_CreateResource(char* Uri, char* Descr,CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt, CoAP_ResourceNotifier_fPtr_t pNotifierFkt ){
 
-	CoAP_Res_t* pRes = (CoAP_Res_t*)(com_mem_get0(sizeof(CoAP_Res_t)));
+	CoAP_Res_t* pRes = (CoAP_Res_t*)(coap_mem_get0(sizeof(CoAP_Res_t)));
 	if(pRes == NULL) return NULL;
 
 	pRes->pListObservers = NULL;
@@ -307,8 +313,8 @@ CoAP_Res_t* CoAP_CreateResource(char* Uri, char* Descr,CoAP_ResOpts_t Options, C
 	pRes->Options = Options;
 
 	if(*Descr != '\0'){
-	pRes->pDescription = (char*)(com_mem_get(sizeof(char)*(strlen(Descr)+1)));
-	strcpy(pRes->pDescription, Descr);
+	pRes->pDescription = (char*)(coap_mem_get(sizeof(char)*(coap_strlen(Descr)+1)));
+	coap_strcpy(pRes->pDescription, Descr);
 	}else {
 		pRes->pDescription=NULL;
 	}
@@ -326,14 +332,14 @@ CoAP_Res_t* CoAP_CreateResource(char* Uri, char* Descr,CoAP_ResOpts_t Options, C
 }
 
 
-CoAP_Result_t CoAP_ResUpdated(CoAP_Res_t* pRes) {
+CoAP_Result_t _rom CoAP_ResUpdated(CoAP_Res_t* pRes) {
 	pRes->UpdateCnt++;
-	CoAP_StartNotifyInteractions(pRes); //async
+	CoAP_StartNotifyInteractions(pRes); //async start of update interaction
 	return COAP_OK;
 }
 
 
-void CoAP_PrintResource(CoAP_Res_t* pRes) {
+void _rom CoAP_PrintResource(CoAP_Res_t* pRes) {
 	CoAP_printUriOptionsList(pRes->pUri);
 	INFO("Observers:\r\n");
 	CoAP_Observer_t* pOpserver = pRes->pListObservers; //point to ListStart
@@ -349,7 +355,7 @@ void CoAP_PrintResource(CoAP_Res_t* pRes) {
 	INFO("\r\n");
 }
 
-void CoAP_PrintAllResources() {
+void _rom CoAP_PrintAllResources() {
 	CoAP_Res_t* pRes = pResList;
 	while(pRes!=NULL) {
 		CoAP_PrintResource(pRes);
@@ -358,7 +364,7 @@ void CoAP_PrintAllResources() {
 }
 
 
-CoAP_Result_t CoAP_RemoveObserverFromResource(CoAP_Observer_t** pObserverList, uint8_t IfID, NetEp_t* pRemoteEP, uint64_t token) {
+CoAP_Result_t _rom CoAP_RemoveObserverFromResource(CoAP_Observer_t** pObserverList, uint8_t IfID, NetEp_t* pRemoteEP, uint64_t token) {
 	CoAP_Observer_t* pObserver = *pObserverList;
 
 	while(pObserver != NULL) { //found right existing observation -> delete it

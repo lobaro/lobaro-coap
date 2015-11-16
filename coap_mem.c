@@ -1,55 +1,87 @@
+/*******************************************************************************
+ * Copyright (c)  2015  Dipl.-Ing. Tobias Rohde, http://www.lobaro.com
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *******************************************************************************/
 //Taken from http://www.fourmilab.ch/bget/
 //"BGET is in the public domain. You can do anything you like with it."
 //Thank you Mr. Walker for your great work!
 
-#include "../../lobaro.h"
+#include "coap.h"
 
-static uint8_t buf[COAP_RAM_TOTAL_BYTES]; //see *.h
+static uint8_t buf[COAP_RAM_TOTAL_BYTES];
 
-uint8_t* com_mem_buf_lowEnd(){
+uint8_t* _rom coap_mem_buf_lowEnd(){
 	return &(buf[0]);
 }
 
-uint8_t* com_mem_buf_highEnd(){
+uint8_t* _rom coap_mem_buf_highEnd(){
 	return &(buf[COAP_RAM_TOTAL_BYTES-1]);
 }
 
-void com_mem_init()
+void _rom coap_mem_init()
 {
-	for(int i=0; i<COAP_RAM_TOTAL_BYTES; i++)
+	int i;
+	for(i=0; i<COAP_RAM_TOTAL_BYTES; i++)
 	{
 		buf[i]=0xaa;
 	}
 	bpool(buf, COAP_RAM_TOTAL_BYTES);
 }
 
-void* com_mem_get(bufsize size)
+void* _rom coap_mem_get(bufsize size)
 {
 	void* ptr = bget(size);
-	//INFO("- mem req: %d got: %d\r\n", size, bsize(ptr));
+//	INFO("- mem req: %d got: %d ptr %x\r\n", size, bsize(ptr), ptr);
 	return ptr;
 }
 
-void* com_mem_get0(bufsize size)
+void* _rom coap_mem_get0(bufsize size)
 {
 	//INFO("- mem req: %d byte\r\n", size);
 	return bgetz(size);
 }
 
-void com_mem_release(void* buf)
+void _rom coap_mem_release(void* buf)
 {
 	if(buf==NULL)return;
 	brel(buf);
 }
 
-void com_mem_stats()
+
+int32_t StaticAllocation = 0;
+
+void coap_mem_defineStaticMem() {
+	bufsize curalloc, totfree, maxfree;
+	int32_t nget,nrel;
+	bstats(&curalloc, &totfree, &maxfree, &nget, &nrel);
+	StaticAllocation = curalloc;
+}
+
+void _rom coap_mem_stats()
 {
 	bufsize curalloc, totfree, maxfree;
 	int32_t nget,nrel;
 
 	bstats(&curalloc, &totfree, &maxfree, &nget, &nrel);
 
-	INFO("- Memory used: [%ld] free: [%ld] biggest shunk: [%ld] get/releases: [%ld|%ld]\r\n", (int32_t)curalloc, (int32_t)totfree, (int32_t)maxfree,nget,nrel );
+	INFO("- Dynamic Memory used: [%ld] Total Memory used: [%ld] free: [%ld] biggest shunk: [%ld] get/releases: [%ld|%ld]\r\n",(int32_t)curalloc-StaticAllocation, (int32_t)curalloc, (int32_t)totfree, (int32_t)maxfree,nget,nrel );
 }
 
 
@@ -483,10 +515,10 @@ void com_mem_stats()
 					 buffer, and the total space
 					 currently allocated. */
 
-#define FreeWipe    1		      /* Wipe free buffers to a guaranteed
-					 pattern of garbage to trip up
-					 miscreants who attempt to use
-					 pointers into released buffers. */
+//#define FreeWipe    1		      /* Wipe free buffers to a guaranteed
+//					 pattern of garbage to trip up
+//					 miscreants who attempt to use
+//					 pointers into released buffers. */
 
 #define BestFit     1		      /* Use a best fit algorithm when
 					 searching for space for an
@@ -498,7 +530,7 @@ void com_mem_stats()
 //					 bectl() function for automatic
 //					 pool space control.  */
 
-#include <stdio.h>
+//#include <stdio.h>
 
 
 
@@ -516,7 +548,7 @@ extern char *sprintf();               /* Sun includes don't define sprintf */
 #endif
 
 //#include <memory.h>
-#include <string.h>
+//#include <string.h>
 
 
 
@@ -533,7 +565,6 @@ extern char *sprintf();               /* Sun includes don't define sprintf */
 /*  Declare the interface, including the requested buffer size type,
     bufsize.  */
 
-#include "coap_mem.h"
 
 #define MemSize     int 	      /* Type for size arguments to memxxx()
 					 functions such as memcmp(). */
@@ -620,7 +651,7 @@ static bufsize pool_len = 0;	      /* 0: no bpool calls have been made
 
 
 //get size of user databuffer
-int32_t bsize(void* buf)
+int32_t _rom bsize(uint8_t* buf)
 {
 	if(!buf)
 	{
@@ -638,7 +669,7 @@ int32_t bsize(void* buf)
 
 /*  BGET  --  Allocate a buffer.  */
 
-void *bget(requested_size)
+void * _rom bget(requested_size)
   bufsize requested_size;
 {
     bufsize size = requested_size;
@@ -825,7 +856,7 @@ void *bget(requested_size)
 	       the  entire  contents  of  the buffer to zero, not just the
 	       region requested by the caller. */
 
-void *bgetz(size)
+void * _rom bgetz(size)
   bufsize size;
 {
     char *buf = (char *) bget(size);
@@ -855,7 +886,7 @@ void *bgetz(size)
 	       enhanced to allow the buffer to grow into adjacent free
 	       blocks and to avoid moving data unnecessarily.  */
 
-void *bgetr(buf, size)
+void * _rom bgetr(buf, size)
   void *buf;
   bufsize size;
 {
@@ -882,7 +913,7 @@ void *bgetr(buf, size)
 #endif
 	osize -= sizeof(struct bhead);
     assert(osize > 0);
-    V memcpy((char *) nbuf, (char *) buf, /* Copy the data */
+    V coap_memcpy((char *) nbuf, (char *) buf, /* Copy the data */
 	     (MemSize) ((size < osize) ? size : osize));
     brel(buf);
     return nbuf;
@@ -890,7 +921,7 @@ void *bgetr(buf, size)
 
 /*  BREL  --  Release a buffer.  */
 
-void brel(buf)
+void _rom brel(buf)
   void *buf;
 {
     struct bfhead *b, *bn;
@@ -1054,7 +1085,7 @@ void bectl(compact, acquire, release, pool_incr)
 
 /*  BPOOL  --  Add a region of memory to the buffer pool.  */
 
-void bpool(buf, len)
+void _rom bpool(buf, len)
   void *buf;
   bufsize len;
 {
@@ -1123,7 +1154,7 @@ void bpool(buf, len)
 
 /*  BSTATS  --	Return buffer allocation free space statistics.  */
 
-void bstats(curalloc, totfree, maxfree, nget, nrel)
+void _rom bstats(curalloc, totfree, maxfree, nget, nrel)
   bufsize *curalloc, *totfree, *maxfree;
   long *nget, *nrel;
 {
@@ -1277,7 +1308,7 @@ void bpoold(buf, dumpalloc, dumpfree)
 /*  BPOOLV  --  Validate a buffer pool.  If NDEBUG isn't defined,
 		any error generates an assertion failure.  */
 
-int bpoolv(buf)
+int _rom bpoolv(buf)
   void *buf;
 {
     struct bfhead *b = BFH(buf);
@@ -1296,7 +1327,7 @@ int bpoolv(buf)
 	    }
 	    if ((b->ql.blink->ql.flink != b) ||
 		(b->ql.flink->ql.blink != b)) {
-                V printf("Free block: size %6ld bytes.  (Bad free list links)\n",
+                V coap_printf("Free block: size %6ld bytes.  (Bad free list links)\n",
 		     (long) bs);
 		assert(0);
 		return 0;
@@ -1304,9 +1335,9 @@ int bpoolv(buf)
 #ifdef FreeWipe
 	    lerr = ((char *) b) + sizeof(struct bfhead);
 	    if ((bs > sizeof(struct bfhead)) && ((*lerr != 0x55) ||
-		(memcmp(lerr, lerr + 1,
+		(coap_memcmp(lerr, lerr + 1,
 		  (MemSize) (bs - (sizeof(struct bfhead) + 1))) != 0))) {
-		V printf(
+		V coap_printf(
                     "(Contents of above free block have been overstored.)\n");
 		bufdump((void *) (((char *) b) + sizeof(struct bhead)));
 		assert(0);

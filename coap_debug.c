@@ -19,6 +19,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-#include "../../lobaro.h"
+#include "coap.h"
 
 char dbgBuf[DEBUG_BUF_SIZE];

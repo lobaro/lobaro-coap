@@ -19,50 +19,62 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-#ifndef COAP_MAIN_H_
-#define COAP_MAIN_H_
+#include "../coap.h"
 
+typedef struct
+{
+	NetSocket_t SocketMemory[MAX_ACTIVE_SOCKETS];
+	bool initDone;
+}NetSocketCtrl_t;
 
-#define MAX_CONCURRENT_TRANSACTIONS (10)
+static NetSocketCtrl_t SocketCtrl = {.initDone = false};
 
-#define MAX_FAIL_RETRIES (4)
+NetSocket_t* _rom AllocSocket()
+{
+	int i;
+	if(!SocketCtrl.initDone)
+	{
+		for(i=0; i<MAX_ACTIVE_SOCKETS; i++) SocketCtrl.SocketMemory[i].Alive = false;
+		SocketCtrl.initDone = true;
+	}
 
+	for(i=0; i<MAX_ACTIVE_SOCKETS; i++)
+	{
+		if(SocketCtrl.SocketMemory[i].Alive == false)
+		{
+			return &(SocketCtrl.SocketMemory[i]);
+		}
+	}
 
-#define POSTPONE_WAIT_TIME_SEK (3)
-#define POSTPONE_MAX_WAIT_TIME (30)
+	return NULL; //no free memory
+}
 
-#define HOLDTIME_AFTER_NON_TRANSACTION_END (0)
+NetSocket_t* _rom RetrieveSocket(SocketHandle_t handle)
+{
+	int i;
+	for(i=0; i<MAX_ACTIVE_SOCKETS; i++ )
+	{
+		if(SocketCtrl.SocketMemory[i].Alive &&
+				SocketCtrl.SocketMemory[i].Handle == handle) //corresponding socket found!
+		{
+			return &(SocketCtrl.SocketMemory[i]);
+		}
 
-#define CLIENT_MAX_RESP_WAIT_TIME (45)
+	}
+	return NULL; //not found
+}
 
+NetSocket_t* _rom RetrieveSocket2(uint8_t ifID)
+{
+	int i;
+	for(i=0; i<MAX_ACTIVE_SOCKETS; i++ )
+	{
+		if(SocketCtrl.SocketMemory[i].Alive &&
+				SocketCtrl.SocketMemory[i].ifID == ifID) //corresponding socket found!
+		{
+			return &(SocketCtrl.SocketMemory[i]);
+		}
 
-#define USE_RFC7641_ADVANCED_TRANSMISSION (1)
-
-#define ACK_TIMEOUT (2)
-#define ACK_RANDOM_FACTOR (1.5)
-#define MAX_RETRANSMIT (4)
-#define NSTART (1)
-#define DEFAULT_LEISURE (5)
-#define PROBING_RATE (1) 		//[client]
-
-
-//#####################
-// Receive of packets
-//#####################
-// This function must be called by network drivers
-// on reception of a new network packets which
-// should be passed to the CoAP stack.
-// "ifID" can be chosen arbitrary by calling network driver,
-// but can be considered constant over runtime.
-void CoAP_onNewPacketHandler( uint8_t ifID, NetPacket_t* pckt);
-
-//#####################
-// Transmit of packets
-//#####################
-//stack uses "NetSocket_t* RetrieveSocket2(uint8_t ifID)" function to get socket / send function inside socket
-
-CoAP_Result_t CoAP_Init();
-void CoAP_doWork();
-
-
-#endif
+	}
+	return NULL; //not found
+}

@@ -19,13 +19,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-#include "../../lobaro.h"
+#include "coap.h"
 
 CoAP_Result_t CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA);
 
-static CoAP_Interaction_t* CoAP_AllocNewInteraction()
+static CoAP_Interaction_t* _rom CoAP_AllocNewInteraction()
 {
-	CoAP_Interaction_t* newInteraction = (CoAP_Interaction_t*)(com_mem_get0(sizeof(CoAP_Interaction_t)));
+	CoAP_Interaction_t* newInteraction = (CoAP_Interaction_t*)(coap_mem_get0(sizeof(CoAP_Interaction_t)));
 	if(newInteraction == NULL) {
 		INFO("- (!!!) CoAP_AllocNewInteraction() Out of Memory!!!\r\n");
 		return NULL;
@@ -49,21 +49,21 @@ static CoAP_Interaction_t* CoAP_AllocNewInteraction()
 	return newInteraction;
 }
 
-CoAP_Result_t CoAP_FreeInteraction(CoAP_Interaction_t** pInteraction)
+CoAP_Result_t _rom CoAP_FreeInteraction(CoAP_Interaction_t** pInteraction)
 {
 	INFO("Releasing Interaction...\r\n");
-	com_mem_stats();
+	coap_mem_stats();
 	CoAP_free_Message(&(*pInteraction)->pReqMsg);
 	CoAP_free_Message(&(*pInteraction)->pRespMsg);
-	com_mem_release((void*)(*pInteraction));
-	com_mem_stats();
+	coap_mem_release((void*)(*pInteraction));
+	coap_mem_stats();
 
 	*pInteraction = NULL;
 	return COAP_OK;
 }
 
 
-static CoAP_Result_t CoAP_UnlinkInteractionFromList(CoAP_Interaction_t** pListStart, CoAP_Interaction_t* pInteractionToRemove, bool FreeUnlinked)
+static CoAP_Result_t _rom CoAP_UnlinkInteractionFromList(CoAP_Interaction_t** pListStart, CoAP_Interaction_t* pInteractionToRemove, bool FreeUnlinked)
 {
 	CoAP_Interaction_t* currP;
 	CoAP_Interaction_t* prevP;
@@ -95,7 +95,7 @@ static CoAP_Result_t CoAP_UnlinkInteractionFromList(CoAP_Interaction_t** pListSt
   return COAP_OK;
 }
 
-static CoAP_Result_t CoAP_UnlinkInteractionFromListByID(CoAP_Interaction_t** pListStart, uint16_t MsgID, uint8_t ifID, NetEp_t* RstEp, bool FreeUnlinked)
+static CoAP_Result_t _rom CoAP_UnlinkInteractionFromListByID(CoAP_Interaction_t** pListStart, uint16_t MsgID, uint8_t ifID, NetEp_t* RstEp, bool FreeUnlinked)
 {
 	CoAP_Interaction_t* currP;
 	CoAP_Interaction_t* prevP;
@@ -132,7 +132,7 @@ static CoAP_Result_t CoAP_UnlinkInteractionFromListByID(CoAP_Interaction_t** pLi
 
 
 
-static CoAP_Result_t CoAP_AppendInteractionToList(CoAP_Interaction_t** pListStart, CoAP_Interaction_t* pInteractionToAdd)
+static CoAP_Result_t _rom CoAP_AppendInteractionToList(CoAP_Interaction_t** pListStart, CoAP_Interaction_t* pInteractionToAdd)
 {
 	if(pInteractionToAdd == NULL) return COAP_ERR_ARGUMENT;
 
@@ -154,7 +154,7 @@ static CoAP_Result_t CoAP_AppendInteractionToList(CoAP_Interaction_t** pListStar
 }
 
 
-static CoAP_Result_t CoAP_MoveInteractionToListEnd(CoAP_Interaction_t** pListStart, CoAP_Interaction_t* pInteractionToMove)
+static CoAP_Result_t _rom CoAP_MoveInteractionToListEnd(CoAP_Interaction_t** pListStart, CoAP_Interaction_t* pInteractionToMove)
 {
 	CoAP_Interaction_t* currP;
 	CoAP_Interaction_t* prevP;
@@ -188,14 +188,15 @@ static CoAP_Result_t CoAP_MoveInteractionToListEnd(CoAP_Interaction_t** pListSta
 }
 
 
-CoAP_Result_t CoAP_SetSleepInteraction(CoAP_Interaction_t* pIA, uint32_t seconds) {
+CoAP_Result_t _rom CoAP_SetSleepInteraction(CoAP_Interaction_t* pIA, uint32_t seconds) {
 	pIA->SleepUntil = hal_rtc_1Hz_Cnt()+seconds;
 	return COAP_OK;
 }
 
-CoAP_Result_t CoAP_EnableAckTimeout(CoAP_Interaction_t* pIA, uint8_t retryNum) {
+CoAP_Result_t _rom CoAP_EnableAckTimeout(CoAP_Interaction_t* pIA, uint8_t retryNum) {
 	uint32_t waitTime = ACK_TIMEOUT;
-	for(int i=0; i < retryNum; i++) { //"exponential backoff"
+	int i;
+	for(i=0; i < retryNum; i++) { //"exponential backoff"
 		waitTime*=ACK_TIMEOUT;
 	}
 
@@ -203,12 +204,12 @@ CoAP_Result_t CoAP_EnableAckTimeout(CoAP_Interaction_t* pIA, uint8_t retryNum) {
 	return COAP_OK;
 }
 
-CoAP_Interaction_t* CoAP_GetLongestPendingInteraction()
+CoAP_Interaction_t* _rom CoAP_GetLongestPendingInteraction()
 {
 	return CoAP.pInteractions;
 }
 
-CoAP_Interaction_t* CoAP_GetInteractionByMessageID(uint16_t mId)
+CoAP_Interaction_t* _rom CoAP_GetInteractionByMessageID(uint16_t mId)
 {
 	CoAP_Interaction_t* pList = CoAP.pInteractions;
 
@@ -230,13 +231,13 @@ CoAP_Interaction_t* CoAP_GetInteractionByMessageID(uint16_t mId)
 }
 
 
-CoAP_Result_t CoAP_DeleteInteraction(CoAP_Interaction_t* pInteractionToDelete)
+CoAP_Result_t _rom CoAP_DeleteInteraction(CoAP_Interaction_t* pInteractionToDelete)
 {
   return CoAP_UnlinkInteractionFromList(&(CoAP.pInteractions), pInteractionToDelete, true);
 }
 
 
-CoAP_Result_t CoAP_ResetInteractionByID(uint16_t MsgID, uint8_t ifID, NetEp_t* RstEp)
+CoAP_Result_t _rom CoAP_ResetInteractionByID(uint16_t MsgID, uint8_t ifID, NetEp_t* RstEp)
 {
 
 	return CoAP_UnlinkInteractionFromListByID(&(CoAP.pInteractions), MsgID, ifID, RstEp, true);
@@ -245,7 +246,7 @@ CoAP_Result_t CoAP_ResetInteractionByID(uint16_t MsgID, uint8_t ifID, NetEp_t* R
 //Iterate over all interactions to find corresponding (by mID) message send by us before
 //and apply the newly received RST/ACK state
 //returns IA found
-CoAP_Interaction_t* CoAP_ApplyReliabilityStateToInteraction(CoAP_ReliabilityState_t stateToAdd, uint16_t mID, uint8_t ifID, NetEp_t* fromEp){
+CoAP_Interaction_t* _rom CoAP_ApplyReliabilityStateToInteraction(CoAP_ReliabilityState_t stateToAdd, uint16_t mID, uint8_t ifID, NetEp_t* fromEp){
 	CoAP_Interaction_t* pList = CoAP.pInteractions;
 
 	//A received RST message rejects a former send CON message or (optional) NON message send by us
@@ -272,7 +273,7 @@ CoAP_Interaction_t* CoAP_ApplyReliabilityStateToInteraction(CoAP_ReliabilityStat
 	return NULL;
 }
 
-CoAP_Result_t CoAP_AckInteractionByID(uint16_t MsgID, uint8_t ifID, NetEp_t* fromEp)
+CoAP_Result_t _rom CoAP_AckInteractionByID(uint16_t MsgID, uint8_t ifID, NetEp_t* fromEp)
 {
 //	CoAP_Interaction_t* pIA = CoAP.pInteractions; //List of all interactions
 //
@@ -317,13 +318,13 @@ CoAP_Result_t CoAP_AckInteractionByID(uint16_t MsgID, uint8_t ifID, NetEp_t* fro
 return COAP_NOT_FOUND;
 }
 
-CoAP_Result_t CoAP_EnqueueLastInteraction(CoAP_Interaction_t* pInteractionToEnqueue){
+CoAP_Result_t _rom CoAP_EnqueueLastInteraction(CoAP_Interaction_t* pInteractionToEnqueue){
 	return CoAP_MoveInteractionToListEnd(&(CoAP.pInteractions), pInteractionToEnqueue);
 }
 
 
 //we act as a CoAP Client (sending requests) in this interaction
-CoAP_Result_t CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, uint8_t ifID, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb)
+CoAP_Result_t _rom CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, uint8_t ifID, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb)
 {
 	if(pMsgReq==NULL || CoAP_MsgIsRequest(pMsgReq) == false) return COAP_ERR_ARGUMENT;
 
@@ -345,7 +346,7 @@ CoAP_Result_t CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, uint8_t if
 	return COAP_OK;
 }
 
-CoAP_Result_t CoAP_StartNewGetRequest(char* UriString, uint8_t ifID, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb) {
+CoAP_Result_t _rom CoAP_StartNewGetRequest(char* UriString, uint8_t ifID, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb) {
 
 	CoAP_Message_t* pReqMsg = CoAP_CreateMessage(CON, REQ_GET, CoAP_GetNextMid(),NULL, 0,0, CoAP_GenerateToken());
 
@@ -359,7 +360,7 @@ CoAP_Result_t CoAP_StartNewGetRequest(char* UriString, uint8_t ifID, NetEp_t* Se
 	return COAP_ERR_OUT_OF_MEMORY;
 }
 
-CoAP_Result_t CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
+CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 	CoAP_Observer_t* pObserver = pRes->pListObservers;
 	CoAP_Interaction_t* newIA;
 	bool SameNotificationOngoing;
@@ -374,7 +375,8 @@ CoAP_Result_t CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 
 		//search for pending notification of this resource to this observer and set update flag of representation
 	    SameNotificationOngoing=false;
-		for (CoAP_Interaction_t* pIA = CoAP.pInteractions; pIA != NULL; pIA = pIA->next) {
+	    CoAP_Interaction_t* pIA;
+		for (pIA = CoAP.pInteractions; pIA != NULL; pIA = pIA->next) {
 			if(pIA->Role==COAP_ROLE_NOTIFICATION){
 				if(pIA->pRes == pRes && pIA->ifID == pObserver->IfID && EpAreEqual( &(pIA->RemoteEp), &(pObserver->Ep))) {
 					SameNotificationOngoing = true;
@@ -431,7 +433,7 @@ CoAP_Result_t CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 }
 
 //we act as a CoAP Server (receiving requests) in this interaction
-CoAP_Result_t CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_Res_t* pRes, uint8_t ifID, NetPacket_t* pRawPckt)
+CoAP_Result_t _rom CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_Res_t* pRes, uint8_t ifID, NetPacket_t* pRawPckt)
 {
 	if(!CoAP_MsgIsRequest(pMsgReq)) return COAP_ERR_ARGUMENT;
 
@@ -485,7 +487,7 @@ CoAP_Result_t CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_Res_t
 
 
 
-CoAP_Result_t CoAP_RemoveInteractionsObserver(CoAP_Interaction_t* pIA, uint64_t token) {
+CoAP_Result_t _rom CoAP_RemoveInteractionsObserver(CoAP_Interaction_t* pIA, uint64_t token) {
 
 	return CoAP_RemoveObserverFromResource( &((pIA->pRes)->pListObservers), pIA->ifID , &(pIA->RemoteEp) , token);
 }
@@ -507,7 +509,7 @@ CoAP_Result_t CoAP_RemoveInteractionsObserver(CoAP_Interaction_t* pIA, uint64_t 
 
 
 
-CoAP_Result_t CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
+CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 	CoAP_Result_t res;
 	uint32_t obsVal = 0;
 	CoAP_Observer_t* pObserver = NULL;
@@ -563,7 +565,8 @@ CoAP_Result_t CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 		CoAP_RemoveInteractionsObserver(pIA, pIA->pReqMsg->Token64); //remove observer identified by token, ifID and remote EP from resource
 
 		//delete/abort any pending notification interaction
-		for(CoAP_Interaction_t* pIApending = CoAP.pInteractions; pIApending!=NULL; pIApending=pIApending->next) {
+		CoAP_Interaction_t* pIApending;
+		for(pIApending = CoAP.pInteractions; pIApending!=NULL; pIApending=pIApending->next) {
 			if(pIApending->Role == COAP_ROLE_NOTIFICATION) {
 				if(pIApending->pRespMsg->Token64 == pIA->pReqMsg->Token64 &&  pIApending->ifID == pIA->ifID && EpAreEqual(&(pIApending->RemoteEp), &(pIA->RemoteEp))) {
 					INFO("Abort of pending notificaton interaction\r\n");

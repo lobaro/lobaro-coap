@@ -19,50 +19,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-#ifndef COAP_MAIN_H_
-#define COAP_MAIN_H_
+#include "../coap.h"
 
 
-#define MAX_CONCURRENT_TRANSACTIONS (10)
+void _rom PrintRawPacket(NetPacket_t* pckt)
+{
 
-#define MAX_FAIL_RETRIES (4)
-
-
-#define POSTPONE_WAIT_TIME_SEK (3)
-#define POSTPONE_MAX_WAIT_TIME (30)
-
-#define HOLDTIME_AFTER_NON_TRANSACTION_END (0)
-
-#define CLIENT_MAX_RESP_WAIT_TIME (45)
-
-
-#define USE_RFC7641_ADVANCED_TRANSMISSION (1)
-
-#define ACK_TIMEOUT (2)
-#define ACK_RANDOM_FACTOR (1.5)
-#define MAX_RETRANSMIT (4)
-#define NSTART (1)
-#define DEFAULT_LEISURE (5)
-#define PROBING_RATE (1) 		//[client]
-
-
-//#####################
-// Receive of packets
-//#####################
-// This function must be called by network drivers
-// on reception of a new network packets which
-// should be passed to the CoAP stack.
-// "ifID" can be chosen arbitrary by calling network driver,
-// but can be considered constant over runtime.
-void CoAP_onNewPacketHandler( uint8_t ifID, NetPacket_t* pckt);
-
-//#####################
-// Transmit of packets
-//#####################
-//stack uses "NetSocket_t* RetrieveSocket2(uint8_t ifID)" function to get socket / send function inside socket
-
-CoAP_Result_t CoAP_Init();
-void CoAP_doWork();
-
-
-#endif
+	INFO("Packet size:%d rssi:%d hops: %d \r\nRawData (hex) :", pckt->size, pckt->MetaInfo.Dat.RfPath.RSSI, pckt->MetaInfo.Dat.RfPath.HopCount);
+	int i;
+	for(i=0; i<pckt->size; i++)
+	{
+		INFO("0x%02x, ", pckt->pData[i]);
+	}
+	INFO("\r\nRawData (char):");
+	for(i=0; i<pckt->size; i++)
+	{
+		INFO("%c", pckt->pData[i]);
+	}
+	INFO("\r\nEP Sender: ");
+	PrintEndpoint(&(pckt->Sender));
+	INFO("EP Receiver: ");
+	PrintEndpoint(&(pckt->Receiver));
+}

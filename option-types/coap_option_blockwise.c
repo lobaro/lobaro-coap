@@ -19,11 +19,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-#include "../../../lobaro.h"
+#include "../coap.h"
 
 //blockwise transfers options
 
-CoAP_Result_t dbgBlkOption(CoAP_blockwise_option_t* blkOption)
+CoAP_Result_t _rom dbgBlkOption(CoAP_blockwise_option_t* blkOption)
 {
 	if(blkOption->Type == BLOCK_1)
 	{
@@ -42,7 +42,7 @@ CoAP_Result_t dbgBlkOption(CoAP_blockwise_option_t* blkOption)
 	return COAP_OK;
 }
 
-CoAP_Result_t AddBlkOptionToMsg(CoAP_Message_t* msg, CoAP_blockwise_option_t* blkOption)
+CoAP_Result_t _rom AddBlkOptionToMsg(CoAP_Message_t* msg, CoAP_blockwise_option_t* blkOption)
 {
 	if(blkOption->Type != BLOCK_1 && blkOption->Type != BLOCK_2) return COAP_ERR_WRONG_OPTION;
 
@@ -55,7 +55,8 @@ CoAP_Result_t AddBlkOptionToMsg(CoAP_Message_t* msg, CoAP_blockwise_option_t* bl
 
 	//Block Size
 	uint8_t szxCalc = (uint8_t)((blkOption->BlockSize)>>4); // divide by 16
-	for(int i=6; i>=0; i--) //find highest bit, e.g. calc log2, i=7 forbidden
+	int i;
+	for(i=6; i>=0; i--) //find highest bit, e.g. calc log2, i=7 forbidden
 	{
 		if(szxCalc & 1<<i)
 		{
@@ -97,7 +98,7 @@ CoAP_Result_t AddBlkOptionToMsg(CoAP_Message_t* msg, CoAP_blockwise_option_t* bl
 }
 
 
-CoAP_Result_t GetBlockOptionFromMsg(CoAP_Message_t* msg, CoAP_blockwise_option_type_t Type, CoAP_blockwise_option_t* BlkOption)
+CoAP_Result_t _rom GetBlockOptionFromMsg(CoAP_Message_t* msg, CoAP_blockwise_option_type_t Type, CoAP_blockwise_option_t* BlkOption)
 {
    CoAP_option_t* pOption = msg->pOptionsList;
 
@@ -154,17 +155,39 @@ CoAP_Result_t GetBlockOptionFromMsg(CoAP_Message_t* msg, CoAP_blockwise_option_t
    return COAP_ERR_NOT_FOUND;
 }
 
-CoAP_Result_t GetBlock1OptionFromMsg(CoAP_Message_t* msg, CoAP_blockwise_option_t* BlkOption)
+CoAP_Result_t _rom GetBlock1OptionFromMsg(CoAP_Message_t* msg, CoAP_blockwise_option_t* BlkOption)
 {
 	return GetBlockOptionFromMsg(msg, BLOCK_1, BlkOption);
 }
 
-CoAP_Result_t GetBlock2OptionFromMsg(CoAP_Message_t* msg, CoAP_blockwise_option_t* BlkOption)
+CoAP_Result_t _rom GetBlock2OptionFromMsg(CoAP_Message_t* msg, CoAP_blockwise_option_t* BlkOption)
 {
 	return GetBlockOptionFromMsg(msg, BLOCK_2, BlkOption);
 }
 
-CoAP_Result_t CoAP_DefineGetRespPayload(CoAP_Message_t* pMsgReq, CoAP_Message_t* pMsgResp, uint8_t* pPayload, uint16_t payloadTotalSize, bool copyPl)
+CoAP_Result_t _rom RemoveAllBlockOptionsFromMsg(CoAP_Message_t* msg, CoAP_blockwise_option_type_t Type)
+{
+	 CoAP_option_t* pOption = NULL;
+	 bool found = false;
+
+	 RESTART:
+	 for(pOption = msg->pOptionsList ;pOption!=NULL;pOption=pOption->next) {
+		 if(pOption->Number==Type) {
+			 CoAP_RemoveOptionFromList( &(msg->pOptionsList), pOption);
+			 found = true;
+			 goto RESTART;
+		 }
+	 }
+
+	 if(found) return COAP_OK;
+	 else return COAP_NOT_FOUND;
+}
+
+//Copy from external payload buffer to response msg payload, and grow buffer if needed
+//1) external buffer is static 	(-> copyPl = false)
+//2) external buffer is volatile (->copyPl = true)
+//3) pPayload equals pMsgResp->Payload only blockwise memove ops are performed (-> copyPl = no meaning)
+CoAP_Result_t _rom CoAP_SetPayloadBlockwise(CoAP_Message_t* pMsgReq, CoAP_Message_t* pMsgResp, uint8_t* pPayload, uint16_t payloadTotalSize, bool copyPl)
 {
 	CoAP_blockwise_option_t B2opt = {.Type = BLOCK_2};
 	int32_t BytesToSend = 0;
@@ -191,17 +214,27 @@ CoAP_Result_t CoAP_DefineGetRespPayload(CoAP_Message_t* pMsgReq, CoAP_Message_t*
 		}
 		else BytesToSend = TotalBytesLeft;
 
+		//Add Block2
+		RemoveAllBlockOptionsFromMsg(pMsgResp, BLOCK_2); //if called more than one a block 2 can already be present, clean up
 		AddBlkOptionToMsg(pMsgResp, &B2opt);
 
-		//set payload to calculated position of given payload buf
-		CoAP_free_MsgPayload(&pMsgReq);
-		if(copyPl) {
-			pMsgResp->Payload = (uint8_t*)com_mem_get(BytesToSend); //alloc new buffer to copy data to send to
-			memcpy(pMsgResp->Payload, &(pPayload[(B2opt.BlockSize) * (B2opt.BlockNum)]),BytesToSend);
-			pMsgResp->PayloadBufSize = BytesToSend;
-		} else {
-			pMsgResp->Payload = &(pPayload[(B2opt.BlockSize) * (B2opt.BlockNum)]); //use external set buffer (will not be freed, must be static!)
-			pMsgResp->PayloadBufSize = 0; //protect "external to msg" buffer
+		if(pPayload == pMsgResp->Payload) { //no need to alter payload buf beside move contents
+			coap_memmove(pMsgResp->Payload, &(pMsgResp->Payload[(B2opt.BlockSize) * (B2opt.BlockNum)]), BytesToSend);
+		} else{
+			//set payload to calculated position of given external payload buf
+
+			if(copyPl) {
+				if(pMsgResp->PayloadBufSize < BytesToSend) {
+					CoAP_free_MsgPayload(&pMsgResp); //this is save in any case because free routine checks location
+					pMsgResp->Payload = (uint8_t*)coap_mem_get(BytesToSend); //alloc new buffer to copy data to send to
+					pMsgResp->PayloadBufSize = BytesToSend;
+				}
+				coap_memcpy(pMsgResp->Payload, &(pPayload[(B2opt.BlockSize) * (B2opt.BlockNum)]),BytesToSend);
+				pMsgResp->PayloadBufSize = BytesToSend;
+			} else {
+				pMsgResp->Payload = &(pPayload[(B2opt.BlockSize) * (B2opt.BlockNum)]); //use external set buffer (will not be freed, MUST be static!)
+				pMsgResp->PayloadBufSize = 0; //protect "external to msg" buffer
+			}
 		}
 
 	} else { //no block2 in request
@@ -217,16 +250,21 @@ CoAP_Result_t CoAP_DefineGetRespPayload(CoAP_Message_t* pMsgReq, CoAP_Message_t*
 			BytesToSend = payloadTotalSize;
 		}
 
-		//set payload to beginning of given payload buf
-		CoAP_free_MsgPayload(&pMsgReq);
-		if(copyPl) {
-			pMsgResp->Payload = (uint8_t*)com_mem_get(BytesToSend); //alloc new buffer to copy data to send to
-			memcpy(pMsgResp->Payload, &(pPayload[0]), BytesToSend);
-			pMsgResp->PayloadBufSize = BytesToSend;
-		} else {
-			pMsgResp->Payload = &(pPayload[0]); //use external set buffer (will not be freed, must be static!)
-			pMsgResp->PayloadBufSize = 0; //protect "external to msg" buffer
-		}
+		if(pPayload != pMsgResp->Payload) {
+			//set payload to beginning of given external payload buf
+			if(copyPl) {
+				if(pMsgResp->PayloadBufSize < BytesToSend) {
+					CoAP_free_MsgPayload(&pMsgResp); //this is save in any case because free routine checks location
+					pMsgResp->Payload = (uint8_t*)coap_mem_get(BytesToSend); //alloc new buffer to copy data to send to
+					pMsgResp->PayloadBufSize = BytesToSend;
+				}
+				coap_memcpy(pMsgResp->Payload, &(pPayload[0]), BytesToSend);
+				pMsgResp->PayloadBufSize = BytesToSend;
+			} else {
+				pMsgResp->Payload = &(pPayload[0]); //use external set buffer (will not be freed, MUST be static!!!)
+				pMsgResp->PayloadBufSize = 0; //protect "external to msg" buffer
+			}
+		}// [else] => no need to alter payload buf beside change payload length before return
 	}
 
 	pMsgResp->PayloadLength = BytesToSend;

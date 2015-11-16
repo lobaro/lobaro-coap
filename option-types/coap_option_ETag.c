@@ -19,17 +19,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-#include "../../../lobaro.h"
+#include "../coap.h"
 
 
 
 
-CoAP_Result_t AddETagOptionToMsg(CoAP_Message_t* msg, uint8_t* pData, uint32_t size)
+CoAP_Result_t _rom AddETagOptionToMsg(CoAP_Message_t* msg, uint8_t* pData, uint32_t size)
 {
 	uint32_t hash=0;
+	uint32_t i;
 
 	//TODO use a hash function
-	for(uint32_t i=0; i < size; i++)
+	for(i=0; i < size; i++)
 	{
 		hash+= pData[i];
 	}
@@ -50,7 +51,7 @@ CoAP_Result_t AddETagOptionToMsg(CoAP_Message_t* msg, uint8_t* pData, uint32_t s
 	return append_OptionToList(&(msg->pOptionsList), OPT_NUM_ETAG,wBuf, 4);
 }
 
-CoAP_Result_t GetETagOptionFromMsg(CoAP_Message_t* msg, uint8_t* val, uint8_t* pLen) { //len  [1..8]
+CoAP_Result_t _rom GetETagOptionFromMsg(CoAP_Message_t* msg, uint8_t* val, uint8_t* pLen) { //len  [1..8]
 
 
 	CoAP_option_t* pOpts = msg->pOptionsList;
@@ -63,7 +64,8 @@ CoAP_Result_t GetETagOptionFromMsg(CoAP_Message_t* msg, uint8_t* val, uint8_t* p
 				return COAP_BAD_OPTION_LEN;
 			} else {
 				*pLen = (uint8_t)pOpts->Length;
-				for(int i=0; i< pOpts->Length; i++) {
+				int i;
+				for(i=0; i< pOpts->Length; i++) {
 					val[i]=pOpts->Value[i];
 				}
 			}
@@ -75,7 +77,7 @@ CoAP_Result_t GetETagOptionFromMsg(CoAP_Message_t* msg, uint8_t* val, uint8_t* p
 	return COAP_NOT_FOUND;
 }
 
-CoAP_Result_t Add64BitETagOptionToMsg(CoAP_Message_t* msg, uint64_t val) {
+CoAP_Result_t _rom Add64BitETagOptionToMsg(CoAP_Message_t* msg, uint64_t val) {
 	uint8_t wBuf[8];
 	uint8_t i = 0;
 
@@ -88,7 +90,7 @@ CoAP_Result_t Add64BitETagOptionToMsg(CoAP_Message_t* msg, uint64_t val) {
 	return append_OptionToList(&(msg->pOptionsList), OPT_NUM_ETAG, wBuf, i+1);
 }
 
-CoAP_Result_t Get64BitETagOptionFromMsg(CoAP_Message_t* msg, uint64_t* pVal) {
+CoAP_Result_t _rom Get64BitETagOptionFromMsg(CoAP_Message_t* msg, uint64_t* pVal) {
 	CoAP_Result_t res;
 	uint8_t wBuf[8];
 	uint8_t pLen = 0;
@@ -98,8 +100,8 @@ CoAP_Result_t Get64BitETagOptionFromMsg(CoAP_Message_t* msg, uint64_t* pVal) {
 	if(res != COAP_OK) return res;
 
 	*pVal = 0;
-
-	for(int i= 0; i<pLen; i++) {
+	int i;
+	for(i= 0; i<pLen; i++) {
 		*pVal |= ((uint64_t)wBuf[i]) << (i*8);
 	}
 

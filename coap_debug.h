@@ -25,8 +25,8 @@
 #define DEBUG_BUF_SIZE (300)
 extern char dbgBuf[DEBUG_BUF_SIZE];
 
-#define UART_PUTS hal_uart1_puts
-#define UART_PUTC hal_uart1_putc
+#define UART_PUTS hal_uart_puts
+#define UART_PUTC hal_uart_putc
 
 #define PUTS(...) \
 do { \
@@ -40,7 +40,7 @@ do { \
 
 #define PRINTF(...) \
 do { \
-	sprintf(dbgBuf,__VA_ARGS__);\
+	coap_sprintf(dbgBuf,__VA_ARGS__);\
 	PUTS(dbgBuf); \
 } while(0)
 

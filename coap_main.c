@@ -19,23 +19,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-#include "../../lobaro.h"
+#include "coap.h"
 
 CoAP_t CoAP;
 
 
-CoAP_Result_t CoAP_Init()
+CoAP_Result_t _rom CoAP_Init()
 {
+	coap_mem_init();
 	CoAP_InitResources();
 	//CoAP_NVloadObservers();
 	return COAP_OK;
 }
 
-CoAP_Result_t CoAP_ClientResponse(CoAP_Message_t* pMsgResp)
+CoAP_Result_t _rom CoAP_ClientResponse(CoAP_Message_t* pMsgResp)
 {
 	INFO("got servers response!:\r\n");
-
-	for(int i=0; i< pMsgResp->PayloadLength; i++){
+	int i;
+	for(i=0; i< pMsgResp->PayloadLength; i++){
 		PUTC(pMsgResp->Payload[i]);
 	}
 	INFO("\r\n");
@@ -46,7 +47,7 @@ CoAP_Result_t CoAP_ClientResponse(CoAP_Message_t* pMsgResp)
 //Called by network interfaces to pass rawData which is parsed to CoAP messages.
 //lifetime of pckt only during function invoke
 //can be called from irq (???sure) since more expensive work is done in CoAP_doWork loop
-void CoAP_onNewPacketHandler(uint8_t ifID, NetPacket_t* pckt)
+void _ram CoAP_onNewPacketHandler(uint8_t ifID, NetPacket_t* pckt)
 {
 	CoAP_Message_t* pMsg = NULL;
 	bool isRequest = false;
@@ -58,7 +59,8 @@ void CoAP_onNewPacketHandler(uint8_t ifID, NetPacket_t* pckt)
 	INFO("Sending Endpoint: ");
 	PrintEndpoint(&(pckt->Sender));
 
-	if(parse_MessageFromRaw(pckt->pData, pckt->size, &pMsg) == COAP_OK){
+
+	if((res=parse_MessageFromRaw(pckt->pData, pckt->size, &pMsg)) == COAP_OK){
 		CoAP_PrintMsg(pMsg); //allocates the needed amount of ram
 		INFO("<<<<<<<<<<<<<<<<<<<<<<\r\n");
 	}
@@ -74,7 +76,9 @@ void CoAP_onNewPacketHandler(uint8_t ifID, NetPacket_t* pckt)
 	//Filter out bad CODE/TYPE combinations (Table 1, RFC7252 4.3.) by silently ignoring them
 	if(pMsg->Type == CON && pMsg->Code == EMPTY) {
 		CoAP_SendEmptyRST(pMsg->MessageID, ifID, &(pckt->Sender)); //a.k.a "CoAP Ping"
-		goto END;
+		CoAP_free_Message(&pMsg); //free if not used inside interaction
+		coap_mem_stats();
+		return;
 	}
 	else if(pMsg->Type == CON && pMsg->Code == EMPTY) goto END;
 	else if(pMsg->Type == ACK && isRequest) goto END;
@@ -101,6 +105,7 @@ void CoAP_onNewPacketHandler(uint8_t ifID, NetPacket_t* pckt)
 		}
 		goto END;
 	}
+
 
 	//Prechecks done...try to include message into new or existing server/client interaction
 	switch(pMsg->Type)
@@ -147,7 +152,8 @@ void CoAP_onNewPacketHandler(uint8_t ifID, NetPacket_t* pckt)
 
 				  } else { //pMsg carries a separate response (=no piggyback!) to our client request...
 					  //find in interaction list request with same token & endpoint
-					  for(CoAP_Interaction_t* pIA = CoAP.pInteractions; pIA != NULL; pIA = pIA->next) {
+					  CoAP_Interaction_t* pIA;
+					  for(pIA = CoAP.pInteractions; pIA != NULL; pIA = pIA->next) {
 						 if(pIA->Role == COAP_ROLE_CLIENT  && pIA->pReqMsg->Token64 == pMsg->Token64 && EpAreEqual(&(pckt->Sender), &(pIA->RemoteEp))) {
 
 							if(pIA->State == COAP_STATE_WAITING_RESPONSE || pIA->State == COAP_STATE_HANDLE_RESPONSE) { //2nd case "updates" received response
@@ -179,7 +185,7 @@ END: //only reached if no interaction has been started (return statement)
 }
 
 
-static CoAP_Result_t SendResp(CoAP_Interaction_t* pIA, CoAP_InteractionState_t nextIAState)
+static CoAP_Result_t _rom SendResp(CoAP_Interaction_t* pIA, CoAP_InteractionState_t nextIAState)
 {
 	if(CoAP_SendMsg( pIA->pRespMsg, pIA->ifID, &(pIA->RemoteEp) ) == COAP_OK) {
 
@@ -203,7 +209,7 @@ static CoAP_Result_t SendResp(CoAP_Interaction_t* pIA, CoAP_InteractionState_t n
  return COAP_OK;
 }
 
-static CoAP_Result_t SendReq(CoAP_Interaction_t* pIA, CoAP_InteractionState_t nextIAState)
+static CoAP_Result_t _rom SendReq(CoAP_Interaction_t* pIA, CoAP_InteractionState_t nextIAState)
 {
 	if(CoAP_SendMsg( pIA->pReqMsg, pIA->ifID, &(pIA->RemoteEp) ) == COAP_OK) {
 
@@ -240,7 +246,7 @@ static CoAP_Result_t SendReq(CoAP_Interaction_t* pIA, CoAP_InteractionState_t ne
 //	}
 //}
 
-static CoAP_Result_t CheckRespStatus(CoAP_Interaction_t* pIA){
+static CoAP_Result_t _rom CheckRespStatus(CoAP_Interaction_t* pIA){
 
 	if(pIA->RespReliabilityState == RST_SET) {
 				INFO("- Response reset by remote client -> Interaction aborted\r\n");
@@ -266,7 +272,7 @@ static CoAP_Result_t CheckRespStatus(CoAP_Interaction_t* pIA){
 		else { //check ACK/RST timeout of our CON response
 			if(hal_rtc_1Hz_Cnt() > pIA->AckTimeout) {
 				if(pIA->RetransCounter+1 > MAX_RETRANSMIT) { //give up
-					INFO("- (!) ACK timeout on sending response, giving up! Req.MiD: %d", pIA->pReqMsg->MessageID );
+					INFO("- (!) ACK timeout on sending response, giving up! Resp.MiD: %d\r\n", pIA->pRespMsg->MessageID );
 					return COAP_ERR_OUT_OF_ATTEMPTS;
 				}else {
 					INFO("- (!) Retry num %d\r\n",pIA->RetransCounter+1);
@@ -283,7 +289,7 @@ static CoAP_Result_t CheckRespStatus(CoAP_Interaction_t* pIA){
 }
 
 //used on [CLIENT] side request to check progress of interaction
-static CoAP_Result_t CheckReqStatus(CoAP_Interaction_t* pIA){
+static CoAP_Result_t _rom CheckReqStatus(CoAP_Interaction_t* pIA){
 
 	if(pIA->ReqReliabilityState == RST_SET) {
 				INFO("- Response reset by remote server -> Interaction aborted\r\n");
@@ -327,7 +333,7 @@ static CoAP_Result_t CheckReqStatus(CoAP_Interaction_t* pIA){
 
 
 //must be called regularly
-void CoAP_doWork()
+void _rom CoAP_doWork()
 {
 	CoAP_Interaction_t* pIA = CoAP_GetLongestPendingInteraction();
 	CoAP_Result_t result;
@@ -368,7 +374,7 @@ void CoAP_doWork()
 
 			//Allocate new msg with payload buffer which can be directly used OR overwritten
 			//by resource handler with (ownstatic memory OR  "com_mem_get(...)" memory areas.
-			//Any non static memory will be freed along with message! see free_Payload(...) function.
+			//Any non static memory will be freed along with message! see free_Payload(...) function, even if user overwrites payload pointer!
 			if(pIA->pRespMsg == NULL) { //if postponed before it would have been already allocated
 				pIA->pRespMsg = CoAP_AllocRespMsg(pIA->pReqMsg, EMPTY, PREFERED_PAYLOAD_SIZE); //matches also TYPE + TOKEN to request
 			}

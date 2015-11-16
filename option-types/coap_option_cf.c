@@ -19,10 +19,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-#include "../../../lobaro.h"
+#include "../coap.h"
 
 //add content-format option
-CoAP_Result_t AddCfOptionToMsg(CoAP_Message_t* msg, uint16_t cf)
+CoAP_Result_t _rom AddCfOptionToMsg(CoAP_Message_t* msg, uint16_t cf)
 {
 	uint8_t wBuf[2];
 
