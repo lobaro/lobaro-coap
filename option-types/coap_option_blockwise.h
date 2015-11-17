@@ -69,6 +69,6 @@ CoAP_Result_t dbgBlkOption(CoAP_blockwise_option_t* blkOption);
 
 int32_t getBlockwiseOffset(uint16_t TotalPayloadSize, CoAP_blockwise_option_t* blkOpt);
 
-CoAP_Result_t CoAP_DefineGetRespPayload(CoAP_Message_t* pMsgReq, CoAP_Message_t* pMsgResp, uint8_t* pPayload, uint16_t payloadTotalSize, bool copyPl);
+CoAP_Result_t CoAP_SetPayloadBlockwise(CoAP_Message_t* pMsgReq, CoAP_Message_t* pMsgResp, uint8_t* pPayload, uint16_t payloadTotalSize, bool copyPl);
 
 #endif /* SRC_COAP_COAP_BLOCKWISE_H_ */

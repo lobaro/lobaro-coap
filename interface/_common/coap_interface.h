@@ -54,7 +54,6 @@
 	#include <string.h>
 	#include <stdlib.h>
 
-
 	#define coap_sprintf sprintf
 	#define coap_printf printf
 	#define coap_memcpy memcpy
