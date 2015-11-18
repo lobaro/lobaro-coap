@@ -36,8 +36,8 @@ bool  CoAP_ESP8266_ConfigDevice();
 #define USE_SOFT_AP (1)
 //-> default soft ap config: ssid = "Lobaro-CoAP (ESP8266)", pw= "lobaro!!", AP-IP: 192.168.4.1
 
-#define USE_HARDCODED_CREDENTIALS (1) //other option: set via coap on soft-ap interface
-#define EXTERNAL_AP_SSID "IBR"
-#define EXTERNAL_AP_PW "hallowelt12"
+#define USE_HARDCODED_CREDENTIALS (0) //other option: set via coap on soft-ap interface
+#define EXTERNAL_AP_SSID "YOUR-SSID"
+#define EXTERNAL_AP_PW "YOUR-WIFI-SECRET"
 
 #endif
