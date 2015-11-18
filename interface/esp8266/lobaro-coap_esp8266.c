@@ -272,6 +272,7 @@ bool ICACHE_FLASH_ATTR CoAP_ESP8266_ConfigDevice(){
 #if USE_HARDCODED_CREDENTIALS == 1
 	ESP8266_Config_Station();
 #endif
+	return true;
 }
 
 bool  ICACHE_FLASH_ATTR CoAP_ESP8266_DeleteInterfaceSocket(uint8_t ifID)
