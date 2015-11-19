@@ -31,7 +31,7 @@
 	#include <os_type.h>
 
 	#define coap_sprintf os_sprintf
-	#define coap_printf  os_printf
+	#define coap_printf  ets_uart_printf
 	#define coap_memcpy  os_memcpy
 	#define coap_memset  os_memset
 	#define coap_memmove os_memmove

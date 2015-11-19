@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  *******************************************************************************/
 #include "../coap.h"
-
+#include <stdarg.h>
 
 //internal function
 //QueryStr points to char AFTER ? in a uri query string e.g: 'O' in [...]myuri/bla?Option1=Val1&Option2=Val2
@@ -191,7 +191,7 @@ uint8_t* CoAP_UriQuery_strstr(CoAP_option_t* pUriOpt, const char* str) {
 	return &(pUriOpt->Value[(pLoc-pUriQuery)]); //return pointer to the first occurrence of str in Opt.val, (pLoc-pUriQuery) = actual offset
 }
 
-uint8_t* CoAP_UriQuery_GetValueAfterPrefix(CoAP_option_t* pUriOpt, const char* prefixStr, uint8_t* pValueLen){
+uint8_t* CoAP_GetUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, uint8_t* pValueLen){
 	if(pUriOpt == NULL) return NULL;
 	if(pUriOpt->Number != OPT_NUM_URI_QUERY) return NULL;
 	if(pUriOpt->Length == 0 || pUriOpt->Length > 255) return NULL;
@@ -203,6 +203,7 @@ uint8_t* CoAP_UriQuery_GetValueAfterPrefix(CoAP_option_t* pUriOpt, const char* p
 	for(;i< prefixLen; i++) {
 		if(pUriOpt->Value[i] != prefixStr[i]) return NULL;
 	}
+
 	//prefix found
 	if(pValueLen != NULL)
 		*pValueLen = (pUriOpt->Length) - prefixLen;
@@ -210,10 +211,44 @@ uint8_t* CoAP_UriQuery_GetValueAfterPrefix(CoAP_option_t* pUriOpt, const char* p
 	return &(pUriOpt->Value[prefixLen]);
 }
 
+int8_t CoAP_CompareUriQueryVal2Cstr(CoAP_option_t* pUriOpt, const char* prefixStr, int CmpStrCnt, ...) {
+	va_list ap; //compare string pointer
+	int i,j;
+	char* pStr=NULL;
+	bool Match=false;
+	uint8_t* pUriQueryVal;
+	uint8_t ValLen;
+
+	pUriQueryVal = CoAP_GetUriQueryVal(pUriOpt, prefixStr, &ValLen);
+	if(pUriQueryVal == NULL) return 0;//-1; //prefix not found, no uri-query
+
+	va_start (ap, CmpStrCnt);         // Initialize the argument list.
+	for(i=1;i<CmpStrCnt+1;i++) { //loop over all string arguments to compare the found uri query against
+		pStr = va_arg(ap, char*);
+
+		if(coap_strlen(pStr) != ValLen) continue; //already length does not match -> try next given string
+
+		Match=true;
+		for(j=0;j< ValLen; j++) {
+			if(pStr[j] != pUriQueryVal[j]){
+				Match=false;
+				break;
+			}
+		}
+		if(Match==false) continue;
+		//found argument string matching to uri-query value
+		va_end (ap);
+		return i; //return argument number of match
+	}
+
+	 va_end (ap);
+	 return 0; //not found
+}
+
 bool CoAP_UriQuery_KeyCorrect(CoAP_option_t* pUriOpt, const char* Key){
 
 	uint8_t KeyLen;
-	uint8_t* pVal = CoAP_UriQuery_GetValueAfterPrefix(pUriOpt, "key=", &KeyLen);
+	uint8_t* pVal = CoAP_GetUriQueryVal(pUriOpt, "key=", &KeyLen);
 
 
 	if(pVal == NULL || KeyLen != coap_strlen(Key)) return false;
