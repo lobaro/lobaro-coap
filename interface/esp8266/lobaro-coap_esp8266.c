@@ -38,6 +38,9 @@
 
 extern int ets_uart_printf(const char *fmt, ...);
 
+CoAP_ESP8266_States_t CoAP_ESP8266_States = {.TxSocketIdle=true, .StationConStatus=STATION_IDLE};
+
+
 //implement internaly used functions (see also lobaro-coap/interface/coap_interface.h)
 void hal_uart_puts(char *s) {
 	ets_uart_printf("%s",s);
@@ -61,15 +64,12 @@ bool hal_nonVolatile_WriteBuf(uint8_t* data, uint32_t len){
 	return false; //not implemented yet on esp8266
 }
 
-bool CoAP_ESP8266_TxSocketIdle = true;
-
-
 //---------------------------------
 
 static void udp_sent_cb(void *arg) {
 	// struct espconn *pesp_conn = arg;
 
-	CoAP_ESP8266_TxSocketIdle = true;
+	CoAP_ESP8266_States.TxSocketIdle = true;
 	 ets_uart_printf("send OK!\r\n");
 }
 
@@ -138,9 +138,6 @@ static void udp_recv_cb(void *arg, char *pdata, unsigned short len) {
 
 NetSocket_t* ICACHE_FLASH_ATTR CoAP_ESP8266_CreateInterfaceSocket(uint8_t ifID, struct espconn* pEsp8266_conn, uint16_t LocalPort, NetReceiveCallback_fn Callback, NetTransmit_fn SendPacket)
 {
-
-
-
 	NetSocket_t* pSocket;
 
 	if(pEsp8266_conn == NULL){
@@ -251,13 +248,13 @@ bool  ICACHE_FLASH_ATTR CoAP_ESP8266_SendDatagram(uint8_t ifID, NetPacket_t* pck
 
 	pEspConn->proto.udp->local_port = pckt->Sender.NetPort;
 
-	CoAP_ESP8266_TxSocketIdle = false;
+	CoAP_ESP8266_States.TxSocketIdle = false;
 	if(espconn_sendto(pEspConn, pckt->pData, pckt->size)==0){
 		//INFO("ESP8266_SendDatagram(...): Send succesfully!\r\n");
 		return true;
 	}
 	else {
-		CoAP_ESP8266_TxSocketIdle = true;
+		CoAP_ESP8266_States.TxSocketIdle = true;
 			ERROR("CoAP_ESP8266_SendDatagram(...): Internal Socket Error\r\n");
 			return false;
 	}
@@ -333,11 +330,10 @@ static bool ICACHE_FLASH_ATTR ESP8266_Config_Station(void)
 }
 
 LOCAL void ICACHE_FLASH_ATTR connection_timer_cb(void *arg) {
-    static uint8_t lastConStatus = STATION_IDLE;
     static uint8_t failRetryCnt=0;
 	uint8_t conStatus = wifi_station_get_connect_status();
 
-	if (conStatus == STATION_GOT_IP && conStatus!=lastConStatus) { //just got ip
+	if (conStatus == STATION_GOT_IP && conStatus!=CoAP_ESP8266_States.StationConStatus ) { //just got ip
 		failRetryCnt=0;
 		ets_uart_printf("\r\n- Got IP from external AP! -> ");
 		struct ip_info ipconfig;
@@ -346,23 +342,23 @@ LOCAL void ICACHE_FLASH_ATTR connection_timer_cb(void *arg) {
 		}
 		else ets_uart_printf("ERROR!!\r\n");
 
-	}else if(conStatus == STATION_CONNECTING && conStatus!=lastConStatus){
+	}else if(conStatus == STATION_CONNECTING && conStatus!=CoAP_ESP8266_States.StationConStatus ){
 		ets_uart_printf("...connecting to remote wifi access point...\r\n");
 
-	}else if(conStatus == STATION_WRONG_PASSWORD && conStatus!=lastConStatus){
+	}else if(conStatus == STATION_WRONG_PASSWORD && conStatus!=CoAP_ESP8266_States.StationConStatus ){
 		ets_uart_printf("(!!!) Wrong Password! Try config via softap interface (coap://192.168.4.1:5683) and reset esp8266\r\n");
 		failRetryCnt++;
 
-	}else if(conStatus == STATION_NO_AP_FOUND && conStatus!=lastConStatus){
+	}else if(conStatus == STATION_NO_AP_FOUND && conStatus!=CoAP_ESP8266_States.StationConStatus ){
 		failRetryCnt++;
 		ets_uart_printf("(!!!) No AP Found! Try config via softap interface (coap://192.168.4.1:5683) and reset esp8266\r\n");
 
-	}else if(conStatus == STATION_CONNECT_FAIL && conStatus!=lastConStatus){
+	}else if(conStatus == STATION_CONNECT_FAIL && conStatus!=CoAP_ESP8266_States.StationConStatus ){
 		failRetryCnt++;
 		ets_uart_printf("(!!!) Connect Fail\r\n");
 	}
 
-	lastConStatus = conStatus;
+	CoAP_ESP8266_States.StationConStatus = conStatus;
 
 	if(failRetryCnt > MAX_CON_RETRIES_BEFORE_ACTIVATING_SOFT_AP) {
 #if SOFTAP_ALLWAYS_ON == 0

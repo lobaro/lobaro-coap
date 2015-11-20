@@ -27,7 +27,14 @@
 // v1.4.0 -> 1.4.1 : http://bbs.espressif.com/viewtopic.php?f=46&t=1268
 //-----------------------------------------------------------------------
 
-extern bool CoAP_ESP8266_TxSocketIdle;
+typedef struct {
+
+	bool TxSocketIdle;
+	uint8_t StationConStatus;
+
+}CoAP_ESP8266_States_t;
+
+extern CoAP_ESP8266_States_t CoAP_ESP8266_States;
 
 bool CoAP_ESP8266_SendDatagram(uint8_t ifID, NetPacket_t* pckt);
 NetSocket_t* CoAP_ESP8266_CreateInterfaceSocket(uint8_t ifID, struct espconn* pEsp8266_conn, uint16_t LocalPort, NetReceiveCallback_fn Callback, NetTransmit_fn SendPacket);
