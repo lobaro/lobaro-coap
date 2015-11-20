@@ -50,6 +50,7 @@ bool  CoAP_ESP8266_ConfigDevice();
 //see here why: http://bbs.espressif.com/viewtopic.php?t=324
 #define SOFTAP_ALLWAYS_ON (0) //0=only soft-ap is connection to ap failed 1=soft-ap allways on
 
-#define MAX_CON_RETRIES_BEFORE_ACTIVATING_SOFT_AP (0) //turn on the softAP after x-connection retries to external AP/Router
+#define MAX_CON_RETRIES_BEFORE_ACTIVATING_SOFT_AP (3) //turn on the softAP after x-connection retries to external AP/Router
+
 
 #endif

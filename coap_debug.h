@@ -22,7 +22,7 @@
 #ifndef COM_DEBUG_H
 #define COM_DEBUG_H
 
-#define DEBUG_BUF_SIZE (300)
+#define DEBUG_BUF_SIZE (500)
 extern char dbgBuf[DEBUG_BUF_SIZE];
 
 #define UART_PUTS hal_uart_puts

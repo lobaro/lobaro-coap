@@ -40,7 +40,6 @@ extern int ets_uart_printf(const char *fmt, ...);
 
 CoAP_ESP8266_States_t CoAP_ESP8266_States = {.TxSocketIdle=true, .StationConStatus=STATION_IDLE};
 
-
 //implement internaly used functions (see also lobaro-coap/interface/coap_interface.h)
 void hal_uart_puts(char *s) {
 	ets_uart_printf("%s",s);
@@ -65,12 +64,10 @@ bool hal_nonVolatile_WriteBuf(uint8_t* data, uint32_t len){
 }
 
 //---------------------------------
-
 static void udp_sent_cb(void *arg) {
 	// struct espconn *pesp_conn = arg;
-
-	CoAP_ESP8266_States.TxSocketIdle = true;
-	 ets_uart_printf("send OK!\r\n");
+ CoAP_ESP8266_States.TxSocketIdle = true;
+ ets_uart_printf("send OK!\r\n");
 }
 
 //implement network functions around coap if socket
@@ -82,7 +79,7 @@ static void udp_recv_cb(void *arg, char *pdata, unsigned short len) {
 	if(espconn_get_connection_info(pesp_conn, &rinfo , 0)!=0){
 		ets_uart_printf("ERROR espconn_get_connection_info(...)\r\n");
 	}
-	ets_uart_printf("Received %d Bytes from %d.%d.%d.%d:%d  %d\r\n", len, rinfo->remote_ip[0], rinfo->remote_ip[1], rinfo->remote_ip[2], rinfo->remote_ip[3], rinfo->remote_port, rinfo->state);
+	ets_uart_printf("Received %d Bytes from %d.%d.%d.%d:%d\r\n", len, rinfo->remote_ip[0], rinfo->remote_ip[1], rinfo->remote_ip[2], rinfo->remote_ip[3], rinfo->remote_port);
 
 	int i;
 	for(i=0; i<len;i++) {

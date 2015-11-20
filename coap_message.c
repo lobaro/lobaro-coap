@@ -270,7 +270,11 @@ int CoAP_GetRawSizeOfMessage(CoAP_Message_t* Msg) {
 	TotalMsgBytes+= CoAP_NeededMem4PackOptions(Msg->pOptionsList);
 
 	if(Msg->Code != EMPTY) {
-		TotalMsgBytes+=Msg->PayloadLength+1; //+1 = PayloadMarker
+
+		if(Msg->PayloadLength) {
+			TotalMsgBytes+=Msg->PayloadLength+1; //+1 = PayloadMarker
+		}
+
 		TotalMsgBytes+=getTokenByteCount(Msg->Token64);
 	}
 
@@ -396,8 +400,12 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, uint8_t ifID, NetEp_t* Rece
 	}
 
 //serialize msg
-	CoAP_BuildDatagram(pked.pData, &bytesToSend, Msg);
-	//INFO("Bytes to Send = %d estimated = %d\r\n", bytesToSend, CoAP_GetRawSizeOfMessage(Msg));
+	CoAP_BuildDatagram((pked.pData), &bytesToSend, Msg);
+
+	if(bytesToSend!=pked.size){
+		INFO("(!!!) Bytes to Send = %d estimated = %d\r\n", bytesToSend, CoAP_GetRawSizeOfMessage(Msg));
+	}
+
 
 	INFO("\r\n>>>>>>>>>>>>>>>>>>>>>>\r\nSend Message [%d Bytes], Interface #%u\r\n", bytesToSend, ifID);
 	INFO("Receiving Endpoint: ");

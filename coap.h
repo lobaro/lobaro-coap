@@ -65,7 +65,7 @@ typedef enum
 }CoAP_Result_t;
 
 #define MAX_PAYLOAD_SIZE  		(256)  //should not exceed 1024 bytes (see 4.6 RFC7252) (must be power of 2 to fit with blocksize option!)
-#define PREFERED_PAYLOAD_SIZE	(32)   //also size of pResp message payload buffer presented to user
+#define PREFERED_PAYLOAD_SIZE	(64)   //also size of inital pResp message payload buffer in user resource handler
 
 #define COAP_VERSION (1)
 
