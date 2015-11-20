@@ -23,9 +23,9 @@
 
 CoAP_t CoAP;
 
-CoAP_Result_t _rom CoAP_Init()
+CoAP_Result_t _rom CoAP_Init(uint8_t* pMemory, int16_t MemorySize)
 {
-	coap_mem_init();
+	coap_mem_init(pMemory, MemorySize);
 	CoAP_InitResources();
 	//CoAP_NVloadObservers();
 	return COAP_OK;

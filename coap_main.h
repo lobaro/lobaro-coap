@@ -61,7 +61,7 @@ void CoAP_onNewPacketHandler( uint8_t ifID, NetPacket_t* pckt);
 //#####################
 //stack uses "NetSocket_t* RetrieveSocket2(uint8_t ifID)" function to get socket / send function inside socket
 
-CoAP_Result_t CoAP_Init();
+CoAP_Result_t  CoAP_Init(uint8_t* pMemory, int16_t MemorySize);
 void CoAP_doWork();
 
 

@@ -209,14 +209,6 @@ CoAP_Message_t* _rom CoAP_CreateMessage(CoAP_MessageType_t Type, CoAP_MessageCod
 	pMsg->MessageID = MessageID;
 	pMsg->Token64 = Token;
 	pMsg->Timestamp = 0;
-//	pMsg->TokenLength 		= TokenInitalContentLength;
-//	if(TokenMaxSize)
-//	{
-//		pMsg->TokenBufSize =TokenMaxSize;
-//		pMsg->Token				= ((uint8_t*)(pMsg))+sizeof(CoAP_Message_t); //set pointer
-//		if(pTokenInitalContent!=NULL) coap_memcpy((void*)((pMsg)->Token), (void*)pTokenInitalContent, TokenInitalContentLength);
-//	}
-
 
 	pMsg->PayloadLength 		= PayloadInitialContentLength;
 	if(PayloadMaxSize)

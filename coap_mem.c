@@ -25,24 +25,28 @@
 
 #include "coap.h"
 
-static uint8_t buf[COAP_RAM_TOTAL_BYTES];
+static uint8_t* pMemArea;
+static int16_t TotalBufBytes=0;
 
 uint8_t* _rom coap_mem_buf_lowEnd(){
-	return &(buf[0]);
+	return &(pMemArea[0]);
 }
 
 uint8_t* _rom coap_mem_buf_highEnd(){
-	return &(buf[COAP_RAM_TOTAL_BYTES-1]);
+	return &(pMemArea[TotalBufBytes-1]);
 }
 
-void _rom coap_mem_init()
+void _rom coap_mem_init(uint8_t* pMemoryArea, int16_t size)
 {
-	int i;
-	for(i=0; i<COAP_RAM_TOTAL_BYTES; i++)
-	{
-		buf[i]=0xaa;
-	}
-	bpool(buf, COAP_RAM_TOTAL_BYTES);
+//	int i;
+//	for(i=0; i<size; i++) {
+//		buf[i]=0xaa;
+//	}
+	if(pMemoryArea == NULL) return;
+	pMemArea = pMemoryArea;
+	TotalBufBytes = size;
+
+	bpool(pMemArea, TotalBufBytes);
 }
 
 void* _rom coap_mem_get(bufsize size)

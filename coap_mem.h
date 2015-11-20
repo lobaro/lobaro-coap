@@ -59,7 +59,7 @@ int	bpoolv	    _((void *pool));
 //Lobaro:
 //4 byte header + alignment = overhead of allocator
 
-void coap_mem_init();
+void  coap_mem_init(uint8_t* pMemoryArea, int16_t size);
 
 void coap_mem_stats();
 void coap_mem_defineStaticMem(); //used by coap_mem_stats to calculate "dynamic"=dangerous memory size (which should go to zero in the long term, otherwise we have a memory leak!)
