@@ -35,7 +35,6 @@
 #define MAX_PAYLOAD_SIZE  		(256)  //should not exceed 1024 bytes (see 4.6 RFC7252) (must be power of 2 to fit with blocksize option!)
 #define PREFERED_PAYLOAD_SIZE	(32)
 
-
 typedef enum
 {
 	COAP_VERSION_1_0 = 1 //see RFC7252
@@ -158,12 +157,7 @@ CoAP_Result_t CoAP_SendEmptyAck(uint16_t MessageID, uint8_t ifID, NetEp_t* Recei
 CoAP_Result_t CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, uint64_t token, uint8_t ifID, NetEp_t* Receiver);
 CoAP_Result_t CoAP_SendEmptyRST(uint16_t MessageID, uint8_t ifID, NetEp_t* Receiver);
 
-#define TOKEN0(ipaddr) (((uint8*)(ipaddr))[0])
-#define TOKEN1(ipaddr) (((uint8*)(ipaddr))[1])
-#define TOKEN2(ipaddr) (((uint8*)(ipaddr))[2])
-#define TOKEN3(ipaddr) (((uint8*)(ipaddr))[3])
-
-#define TOKEN_BYTE(num, token) (((uint8*)(&token))[num])
+#define TOKEN_BYTE(num, token) (((uint8_t*)(&token))[num])
 
 #define TOKEN2STR(token) TOKEN_BYTE(0,token), \
 		TOKEN_BYTE(1,token), \
