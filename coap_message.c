@@ -249,18 +249,20 @@ CoAP_Result_t _rom parse_MessageFromRaw(uint8_t* srcArr, uint16_t srcArrLength, 
 
 	Msg.Type = (srcArr[0] & 0b110000) >> 4;
 	TokenLength = srcArr[0] & 0b1111;
-	if(TokenLength > 8) return COAP_PARSE_MESSAGE_FORMAT_ERROR;
+	if(TokenLength > 8)	{INFO("CoAP-Parse Byte1 Error\r\n");return COAP_PARSE_MESSAGE_FORMAT_ERROR;}// return COAP_PARSE_MESSAGE_FORMAT_ERROR;
 
 //2nd & 3rd Header Byte
 	Msg.Code = srcArr[1];
 
-	if(Msg.Code == EMPTY && (TokenLength != 0 || srcArrLength != 4)) return COAP_PARSE_MESSAGE_FORMAT_ERROR;
+	//"Hack" to support early version of "myCoAP" iOS app which sends malformed "CoAP-pings" containing a token...
+	//if(Msg.Code == EMPTY && (TokenLength != 0 || srcArrLength != 4))	{INFO("err2\r\n");return COAP_PARSE_MESSAGE_FORMAT_ERROR;}// return COAP_PARSE_MESSAGE_FORMAT_ERROR;
 
 	uint8_t codeClass = ((uint8_t)Msg.Code) >> 5;
-	if(codeClass == 1 || codeClass == 6 || codeClass == 7)  return COAP_PARSE_MESSAGE_FORMAT_ERROR; //reserved classes
+	if(codeClass == 1 || codeClass == 6 || codeClass == 7)	{INFO("CoAP-Parse Byte2/3 Error\r\n");return COAP_PARSE_MESSAGE_FORMAT_ERROR;}//  return COAP_PARSE_MESSAGE_FORMAT_ERROR; //reserved classes
 
 //4th Header Byte
 	Msg.MessageID = (uint16_t)srcArr[2] << 8 | srcArr[3];
+
 
 //further parsing locations depend on parsed 4Byte CoAP Header -> use of offset addressing
 	uint16_t offset = 4;
@@ -272,8 +274,7 @@ CoAP_Result_t _rom parse_MessageFromRaw(uint8_t* srcArr, uint16_t srcArrLength, 
 //Token (if any)
 	Msg.Token64 = 0;
 	int i;
-	for(i=0; i< TokenLength; i++)
-	{
+	for(i=0; i< TokenLength; i++){
 		Msg.Token64 |= ((uint64_t)(srcArr[offset+i])) << (8*i);
 	}
 
@@ -583,10 +584,21 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg)
 	else if(msg->Type == RST){LOG_DEBUG("*Type: RST (0x%02x)\r\n", msg->Type);}
 	else {LOG_DEBUG("*Type: UNKNOWN! (0x%02x)\r\n", msg->Type);}
 
-	LOG_DEBUG("*Token: %u Byte -> [0x%llx]\r\n", getTokenByteCount(msg->Token64),msg->Token64);//try "%" PRIu64
+	uint8_t tokenBytes = getTokenByteCount(msg->Token64);
+	//LOG_DEBUG("*Token: %u Byte -> 0x["TOKEN_STR"]\r\n", getTokenByteCount(msg->Token64), TOKEN2STR(msg->Token64));
+
+	if(tokenBytes > 0) {
+		LOG_DEBUG("*Token: %u Byte -> 0x",tokenBytes);
+		int i;
+		for(i=0; i<tokenBytes;i++) {
+			LOG_DEBUG("%02x",TOKEN_BYTE(i,msg->Token64));
+		}
+	} else {
+		LOG_DEBUG("*Token: %u Byte -> 0",tokenBytes);
+	}
 
 	uint8_t code = msg->Code;
-	LOG_DEBUG("*Code: %d.%02d (0x%02x) ", code >> 5, code & 31, code);
+	LOG_DEBUG("\r\n*Code: %d.%02d (0x%02x) ", code >> 5, code & 31, code);
 
 	if(msg->Code == EMPTY){LOG_DEBUG("[EMPTY]\r\n");}
 	else if(msg->Code == REQ_GET){LOG_DEBUG("[REQ_GET]\r\n");}

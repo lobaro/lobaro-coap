@@ -580,25 +580,3 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 
 	return COAP_ERR_NOT_FOUND;
 }
-
-//void CoAP_Client_SendMulticastRequest(uint16_t ifID)
-//{
-//	CoAP_Message_t* pReq = NULL;
-//
-//	//create an CoAP request
-//	pReq=CoAP_CreateMessage(NON, REQ_GET,generateMessageID(),
-//										NULL, 0, 0, 0);
-//
-//	NetEp_t epMulticast;
-//	epMulticast.NetPort = 5683;
-//	epMulticast.NetType = IPV6;
-//	epMulticast.NetAddr.IPv6 = NetAddr_IPv6_mulitcast;
-//
-//	CoAP_AddUriOptionsToMsgFromString(pReq, "/files/display1");
-//	//CoAP_AddUriOptionsToMsgFromString(pReq, "/files/display1/f1.txt");
-//
-//	CoAP_StartNewClientInteraction(pReq, ifID, &epMulticast ,CoAP_ClientResponse);
-//}
-
-
-

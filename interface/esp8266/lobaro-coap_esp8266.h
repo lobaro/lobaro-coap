@@ -23,21 +23,26 @@
 #define COAP_ESP8266_INTERFACE_H
 
 //-----------------------------------------------------------------------
-// Please use at least ESP8266_NONOS_SDK_v1.4.1_15_10_27 !!
+// Please use at least ESP8266_NONOS_SDK_v1.4.1_15_10_27 !!!!
 // v1.4.0 -> 1.4.1 : http://bbs.espressif.com/viewtopic.php?f=46&t=1268
 //-----------------------------------------------------------------------
 
-extern bool CoAPSocket_TxOngoing;
+extern bool CoAP_ESP8266_TxSocketIdle;
 
 bool CoAP_ESP8266_SendDatagram(uint8_t ifID, NetPacket_t* pckt);
 NetSocket_t* CoAP_ESP8266_CreateInterfaceSocket(uint8_t ifID, struct espconn* pEsp8266_conn, uint16_t LocalPort, NetReceiveCallback_fn Callback, NetTransmit_fn SendPacket);
 bool  CoAP_ESP8266_ConfigDevice();
 
-#define USE_SOFT_AP (1)
-//-> default soft ap config: ssid = "Lobaro-CoAP (ESP8266)", pw= "lobaro!!", AP-IP: 192.168.4.1
-
 #define USE_HARDCODED_CREDENTIALS (0) //other option: set via coap on soft-ap interface
 #define EXTERNAL_AP_SSID "YOUR-SSID"
 #define EXTERNAL_AP_PW "YOUR-WIFI-SECRET"
+
+//enable always the softap even if connected to external router/ap
+//soft ap config: ssid = "Lobaro-CoAP (ESP8266)", pw= "lobaro!!", AP-IP: 192.168.4.1
+//note: soft-ap will not work properly until esp8266 is trying to connect to external router/ap
+//see here why: http://bbs.espressif.com/viewtopic.php?t=324
+#define SOFTAP_ALLWAYS_ON (0) //0=only soft-ap is connection to ap failed 1=soft-ap allways on
+
+#define MAX_CON_RETRIES_BEFORE_ACTIVATING_SOFT_AP (0) //turn on the softAP after x-connection retries to external AP/Router
 
 #endif

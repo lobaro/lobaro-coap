@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  *******************************************************************************/
 #include "../coap.h"
-#include <stdarg.h>
+
 
 //internal function
 //QueryStr points to char AFTER ? in a uri query string e.g: 'O' in [...]myuri/bla?Option1=Val1&Option2=Val2

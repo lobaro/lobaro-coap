@@ -158,5 +158,22 @@ CoAP_Result_t CoAP_SendEmptyAck(uint16_t MessageID, uint8_t ifID, NetEp_t* Recei
 CoAP_Result_t CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, uint64_t token, uint8_t ifID, NetEp_t* Receiver);
 CoAP_Result_t CoAP_SendEmptyRST(uint16_t MessageID, uint8_t ifID, NetEp_t* Receiver);
 
+#define TOKEN0(ipaddr) (((uint8*)(ipaddr))[0])
+#define TOKEN1(ipaddr) (((uint8*)(ipaddr))[1])
+#define TOKEN2(ipaddr) (((uint8*)(ipaddr))[2])
+#define TOKEN3(ipaddr) (((uint8*)(ipaddr))[3])
+
+#define TOKEN_BYTE(num, token) (((uint8*)(&token))[num])
+
+#define TOKEN2STR(token) TOKEN_BYTE(0,token), \
+		TOKEN_BYTE(1,token), \
+		TOKEN_BYTE(2,token), \
+		TOKEN_BYTE(3,token), \
+		TOKEN_BYTE(4,token), \
+		TOKEN_BYTE(5,token), \
+		TOKEN_BYTE(6,token), \
+		TOKEN_BYTE(7,token)
+
+#define TOKEN_STR "%02x%02x%02x%02x%02x%02x%02x%02x"
 
 #endif /* COAP_MESSAGE_H_ */

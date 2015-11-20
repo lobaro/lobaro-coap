@@ -23,7 +23,6 @@
 
 CoAP_t CoAP;
 
-
 CoAP_Result_t _rom CoAP_Init()
 {
 	coap_mem_init();
@@ -31,18 +30,6 @@ CoAP_Result_t _rom CoAP_Init()
 	//CoAP_NVloadObservers();
 	return COAP_OK;
 }
-
-CoAP_Result_t _rom CoAP_ClientResponse(CoAP_Message_t* pMsgResp)
-{
-	INFO("got servers response!:\r\n");
-	int i;
-	for(i=0; i< pMsgResp->PayloadLength; i++){
-		PUTC(pMsgResp->Payload[i]);
-	}
-	INFO("\r\n");
-	return COAP_OK;
-}
-
 
 //Called by network interfaces to pass rawData which is parsed to CoAP messages.
 //lifetime of pckt only during function invoke

@@ -26,7 +26,7 @@
 
 //"glue" and actual system related functions
 //go there to see what to do adapting the library to your platform
-#include "interface/_common/coap_interface.h"
+#include "interface/coap_interface.h"
 
 //Internal stack functions
 typedef enum

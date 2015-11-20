@@ -81,7 +81,7 @@ void _rom coap_mem_stats()
 
 	bstats(&curalloc, &totfree, &maxfree, &nget, &nrel);
 
-	INFO("- Dynamic Memory used: [%ld] Total Memory used: [%ld] free: [%ld] biggest shunk: [%ld] get/releases: [%ld|%ld]\r\n",(int32_t)curalloc-StaticAllocation, (int32_t)curalloc, (int32_t)totfree, (int32_t)maxfree,nget,nrel );
+	INFO("- CoAP mem usage: dynamic: [%ld] dynamic+static: [%ld] free: [%ld] biggest shunk: [%ld] get/releases: [%ld|%ld]\r\n",(int32_t)curalloc-StaticAllocation, (int32_t)curalloc, (int32_t)totfree, (int32_t)maxfree,nget,nrel );
 }
 
 
@@ -1327,8 +1327,7 @@ int _rom bpoolv(buf)
 	    }
 	    if ((b->ql.blink->ql.flink != b) ||
 		(b->ql.flink->ql.blink != b)) {
-                V coap_printf("Free block: size %6ld bytes.  (Bad free list links)\n",
-		     (long) bs);
+               // V coap_printf("Free block: size %6ld bytes.  (Bad free list links)\n",(long) bs);
 		assert(0);
 		return 0;
 	    }
@@ -1337,8 +1336,7 @@ int _rom bpoolv(buf)
 	    if ((bs > sizeof(struct bfhead)) && ((*lerr != 0x55) ||
 		(coap_memcmp(lerr, lerr + 1,
 		  (MemSize) (bs - (sizeof(struct bfhead) + 1))) != 0))) {
-		V coap_printf(
-                    "(Contents of above free block have been overstored.)\n");
+		//V coap_printf( "(Contents of above free block have been overstored.)\n");
 		bufdump((void *) (((char *) b) + sizeof(struct bhead)));
 		assert(0);
 		return 0;

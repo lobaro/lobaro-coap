@@ -61,7 +61,7 @@ bool hal_nonVolatile_WriteBuf(uint8_t* data, uint32_t len){
 	return false; //not implemented yet on esp8266
 }
 
-bool CoAPSocket_TxOngoing = false;
+bool CoAP_ESP8266_TxSocketIdle = true;
 
 
 //---------------------------------
@@ -69,7 +69,7 @@ bool CoAPSocket_TxOngoing = false;
 static void udp_sent_cb(void *arg) {
 	// struct espconn *pesp_conn = arg;
 
-	 CoAPSocket_TxOngoing = false;
+	CoAP_ESP8266_TxSocketIdle = true;
 	 ets_uart_printf("send OK!\r\n");
 }
 
@@ -138,6 +138,9 @@ static void udp_recv_cb(void *arg, char *pdata, unsigned short len) {
 
 NetSocket_t* ICACHE_FLASH_ATTR CoAP_ESP8266_CreateInterfaceSocket(uint8_t ifID, struct espconn* pEsp8266_conn, uint16_t LocalPort, NetReceiveCallback_fn Callback, NetTransmit_fn SendPacket)
 {
+
+
+
 	NetSocket_t* pSocket;
 
 	if(pEsp8266_conn == NULL){
@@ -207,74 +210,6 @@ NetSocket_t* ICACHE_FLASH_ATTR CoAP_ESP8266_CreateInterfaceSocket(uint8_t ifID, 
 }
 
 
-static bool ICACHE_FLASH_ATTR ESP8266_Config_SoftAP(){
-	struct softap_config config;
-	struct ip_info info;
-
-	wifi_softap_dhcps_stop();
-	IP4_ADDR(&info.ip, 192, 168, 4, 1);
-	IP4_ADDR(&info.gw, 192, 168, 4, 1);
-	IP4_ADDR(&info.netmask, 255, 255, 255, 0);
-	wifi_set_ip_info(SOFTAP_IF, &info);
-	wifi_softap_dhcps_start();
-
-	config.authmode = AUTH_WPA_WPA2_PSK;
-	config.beacon_interval = 100;
-	config.channel = 1;
-	config.max_connection = 4;
-	os_memset(config.ssid, 0, 32);
-	os_memset(config.password, 0, 64);
-	os_memcpy(config.ssid, "Lobaro-CoAP (ESP8266)", 21);
-	os_memcpy(config.password, "lobaro!!", 8); //min. length 8!
-	config.ssid_hidden = 0;
-	config.ssid_len = 21;
-	if(wifi_softap_set_config(&config)){
-		ets_uart_printf("ESP8266_Config_SoftAP(): OK\r\n");
-		return true;
-	}
-	else {
-		ets_uart_printf("ESP8266_Config_SoftAP(): ERROR\r\n");
-		return false;
-	}
-}
-
-#if USE_HARDCODED_CREDENTIALS == 1
-static bool ICACHE_FLASH_ATTR ESP8266_Config_Station(void)
-{
-	char ssid[32] = EXTERNAL_AP_SSID;
-	char password[64] = EXTERNAL_AP_PW;
-	struct station_config config;
-
-	config.bssid_set = 0; //need not check MAC address of AP
-	os_memcpy(&config.ssid, ssid, 32);
-	os_memcpy(&config.password, password, 64);
-
-	if(wifi_station_set_config(&config)){
-		ets_uart_printf("- ESP8266: SoftAP init: OK\r\n");
-		return true;
-	}
-	else {
-		ets_uart_printf("- ESP8266: SoftAP init: ERROR\r\n");
-		return false;
-	}
-}
-#endif
-
-bool ICACHE_FLASH_ATTR CoAP_ESP8266_ConfigDevice(){
-#if USE_SOFT_AP == 1
-	wifi_set_opmode(STATIONAP_MODE);
-	ESP8266_Config_SoftAP();
-
-#else
-	wifi_set_opmode(STATION_MODE);
-#endif
-
-#if USE_HARDCODED_CREDENTIALS == 1
-	ESP8266_Config_Station();
-#endif
-	return true;
-}
-
 bool  ICACHE_FLASH_ATTR CoAP_ESP8266_DeleteInterfaceSocket(uint8_t ifID)
 {
 	NetSocket_t* pSocket = RetrieveSocket2(ifID);
@@ -316,17 +251,148 @@ bool  ICACHE_FLASH_ATTR CoAP_ESP8266_SendDatagram(uint8_t ifID, NetPacket_t* pck
 
 	pEspConn->proto.udp->local_port = pckt->Sender.NetPort;
 
-	CoAPSocket_TxOngoing = true;
+	CoAP_ESP8266_TxSocketIdle = false;
 	if(espconn_sendto(pEspConn, pckt->pData, pckt->size)==0){
 		//INFO("ESP8266_SendDatagram(...): Send succesfully!\r\n");
-		os_delay_us(1000);
 		return true;
 	}
 	else {
-			CoAPSocket_TxOngoing = false;
+		CoAP_ESP8266_TxSocketIdle = true;
 			ERROR("CoAP_ESP8266_SendDatagram(...): Internal Socket Error\r\n");
 			return false;
 	}
+}
+
+
+//########################### Wifi connection management ##############################
+LOCAL os_timer_t Connection_timer;
+
+static bool ICACHE_FLASH_ATTR ESP8266_Config_SoftAP(){
+	struct softap_config config;
+	struct ip_info info;
+
+	wifi_set_opmode(STATIONAP_MODE);
+
+	wifi_softap_dhcps_stop();
+	IP4_ADDR(&info.ip, 192, 168, 4, 1);
+	IP4_ADDR(&info.gw, 192, 168, 4, 1);
+	IP4_ADDR(&info.netmask, 255, 255, 255, 0);
+	wifi_set_ip_info(SOFTAP_IF, &info);
+	wifi_softap_dhcps_start();
+
+	config.authmode = AUTH_WPA2_PSK;
+	config.beacon_interval = 100;
+	config.channel = 7;
+	config.max_connection = 4;
+	os_memset(config.ssid, 0, 32);
+	os_memset(config.password, 0, 64);
+	os_memcpy(config.ssid, "Lobaro-CoAP (ESP8266)", 21);
+	os_memcpy(config.password, "lobaro!!", 8); //min. length 8!
+	config.ssid_hidden = 0;
+	config.ssid_len = 21;
+	if(wifi_softap_set_config(&config)){
+
+		struct ip_info ipconfig;
+		if(wifi_get_ip_info(SOFTAP_IF, &ipconfig)){
+					  ets_uart_printf("- SoftAP started at IP -> %d.%d.%d.%d\r\n",IP2STR(&ipconfig.ip));
+		}
+
+		return true;
+	}
+	else {
+		ets_uart_printf("ESP8266_Config_SoftAP(): ERROR\r\n");
+		return false;
+	}
+}
+
+static bool ICACHE_FLASH_ATTR ESP8266_Config_Station(void)
+{
+	struct station_config config;
+
+#if USE_HARDCODED_CREDENTIALS == 1
+	char ssid[32] = EXTERNAL_AP_SSID;
+	char password[64] = EXTERNAL_AP_PW;
+	config.bssid_set = 0; //need not check MAC address of AP
+	os_memcpy(&config.ssid, ssid, 32);
+	os_memcpy(&config.password, password, 64);
+#else
+	if(wifi_station_get_config_default(&config)==false) {
+		ets_uart_printf("- ESP8266: No default wifi config present!\r\n");
+		return false;
+	}
+#endif
+
+	if(wifi_station_set_config(&config)){
+		ets_uart_printf("- Connecting to as station to external WIFI AP/Router [ssid=\"%s\"] \r\n", config.ssid);
+		return true;
+	}
+	else {
+		ets_uart_printf("- (!!!!) Could not set station config!\r\n");
+		return false;
+	}
+}
+
+LOCAL void ICACHE_FLASH_ATTR connection_timer_cb(void *arg) {
+    static uint8_t lastConStatus = STATION_IDLE;
+    static uint8_t failRetryCnt=0;
+	uint8_t conStatus = wifi_station_get_connect_status();
+
+	if (conStatus == STATION_GOT_IP && conStatus!=lastConStatus) { //just got ip
+		failRetryCnt=0;
+		ets_uart_printf("\r\n- Got IP from external AP! -> ");
+		struct ip_info ipconfig;
+		if(wifi_get_ip_info(STATION_IF, &ipconfig)){
+			  ets_uart_printf("%d.%d.%d.%d",IP2STR(&ipconfig.ip));
+		}
+		else ets_uart_printf("ERROR!!\r\n");
+
+	}else if(conStatus == STATION_CONNECTING && conStatus!=lastConStatus){
+		ets_uart_printf("...connecting to remote wifi access point...\r\n");
+
+	}else if(conStatus == STATION_WRONG_PASSWORD && conStatus!=lastConStatus){
+		ets_uart_printf("(!!!) Wrong Password! Try config via softap interface (coap://192.168.4.1:5683) and reset esp8266\r\n");
+		failRetryCnt++;
+
+	}else if(conStatus == STATION_NO_AP_FOUND && conStatus!=lastConStatus){
+		failRetryCnt++;
+		ets_uart_printf("(!!!) No AP Found! Try config via softap interface (coap://192.168.4.1:5683) and reset esp8266\r\n");
+
+	}else if(conStatus == STATION_CONNECT_FAIL && conStatus!=lastConStatus){
+		failRetryCnt++;
+		ets_uart_printf("(!!!) Connect Fail\r\n");
+	}
+
+	lastConStatus = conStatus;
+
+	if(failRetryCnt > MAX_CON_RETRIES_BEFORE_ACTIVATING_SOFT_AP) {
+#if SOFTAP_ALLWAYS_ON == 0
+		wifi_station_disconnect(); //don't retry automatically to let soft-ap work properly (which isn't functional during station connecting!)
+		ESP8266_Config_SoftAP(); //enable soft-ap mode
+#else
+		wifi_station_disconnect(); //don't retry automatically to let soft-ap work properly (which isn't functional during station connecting!)
+#endif
+		failRetryCnt = 0;
+	}
+}
+
+bool ICACHE_FLASH_ATTR CoAP_ESP8266_ConfigDevice(){
+
+#if SOFTAP_ALLWAYS_ON == 1
+	ESP8266_Config_SoftAP(); //enables STATION+SOFTAP mode
+#else
+	wifi_set_opmode(STATION_MODE);
+#endif
+	if(ESP8266_Config_Station()==false) { //no valid config/could not start station connect
+		ets_uart_printf("(!!!) Could not start connecto to external AP. Try config via softap interface (coap://192.168.4.1:5683) and reset esp8266\r\n");
+		ESP8266_Config_SoftAP(); //enables STATION+SOFTAP mode
+	}
+
+	//start timer for monitoring wifi station connection status to external router
+	os_timer_disarm(&Connection_timer);
+	os_timer_setfn(&Connection_timer, (os_timer_func_t *)connection_timer_cb, (void *)0);
+	os_timer_arm(&Connection_timer, 2000, 1);
+
+	return true;
 }
 
 
