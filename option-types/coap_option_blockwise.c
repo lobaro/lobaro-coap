@@ -202,7 +202,7 @@ CoAP_Result_t _rom CoAP_SetPayloadBlockwise(CoAP_Message_t* pMsgReq, CoAP_Messag
 		int32_t TotalBytesLeft = ((int32_t)(payloadTotalSize)) - (int32_t)((B2opt.BlockSize) * (B2opt.BlockNum));
 		if(TotalBytesLeft <= 0)
 		{
-			addTxtPayloadToMessage(pMsgResp, "block not existing");
+			CoAP_addTextPayload(pMsgResp, "block not existing");
 			pMsgResp->Code=RESP_BAD_OPTION_4_02;
 			return COAP_ERR_WRONG_OPTION;
 		}
@@ -280,7 +280,7 @@ CoAP_Result_t _rom CoAP_SetPayloadBlockwise(CoAP_Message_t* pMsgReq, CoAP_Messag
 //	int32_t TotalBytesLeft = payloadSize - blk2Opt.BlockNum * blk2Opt.BlockSize;
 //
 //	if(TotalBytesLeft <= 0) {
-//		addTxtPayloadToMessage(pResp, "block not existing");
+//		CoAP_addTextPayload(pResp, "block not existing");
 //		pResp->Code=RESP_BAD_OPTION_4_02;
 //		return COAP_OK;
 //	}

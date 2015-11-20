@@ -47,7 +47,7 @@ void _ram CoAP_onNewPacketHandler(uint8_t ifID, NetPacket_t* pckt)
 	PrintEndpoint(&(pckt->Sender));
 
 
-	if((res=parse_MessageFromRaw(pckt->pData, pckt->size, &pMsg)) == COAP_OK){
+	if((res=CoAP_ParseMessageFromDatagram(pckt->pData, pckt->size, &pMsg)) == COAP_OK){
 		CoAP_PrintMsg(pMsg); //allocates the needed amount of ram
 		INFO("<<<<<<<<<<<<<<<<<<<<<<\r\n");
 	}
@@ -170,7 +170,6 @@ void _ram CoAP_onNewPacketHandler(uint8_t ifID, NetPacket_t* pckt)
 END: //only reached if no interaction has been started (return statement)
 	CoAP_free_Message(&pMsg); //free if not used inside interaction
 }
-
 
 static CoAP_Result_t _rom SendResp(CoAP_Interaction_t* pIA, CoAP_InteractionState_t nextIAState)
 {

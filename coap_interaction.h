@@ -46,7 +46,6 @@ typedef enum
 	COAP_STATE_NOTIFICATION_SENT,				// NON response has been sent -> wait some time then delete
 												// CON response has been sent -> wait for ACK or resent after some time
 
-
 	//[client]
 	COAP_STATE_READY_TO_REQUEST,				// request is ready to send
 	COAP_STATE_WAITING_RESPONSE,				// resend request after some time if no response or ack has been received for some time
@@ -99,15 +98,12 @@ struct CoAP_Interaction
 
 typedef struct CoAP_Interaction CoAP_Interaction_t;
 
-//callled by incoming request
+//called by incoming request
 CoAP_Result_t CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_Res_t* pRes, uint8_t ifID, NetPacket_t* pRawPckt); //we act as a CoAP Server (receiving requests) in this interaction
 
-//called by interal requests to external servers (client mode)
-//CoAp_Result_t CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, uint8_t ifID, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb); //we act as a CoAP Client (sending requests) in this interaction
-
-CoAP_Result_t CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, uint8_t ifID, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb);
+//called by internal requests to external servers (client mode)
+CoAP_Result_t CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, uint8_t ifID, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb);//we act as a CoAP Client (sending requests) in this interaction
 CoAP_Result_t CoAP_StartNewGetRequest(char* UriString, uint8_t ifID, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb);
-
 
 CoAP_Result_t CoAP_RemoveInteractionsObserver(CoAP_Interaction_t* pIA, uint64_t token);
 CoAP_Result_t CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA);

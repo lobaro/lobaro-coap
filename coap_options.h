@@ -19,12 +19,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-/*
- * coap_options.h
- *
- *  Created on: 05.11.2014
- *      Author: Tobias
- */
 
 #ifndef COAP_OPTIONS_H_
 #define COAP_OPTIONS_H_
@@ -72,6 +66,7 @@ typedef struct CoAP_option CoAP_option_t;
 
 CoAP_Result_t parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uint8_t** pPayloadBeginInSrc, CoAP_option_t** pOptionsListBegin);
 CoAP_Result_t pack_OptionsFromList(uint8_t* pDestArr, uint16_t* pBytesWritten, CoAP_option_t* pOptionsListBegin);
+uint16_t  CoAP_NeededMem4PackOptions(CoAP_option_t* pOptionsListBegin);
 
 CoAP_Result_t append_OptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length);
 CoAP_Result_t append_OptionToListByCopy(CoAP_option_t** pOptionsListBegin, CoAP_option_t* OptToCopy);
@@ -82,7 +77,6 @@ CoAP_Result_t free_OptionList(CoAP_option_t** pOptionsListBegin);
 bool CoAP_OptionsAreEqual(CoAP_option_t* OptA, CoAP_option_t* OptB);
 
 uint16_t CoAP_CheckForUnknownCriticalOption(CoAP_option_t* pOptionsListBegin);
-
 
 void CoAP_printOptionsList(CoAP_option_t* pOptListBegin);
 

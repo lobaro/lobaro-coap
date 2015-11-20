@@ -64,8 +64,13 @@ typedef enum
 	COAP_RETRY
 }CoAP_Result_t;
 
+#define MAX_PAYLOAD_SIZE  		(256)  //should not exceed 1024 bytes (see 4.6 RFC7252) (must be power of 2 to fit with blocksize option!)
+#define PREFERED_PAYLOAD_SIZE	(32)   //also size of pResp message payload buffer presented to user
+
+#define COAP_VERSION (1)
+
+
 #include "coap_debug.h"
-#define COAP_RAM_TOTAL_BYTES (4096)
 #include "coap_mem.h"
 #include "coap_options.h"
 #include "coap_message.h"

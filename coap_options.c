@@ -121,6 +121,53 @@ CoAP_Result_t _rom pack_OptionsFromList(uint8_t* pDestArr, uint16_t* pBytesWritt
   	return COAP_OK;
 }
 
+uint16_t _rom CoAP_NeededMem4PackOptions(CoAP_option_t* pOptionsListBegin)
+{
+  	uint16_t offset = 0;		 //Current "Write" Position while packing the options array to the byte array
+  	uint16_t OptStartOffset = 0; //Position of 1st Byte of current packed option
+  	uint16_t lastOptNumber = 0;
+  	uint16_t currDelta = 0;		 //current Delta to privious option
+  	uint16_t optLength = 0;		 //Length of current Option
+
+  	CoAP_option_t* pOption = pOptionsListBegin;
+
+  	if(pOption==NULL) {//no options - list empty - can happen no error
+  		return 0;
+  	}
+
+  	//iterate throw array of options
+  	do
+  	{
+  	 //Inits for Option Packing
+  	    currDelta = pOption->Number - lastOptNumber;
+  	    lastOptNumber = pOption->Number;
+
+  		optLength = pOption->Length;
+  		OptStartOffset = offset;
+  		offset++;
+
+  	 //Delta Bytes
+  		if(currDelta < 13){;}
+  		else if(currDelta < 269) offset++;
+  		else offset+=2;
+
+
+    //Length Bytes
+		if(optLength < 13){;}
+		else if(optLength < 269) offset++;
+		else offset+=2;
+
+  	  //Option Values
+		int t;
+		for(t=0; t< optLength; t++) offset++;
+
+  	  	if(pOption->next == NULL) break;
+  	  	pOption = pOption->next;
+  	}while(1);
+
+  	return offset;
+}
+
 
 
 

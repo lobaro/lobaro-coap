@@ -19,27 +19,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-/*
- * coap_message.h
- *
- *  Created on: 05.11.2014
- *      Author: Tobias
- */
 
 #ifndef COAP_MESSAGE_H_
 #define COAP_MESSAGE_H_
 
 #include "coap_options.h"
-
-#define MAX_MESSAGE_SIZE		(1048) //should not exceed 1152 bytes (see 4.6 RFC7252)
-#define MAX_PAYLOAD_SIZE  		(256)  //should not exceed 1024 bytes (see 4.6 RFC7252) (must be power of 2 to fit with blocksize option!)
-#define PREFERED_PAYLOAD_SIZE	(32)
-
-typedef enum
-{
-	COAP_VERSION_1_0 = 1 //see RFC7252
-}CoAP_Ver_t;
-//typedef uint8_t  CoAP_Ver_t;
 
 //##########################
 //### CoAP Message Types ###
@@ -87,9 +71,6 @@ typedef enum
 	RESP_GATEWAY_TIMEOUT_5_04 = CODE(5,4),
 	RESP_PROXYING_NOT_SUPPORTED_5_05 = CODE(5,5)
 }CoAP_MessageCode_t;
-//typedef uint8_t CoAP_MessageCodes_t;
-
-//##########################
 
 //##########################
 //###    CoAP Message 	 ###
@@ -110,55 +91,7 @@ typedef struct
 }CoAP_Message_t; //total of 24 Bytes
 //##########################
 
-bool CoAP_MsgIsRequest(CoAP_Message_t* pMsg);
-bool CoAP_MsgIsResponse(CoAP_Message_t* pMsg);
-bool CoAP_MsgIsOlderThan(CoAP_Message_t* pMsg, uint32_t timespan);
-
-CoAP_Result_t parse_MessageFromRaw(uint8_t* srcArr, uint16_t srcArrLength, CoAP_Message_t** rxedMsg);
-CoAP_Result_t CoAP_free_Message(CoAP_Message_t** Msg);
-
-CoAP_Result_t CoAP_SendMsg(CoAP_Message_t* Msg, uint8_t ifID, NetEp_t* Receiver);
-
-void CoAP_PrintMsg(CoAP_Message_t* msg);
-void CoAP_PrintResultValue(CoAP_Result_t res);
-
-CoAP_Result_t addTxtPayloadToMessage(CoAP_Message_t* Msg, char* PayloadStr);
-CoAP_Result_t addNewPayloadToMessage(CoAP_Message_t* Msg, uint8_t* pData, uint16_t size);
-
-uint16_t CoAP_GetNextMid();
-uint64_t CoAP_GenerateToken();
-
-
-CoAP_Result_t CoAP_MatchRespToReq(CoAP_Message_t* pMsgResp, CoAP_Message_t* pMsgReq);
-CoAP_MessageType_t CoAP_getRespMsgType(CoAP_Message_t* ReqMsg);//todo inline it
-uint16_t CoAP_getRespMsgID(CoAP_Message_t* ReqMsg);
-
-CoAP_Result_t CoAP_RecycleMsgTo_RST(CoAP_Message_t* Msg, uint16_t MsgID);
-
-CoAP_Result_t CoAP_RecycleMsg(CoAP_Message_t* Msg, CoAP_MessageType_t newType,
-		CoAP_MessageCode_t newCode, uint16_t newMessageID,
-		uint8_t* newPayload, uint16_t newPayloadLength,
-		uint8_t* newToken, uint16_t newTokenLength);
-
-CoAP_Message_t* CoAP_CreateMessage(CoAP_MessageType_t Type, CoAP_MessageCode_t Code,
-		uint16_t MessageID, uint8_t* pPayloadInitialContent, uint16_t PayloadInitialContentLength, uint16_t PayloadMaxSize, uint64_t Token);
-
-CoAP_Message_t* CoAP_Create4ByteMessage(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID);
-
-CoAP_Message_t* CoAP_AllocRespMsg(CoAP_Message_t* ReqMsg, uint8_t Code, uint16_t PayloadMaxSize);
-CoAP_Message_t* CoAP_AllocRespMsg2(CoAP_Message_t* ReqMsg, uint8_t Code, char* PayloadCStr);
-
-CoAP_Result_t CoAP_Send4ByteMsg(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, uint8_t ifID, NetEp_t* Receiver);
-
-void CoAP_free_MsgPayload(CoAP_Message_t** Msg);
-
-//Shortcut for sending messages without memory allocations
-CoAP_Result_t CoAP_SendEmptyAck(uint16_t MessageID, uint8_t ifID, NetEp_t* Receiver);
-CoAP_Result_t CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, uint64_t token, uint8_t ifID, NetEp_t* Receiver);
-CoAP_Result_t CoAP_SendEmptyRST(uint16_t MessageID, uint8_t ifID, NetEp_t* Receiver);
-
 #define TOKEN_BYTE(num, token) (((uint8_t*)(&token))[num])
-
 #define TOKEN2STR(token) TOKEN_BYTE(0,token), \
 		TOKEN_BYTE(1,token), \
 		TOKEN_BYTE(2,token), \
@@ -168,6 +101,33 @@ CoAP_Result_t CoAP_SendEmptyRST(uint16_t MessageID, uint8_t ifID, NetEp_t* Recei
 		TOKEN_BYTE(6,token), \
 		TOKEN_BYTE(7,token)
 
-#define TOKEN_STR "%02x%02x%02x%02x%02x%02x%02x%02x"
+CoAP_Message_t* CoAP_CreateMessage(CoAP_MessageType_t Type, CoAP_MessageCode_t Code,
+		uint16_t MessageID, uint8_t* pPayloadInitialContent, uint16_t PayloadInitialContentLength, uint16_t PayloadMaxSize, uint64_t Token);
+
+CoAP_Result_t CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcArrLength, CoAP_Message_t** rxedMsg);
+
+CoAP_Result_t CoAP_SendMsg(CoAP_Message_t* Msg, uint8_t ifID, NetEp_t* Receiver);
+CoAP_Result_t CoAP_SendEmptyAck(uint16_t MessageID, uint8_t ifID, NetEp_t* Receiver);
+CoAP_Result_t CoAP_SendEmptyRST(uint16_t MessageID, uint8_t ifID, NetEp_t* Receiver);
+CoAP_Result_t CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, uint64_t token, uint8_t ifID, NetEp_t* Receiver);
+CoAP_Message_t* CoAP_AllocRespMsg(CoAP_Message_t* ReqMsg, uint8_t Code, uint16_t PayloadMaxSize);
+
+CoAP_Result_t CoAP_free_Message(CoAP_Message_t** Msg);
+void CoAP_free_MsgPayload(CoAP_Message_t** Msg);
+
+bool CoAP_MsgIsRequest(CoAP_Message_t* pMsg);
+bool CoAP_MsgIsResponse(CoAP_Message_t* pMsg);
+bool CoAP_MsgIsOlderThan(CoAP_Message_t* pMsg, uint32_t timespan);
+
+void CoAP_PrintMsg(CoAP_Message_t* msg);
+int CoAP_GetRawSizeOfMessage(CoAP_Message_t* Msg);
+void CoAP_PrintResultValue(CoAP_Result_t res);
+
+//note: consider using CoAP_SetPayloadBlockwise
+CoAP_Result_t CoAP_addTextPayload(CoAP_Message_t* Msg, char* PayloadStr);
+CoAP_Result_t CoAP_addNewPayloadToMessage(CoAP_Message_t* Msg, uint8_t* pData, uint16_t size);
+
+uint16_t CoAP_GetNextMid();
+uint64_t CoAP_GenerateToken();
 
 #endif /* COAP_MESSAGE_H_ */
