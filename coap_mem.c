@@ -71,7 +71,7 @@ void _rom coap_mem_release(void* buf)
 
 int32_t StaticAllocation = 0;
 
-void coap_mem_defineStaticMem() {
+void coap_mem_determinateStaticMem() {
 	bufsize curalloc, totfree, maxfree;
 	int32_t nget,nrel;
 	bstats(&curalloc, &totfree, &maxfree, &nget, &nrel);

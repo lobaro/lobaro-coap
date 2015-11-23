@@ -19,14 +19,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-/*
- * coap_options.c
- *
- *  Created on: 05.11.2014
- *      Author: Tobias
- */
 
 #include "coap.h"
+
+
+
 
 uint16_t KNOWN_OPTIONS[KNOWN_OPTIONS_COUNT] = {OPT_NUM_URI_PATH, OPT_BLOCK2, OPT_BLOCK1, OPT_NUM_ETAG, OPT_NUM_CONTENT_FORMAT, OPT_NUM_URI_QUERY};
 
@@ -239,7 +236,7 @@ CoAP_Result_t _rom parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uin
 			lastOptionNumber  = currOptDelta + lastOptionNumber;
 
 			//add this option to ordered linked list
-			CoAP_Result_t Res = append_OptionToList(pOptionsListBegin, lastOptionNumber, &(srcArr[offset]),currOptLength);
+			CoAP_Result_t Res = CoAP_AppendOptionToList(pOptionsListBegin, lastOptionNumber, &(srcArr[offset]),currOptLength);
 			if(Res != COAP_OK) return Res;
 
 			offset+=currOptLength;
@@ -327,7 +324,7 @@ static CoAP_Result_t _rom append_OptionToListEnd(CoAP_option_t** pOptionsListBeg
 //this function adds a new option to linked list of options starting at pOptionsListBegin
 //on demand the list gets reordered so that it's sorted ascending by option number (CoAP requirement)
 //copies given buffer to option local buffer
-CoAP_Result_t _rom append_OptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length)
+CoAP_Result_t _rom CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length)
 {
 	if(*pOptionsListBegin == NULL) //List empty? create 1st option in list
 	{
@@ -384,12 +381,12 @@ CoAP_Result_t _rom append_OptionToList(CoAP_option_t** pOptionsListBegin, uint16
 	return COAP_OK;
 }
 
-CoAP_Result_t _rom append_OptionToListByCopy(CoAP_option_t** pOptionsListBegin, CoAP_option_t* OptToCopy) {
-	return append_OptionToList(pOptionsListBegin, OptToCopy->Number, OptToCopy->Value, OptToCopy->Length);
+CoAP_Result_t _rom CoAP_CopyOptionToList(CoAP_option_t** pOptionsListBegin, CoAP_option_t* OptToCopy) {
+	return CoAP_AppendOptionToList(pOptionsListBegin, OptToCopy->Number, OptToCopy->Value, OptToCopy->Length);
 }
 
 
-CoAP_Result_t _rom free_OptionList(CoAP_option_t** pOptionsListBegin)
+CoAP_Result_t _rom CoAP_FreeOptionList(CoAP_option_t** pOptionsListBegin)
 {
 	if(*pOptionsListBegin == NULL) return COAP_OK; //any list to delete?
 
@@ -413,7 +410,7 @@ CoAP_Result_t _rom free_OptionList(CoAP_option_t** pOptionsListBegin)
 uint16_t _rom CoAP_CheckForUnknownCriticalOption(CoAP_option_t* pOptionsListBegin)
 {
 	//uses:
-	//#define KNOWN_OPTIONS_COUNT (3)
+	//#define KNOWN_OPTIONS_COUNT (X)
 	//extern uint16_t KNOWN_OPTIONS[KNOWN_OPTIONS_COUNT];
 	if(pOptionsListBegin==NULL)return 0; //no options, nothing can be unknown
 

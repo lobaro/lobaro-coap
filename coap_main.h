@@ -22,29 +22,19 @@
 #ifndef COAP_MAIN_H_
 #define COAP_MAIN_H_
 
-
-#define MAX_CONCURRENT_TRANSACTIONS (10)
-
-#define MAX_FAIL_RETRIES (4)
-
-
+#define HOLDTIME_AFTER_NON_TRANSACTION_END (0)
 #define POSTPONE_WAIT_TIME_SEK (3)
 #define POSTPONE_MAX_WAIT_TIME (30)
-
-#define HOLDTIME_AFTER_NON_TRANSACTION_END (0)
-
 #define CLIENT_MAX_RESP_WAIT_TIME (45)
 
-
-#define USE_RFC7641_ADVANCED_TRANSMISSION (1)
+#define USE_RFC7641_ADVANCED_TRANSMISSION (1) //Update representation of resource during retry of observe sendout
 
 #define ACK_TIMEOUT (2)
 #define ACK_RANDOM_FACTOR (1.5)
 #define MAX_RETRANSMIT (4)
-#define NSTART (1)
-#define DEFAULT_LEISURE (5)
+#define NSTART (1) //todo implement
+#define DEFAULT_LEISURE (5) //todo implement
 #define PROBING_RATE (1) 		//[client]
-
 
 //#####################
 // Receive of packets
@@ -63,6 +53,5 @@ void CoAP_onNewPacketHandler( uint8_t ifID, NetPacket_t* pckt);
 
 CoAP_Result_t  CoAP_Init(uint8_t* pMemory, int16_t MemorySize);
 void CoAP_doWork();
-
 
 #endif

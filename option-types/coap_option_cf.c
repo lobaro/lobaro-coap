@@ -30,19 +30,19 @@ CoAP_Result_t _rom AddCfOptionToMsg(CoAP_Message_t* msg, uint16_t cf)
 	if(cf==0)
 	{
 		//msg->Options[msg->OptionCount].Length = 0;
-		append_OptionToList(&(msg->pOptionsList), OPT_NUM_CONTENT_FORMAT ,wBuf, 0);
+		CoAP_AppendOptionToList(&(msg->pOptionsList), OPT_NUM_CONTENT_FORMAT ,wBuf, 0);
 	}
 	else if(cf <= 0xff)
 	{
 		wBuf[0]=(uint8_t)cf;
 		//msg->Options[msg->OptionCount].Length = 1;
-		append_OptionToList(&(msg->pOptionsList), OPT_NUM_CONTENT_FORMAT ,wBuf, 1);
+		CoAP_AppendOptionToList(&(msg->pOptionsList), OPT_NUM_CONTENT_FORMAT ,wBuf, 1);
 	}
 	else {
 		wBuf[0]=(uint8_t)(cf & 0xff);
 		wBuf[1]=(uint8_t)(cf>>8);
 		//msg->Options[msg->OptionCount].Length = 2;
-		append_OptionToList(&(msg->pOptionsList), OPT_NUM_CONTENT_FORMAT ,wBuf, 2);
+		CoAP_AppendOptionToList(&(msg->pOptionsList), OPT_NUM_CONTENT_FORMAT ,wBuf, 2);
 	}
 
 	return COAP_OK;

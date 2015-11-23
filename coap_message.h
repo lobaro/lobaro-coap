@@ -123,7 +123,8 @@ void CoAP_PrintMsg(CoAP_Message_t* msg);
 int CoAP_GetRawSizeOfMessage(CoAP_Message_t* Msg);
 void CoAP_PrintResultValue(CoAP_Result_t res);
 
-//note: consider using CoAP_SetPayloadBlockwise
+//note: payload should be set normally by CoAP_SetPayload(...) function, because this function performs
+//beside setting the payload also the blockwise transfer logic!
 CoAP_Result_t CoAP_addTextPayload(CoAP_Message_t* Msg, char* PayloadStr);
 CoAP_Result_t CoAP_addNewPayloadToMessage(CoAP_Message_t* Msg, uint8_t* pData, uint16_t size);
 

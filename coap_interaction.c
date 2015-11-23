@@ -413,7 +413,7 @@ CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 			newIA->pRes = pRes;
 			newIA->pObserver = pObserver;
 
-			CoAP_AppendInteractionToList(&(CoAP.pInteractions), newIA);
+
 
 			if(newIA->pRespMsg->Code >=RESP_ERROR_BAD_REQUEST_4_00) { //remove this observer from resource in case of non OK Code (see RFC7641, 3.2., 3rd paragraph)
 				pObserver = pObserver->next; //next statement will free current observer so save its ancestor node right now
@@ -422,6 +422,13 @@ CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 			} else {
 				AddObserveOptionToMsg(newIA->pRespMsg, pRes->UpdateCnt); // Only 2.xx responses do include an Observe Option.
 			}
+
+			if(newIA->pRespMsg->Type == NON && pRes->UpdateCnt % 20 == 0) { //send every 20th message as CON even if notify handler defines the send out as NON to support "lazy" cancelation
+				newIA->pRespMsg->Type = CON;
+			}
+
+
+			CoAP_AppendInteractionToList(&(CoAP.pInteractions), newIA);
 
 		}else {
 			CoAP_FreeInteraction(&newIA); //revert IA creation above
@@ -539,7 +546,7 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 		while(pOption != NULL) {
 			if(pOption->Number == OPT_NUM_URI_QUERY || pOption->Number == OPT_NUM_OBSERVE) {
 				//create copy from volatile Iinteraction msg options
-				if(append_OptionToList( &(pObserver->pOptList), pOption->Number, pOption->Value, pOption->Length)!=COAP_OK) {
+				if(CoAP_AppendOptionToList( &(pObserver->pOptList), pOption->Number, pOption->Value, pOption->Length)!=COAP_OK) {
 					CoAP_FreeObserver(&pObserver);
 					return COAP_ERR_OUT_OF_MEMORY;
 				}

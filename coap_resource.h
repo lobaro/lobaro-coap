@@ -61,7 +61,7 @@ typedef struct CoAP_Res CoAP_Res_t;
 
 CoAP_Res_t* CoAP_CreateResource(char* Uri, char* Descr,CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt, CoAP_ResourceNotifier_fPtr_t pNotifierFkt );
 CoAP_Res_t* CoAP_FindResourceByUri(CoAP_Res_t* pResListToSearchIn, CoAP_option_t* pUriToMatch);
-CoAP_Result_t CoAP_ResUpdated(CoAP_Res_t* pRes);
+CoAP_Result_t CoAP_NotifyResourceObservers(CoAP_Res_t* pRes);
 CoAP_Result_t CoAP_FreeResource(CoAP_Res_t** pResource);
 
 void CoAP_PrintResource(CoAP_Res_t* pRes);

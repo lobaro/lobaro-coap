@@ -48,7 +48,7 @@ CoAP_Result_t _rom AddETagOptionToMsg(CoAP_Message_t* msg, uint8_t* pData, uint3
 	wBuf[2] = 3;
 	wBuf[3] = 4;
 
-	return append_OptionToList(&(msg->pOptionsList), OPT_NUM_ETAG,wBuf, 4);
+	return CoAP_AppendOptionToList(&(msg->pOptionsList), OPT_NUM_ETAG,wBuf, 4);
 }
 
 CoAP_Result_t _rom GetETagOptionFromMsg(CoAP_Message_t* msg, uint8_t* val, uint8_t* pLen) { //len  [1..8]
@@ -87,7 +87,7 @@ CoAP_Result_t _rom Add64BitETagOptionToMsg(CoAP_Message_t* msg, uint64_t val) {
 		if(!val) break;
 	}
 
-	return append_OptionToList(&(msg->pOptionsList), OPT_NUM_ETAG, wBuf, i+1);
+	return CoAP_AppendOptionToList(&(msg->pOptionsList), OPT_NUM_ETAG, wBuf, i+1);
 }
 
 CoAP_Result_t _rom Get64BitETagOptionFromMsg(CoAP_Message_t* msg, uint64_t* pVal) {

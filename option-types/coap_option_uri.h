@@ -29,12 +29,8 @@ CoAP_Result_t CoAP_AddUriOptionsToMsgFromString(CoAP_Message_t* msg, char* UriSt
 
 bool CoAP_UriOptionsAreEqual(CoAP_option_t* OptListA, CoAP_option_t* OptListB);
 
-uint8_t* CoAP_UriQuery_strstr(CoAP_option_t* pUriOpt, const char* str);
 uint8_t* CoAP_GetUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, uint8_t* pValueLen);
-bool CoAP_UriQuery_KeyCorrect(CoAP_option_t* pUriOpt, const char* Key);
-
-int8_t CoAP_CompareUriQueryVal2Cstr(CoAP_option_t* pUriOpt, const char* prefixStr, int CmpStrCnt, ...);
-
+int8_t CoAP_FindUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, int CmpStrCnt, ...);
 
 void CoAP_printUriOptionsList(CoAP_option_t* pOptListBegin);
 #endif

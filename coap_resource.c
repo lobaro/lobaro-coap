@@ -44,15 +44,15 @@ CoAP_Result_t _rom CoAP_NVsaveObservers(){
 			while(pObserverList != NULL) { //iterate over all observers of this resource
 
 				//Store Uri of external Oberserver as option
-				append_OptionToList(&pOptList, OPT_NUM_URI_HOST, (uint8_t*)&(pObserverList->Ep), sizeof(NetEp_t)); //IP+Port of external Observer
-				append_OptionToList(&pOptList, OPT_NUM_URI_PORT, &(pObserverList->IfID), 1); //IfID as pseudo "Port"
+				CoAP_AppendOptionToList(&pOptList, OPT_NUM_URI_HOST, (uint8_t*)&(pObserverList->Ep), sizeof(NetEp_t)); //IP+Port of external Observer
+				CoAP_AppendOptionToList(&pOptList, OPT_NUM_URI_PORT, &(pObserverList->IfID), 1); //IfID as pseudo "Port"
 
 				CoAP_option_t* pOptionsTemp = pList->pUri;
 
 				//Copy uri-path option of resource
 				if(UriPathHasBeenEncoded == false) {
 					while(pOptionsTemp != NULL) {
-						append_OptionToListByCopy(&pOptList, pOptionsTemp); //todo check for sufficent memory or implement cross linking to save memory
+						CoAP_CopyOptionToList(&pOptList, pOptionsTemp); //todo check for sufficent memory or implement cross linking to save memory
 						pOptionsTemp = pOptionsTemp->next;
 					}
 					UriPathHasBeenEncoded = true; //store uri path of resource only once
@@ -61,11 +61,11 @@ CoAP_Result_t _rom CoAP_NVsaveObservers(){
 				//Also copy any other options of observe structure (e.g. uri-query)
 				pOptionsTemp = pObserverList->pOptList;
 				while(pOptionsTemp != NULL) {
-					append_OptionToListByCopy(&pOptList, pOptionsTemp); //todo check for sufficent memory or implement cross linking to save memory
+					CoAP_CopyOptionToList(&pOptList, pOptionsTemp); //todo check for sufficent memory or implement cross linking to save memory
 					pOptionsTemp = pOptionsTemp->next;
 				}
 
-				append_OptionToList(&pOptList, OPT_NUM_LOBARO_TOKEN_SAVE, (uint8_t*)&(pObserverList->Token), 8);
+				CoAP_AppendOptionToList(&pOptList, OPT_NUM_LOBARO_TOKEN_SAVE, (uint8_t*)&(pObserverList->Token), 8);
 
 				uint16_t BytesWritten = 0;
 				pack_OptionsFromList(pTempPage, &BytesWritten,  pOptList);
@@ -77,7 +77,7 @@ CoAP_Result_t _rom CoAP_NVsaveObservers(){
 				INFO("Wrote Observer Option List:\r\n");
 				CoAP_printOptionsList(pOptList);
 
-				free_OptionList(&pOptList); //free options
+				CoAP_FreeOptionList(&pOptList); //free options
 				pObserverList = pObserverList->next;
 			}
 		}
@@ -139,7 +139,7 @@ CoAP_Result_t _rom CoAP_NVloadObservers() {
 					coap_memcpy( (void*) &(pNewObserver->Token), pOpt->Value, 8 );
 					break;
 				default:
-					append_OptionToListByCopy(&(pNewObserver->pOptList), pOpt);
+					CoAP_CopyOptionToList(&(pNewObserver->pOptList), pOpt);
 					break;
 			}
 
@@ -149,7 +149,7 @@ CoAP_Result_t _rom CoAP_NVloadObservers() {
 		//attach observer to resource
 		CoAP_AppendObserverToList(&(pRes->pListObservers), pNewObserver);
 
-		free_OptionList(&pOptList); //free temp options
+		CoAP_FreeOptionList(&pOptList); //free temp options
 	}
 
 	CoAP_PrintAllResources();
@@ -166,7 +166,7 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 	if(pReq->Code != REQ_GET) {
 		char errMsg[] = {"CoAP GET only!"};
 		pResp->Code = RESP_ERROR_BAD_REQUEST_4_00;
-		CoAP_SetPayloadBlockwise(pReq, pResp, errMsg, (uint16_t)coap_strlen(errMsg), true);
+		CoAP_SetPayload(pReq, pResp, errMsg, (uint16_t)coap_strlen(errMsg), true);
 		return HANDLER_ERROR;
 	}
 
@@ -210,7 +210,7 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 		//TODO: implement growing of buf/overwrite check
 	}
 
-	CoAP_SetPayloadBlockwise(pReq, pResp, pStrStart, (uint16_t)coap_strlen((char*)pStrStart), true);
+	CoAP_SetPayload(pReq, pResp, pStrStart, (uint16_t)coap_strlen((char*)pStrStart), true);
 	coap_mem_release(pStrStart);
 
 	AddCfOptionToMsg(pResp,COAP_CF_LINK_FORMAT);
@@ -246,7 +246,7 @@ static CoAP_Result_t _rom CoAP_AppendResourceToList(CoAP_Res_t** pListStart, CoA
 
 CoAP_Result_t _rom CoAP_FreeResource(CoAP_Res_t** pResource)
 {
-	free_OptionList(&(*pResource)->pUri);
+	CoAP_FreeOptionList(&(*pResource)->pUri);
 
 	coap_mem_release((*pResource)->pDescription);
 	coap_mem_release((void*)(*pResource));
@@ -332,7 +332,7 @@ CoAP_Res_t* _rom CoAP_CreateResource(char* Uri, char* Descr,CoAP_ResOpts_t Optio
 }
 
 
-CoAP_Result_t _rom CoAP_ResUpdated(CoAP_Res_t* pRes) {
+CoAP_Result_t _rom CoAP_NotifyResourceObservers(CoAP_Res_t* pRes) {
 	pRes->UpdateCnt++;
 	CoAP_StartNotifyInteractions(pRes); //async start of update interaction
 	return COAP_OK;

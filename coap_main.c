@@ -46,7 +46,6 @@ void _ram CoAP_onNewPacketHandler(uint8_t ifID, NetPacket_t* pckt)
 	INFO("Sending Endpoint: ");
 	PrintEndpoint(&(pckt->Sender));
 
-
 	if((res=CoAP_ParseMessageFromDatagram(pckt->pData, pckt->size, &pMsg)) == COAP_OK){
 		CoAP_PrintMsg(pMsg); //allocates the needed amount of ram
 		INFO("<<<<<<<<<<<<<<<<<<<<<<\r\n");
@@ -216,22 +215,7 @@ static CoAP_Result_t _rom SendReq(CoAP_Interaction_t* pIA, CoAP_InteractionState
  return COAP_OK;
 }
 
-
-//static CoAP_Result_t CheckNotificationUpdaded(CoAP_Interaction_t* pIA) {
-//	if(pIA->UpdateNotification) {
-//		//call notifier to set to new representation of res
-//		pIA->pRes->Notifier(pIA->pObserver, pIA->pRespMsg);
-//
-//		RemoveObserveOptionFromMsg(pIA->pRespMsg);
-//		if(pIA->pRespMsg->Code >=RESP_ERROR_BAD_REQUEST_4_00) { //remove this observer from resource in case of non OK Code (see RFC7641, 3.2., 3rd paragraph)
-//			RemoveObserveOptionFromMsg(pIA->pRespMsg);
-//			CoAP_RemoveInteractionsObserver(pIA, pIA->pRespMsg->Token64);
-//		} else {
-//			AddObserveOptionToMsg(newIA->pRespMsg, pRes->UpdateCnt); // Only 2.xx responses do include an Observe Option.
-//		}
-//	}
-//}
-
+//used on [server]
 static CoAP_Result_t _rom CheckRespStatus(CoAP_Interaction_t* pIA){
 
 	if(pIA->RespReliabilityState == RST_SET) {
@@ -423,7 +407,7 @@ void _rom CoAP_doWork()
 				uint8_t buf_temp[2];
 				buf_temp[0] = pIA->ReqMetaInfo.Dat.RfPath.HopCount;
 				buf_temp[1] = pIA->ReqMetaInfo.Dat.RfPath.RSSI*-1;
-				append_OptionToList(&(pIA->pRespMsg->pOptionsList),10000,buf_temp,2); //custom option #10000
+				CoAP_AppendOptionToList(&(pIA->pRespMsg->pOptionsList),10000,buf_temp,2); //custom option #10000
 			}
 
 			//handle for GET observe option
@@ -476,9 +460,12 @@ void _rom CoAP_doWork()
 	  //------------------------------------------
 	  if(pIA->State == COAP_STATE_READY_TO_NOTIFY) {
 	  //------------------------------------------
-		  	  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+
+		  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		  	  SendResp(pIA, COAP_STATE_NOTIFICATION_SENT); //transmit response & move to next state
-		  	  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	  //--------------------------------------------------
 		}else if(pIA->State == COAP_STATE_NOTIFICATION_SENT) {
 	  //--------------------------------------------------
@@ -570,7 +557,7 @@ void _rom CoAP_doWork()
 		  	   SendReq(pIA, COAP_STATE_WAITING_RESPONSE); //transmit response & move to next state
 			  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	  //--------------------------------------------------
-		}else if(pIA->State == COAP_STATE_WAITING_RESPONSE) {
+		} else if(pIA->State == COAP_STATE_WAITING_RESPONSE) {
 	  //--------------------------------------------------
 		switch(CheckReqStatus(pIA)) {
 					 case COAP_WAITING:
@@ -594,7 +581,7 @@ void _rom CoAP_doWork()
 						 CoAP_DeleteInteraction(pIA);
 					}
 	  //--------------------------------------------------
-		}else if(pIA->State == COAP_STATE_HANDLE_RESPONSE) {
+		} else if(pIA->State == COAP_STATE_HANDLE_RESPONSE) {
 	  //--------------------------------------------------
 			INFO("- Got Response to Client request! -> calling Handler!\r\n");
 			if(pIA->RespCB != NULL) {

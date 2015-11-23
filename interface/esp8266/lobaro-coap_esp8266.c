@@ -330,35 +330,42 @@ LOCAL void ICACHE_FLASH_ATTR connection_timer_cb(void *arg) {
     static uint8_t failRetryCnt=0;
 	uint8_t conStatus = wifi_station_get_connect_status();
 
-	if (conStatus == STATION_GOT_IP && conStatus!=CoAP_ESP8266_States.StationConStatus ) { //just got ip
-		failRetryCnt=0;
-		ets_uart_printf("\r\n- Got IP from external AP! -> ");
-		struct ip_info ipconfig;
-		if(wifi_get_ip_info(STATION_IF, &ipconfig)){
-			  ets_uart_printf("%d.%d.%d.%d",IP2STR(&ipconfig.ip));
+	if (conStatus == STATION_GOT_IP) { //just got ip
+		if(conStatus == CoAP_ESP8266_States.StationConStatus) {
+			return; //connected
+		} else { //just got connected...
+			failRetryCnt=0;
+			ets_uart_printf("\r\n- Got IP from external AP! -> ");
+			struct ip_info ipconfig;
+			if(wifi_get_ip_info(STATION_IF, &ipconfig)){
+				  ets_uart_printf("%d.%d.%d.%d",IP2STR(&ipconfig.ip));
+			}
+			else ets_uart_printf("ERROR!!\r\n");
 		}
-		else ets_uart_printf("ERROR!!\r\n");
-
 	}else if(conStatus == STATION_CONNECTING && conStatus!=CoAP_ESP8266_States.StationConStatus ){
 		ets_uart_printf("...connecting to remote wifi access point...\r\n");
 
 	}else if(conStatus == STATION_WRONG_PASSWORD && conStatus!=CoAP_ESP8266_States.StationConStatus ){
-		ets_uart_printf("(!!!) Wrong Password! Try config via softap interface (coap://192.168.4.1:5683) and reset esp8266\r\n");
+		ets_uart_printf("(!!!) Wrong Password!\r\n");
 		failRetryCnt++;
+		wifi_station_connect();
 
 	}else if(conStatus == STATION_NO_AP_FOUND && conStatus!=CoAP_ESP8266_States.StationConStatus ){
 		failRetryCnt++;
-		ets_uart_printf("(!!!) No AP Found! Try config via softap interface (coap://192.168.4.1:5683) and reset esp8266\r\n");
+		ets_uart_printf("(!!!) No AP Found!\r\n");
+		wifi_station_connect();
 
 	}else if(conStatus == STATION_CONNECT_FAIL && conStatus!=CoAP_ESP8266_States.StationConStatus ){
 		failRetryCnt++;
 		ets_uart_printf("(!!!) Connect Fail\r\n");
+		wifi_station_connect();
 	}
 
 	CoAP_ESP8266_States.StationConStatus = conStatus;
 
 	if(failRetryCnt > MAX_CON_RETRIES_BEFORE_ACTIVATING_SOFT_AP) {
 #if SOFTAP_ALLWAYS_ON == 0
+		ets_uart_printf("(!!!) giving up to connect!\r\nTry config via softAP interface (coap://192.168.4.1:5683) and reset esp8266\r\n");
 		wifi_station_disconnect(); //don't retry automatically to let soft-ap work properly (which isn't functional during station connecting!)
 		ESP8266_Config_SoftAP(); //enable soft-ap mode
 #else

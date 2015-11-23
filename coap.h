@@ -20,7 +20,6 @@
  * THE SOFTWARE.
  *******************************************************************************/
 
-
 #ifndef COAP_H_
 #define COAP_H_
 
@@ -29,8 +28,7 @@
 #include "interface/coap_interface.h"
 
 //Internal stack functions
-typedef enum
-{
+typedef enum {
 	COAP_OK=0,
 	COAP_NOT_FOUND, //not found but no error
 	COAP_PARSE_DATAGRAM_TOO_SHORT,
@@ -68,7 +66,6 @@ typedef enum
 #define PREFERED_PAYLOAD_SIZE	(64)   //also size of inital pResp message payload buffer in user resource handler
 
 #define COAP_VERSION (1)
-
 
 #include "coap_debug.h"
 #include "coap_mem.h"

@@ -62,7 +62,7 @@ int	bpoolv	    _((void *pool));
 void  coap_mem_init(uint8_t* pMemoryArea, int16_t size);
 
 void coap_mem_stats();
-void coap_mem_defineStaticMem(); //used by coap_mem_stats to calculate "dynamic"=dangerous memory size (which should go to zero in the long term, otherwise we have a memory leak!)
+void coap_mem_determinateStaticMem(); //used by coap_mem_stats to calculate "dynamic"=dangerous memory size (which should go to zero in the long term, otherwise we have a memory leak!)
 
 void coap_mem_release(void* buf);
 void* coap_mem_get(bufsize size); //define in for debug output of each requested mem

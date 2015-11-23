@@ -32,16 +32,16 @@ CoAP_Result_t _rom AddObserveOptionToMsg(CoAP_Message_t* msg, uint32_t val)
 		wBuf[0] = (val >> 16) & 0xff;
 		wBuf[1] = (val >> 8) & 0xff;
 		wBuf[2]=  val & 0xff;
-		return append_OptionToList(&(msg->pOptionsList), OPT_NUM_OBSERVE, wBuf, 3);
+		return CoAP_AppendOptionToList(&(msg->pOptionsList), OPT_NUM_OBSERVE, wBuf, 3);
 	} else if(val > 0xff){
 		wBuf[0] = (val >> 8) & 0xff;
 		wBuf[1]=  val & 0xff;
-		return append_OptionToList(&(msg->pOptionsList), OPT_NUM_OBSERVE, wBuf, 2);
+		return CoAP_AppendOptionToList(&(msg->pOptionsList), OPT_NUM_OBSERVE, wBuf, 2);
 	} else if(val > 0) {
 		wBuf[0]=  val & 0xff;
-		return append_OptionToList(&(msg->pOptionsList), OPT_NUM_OBSERVE, wBuf, 1);
+		return CoAP_AppendOptionToList(&(msg->pOptionsList), OPT_NUM_OBSERVE, wBuf, 1);
 	}else { //val == 0
-		return append_OptionToList(&(msg->pOptionsList), OPT_NUM_OBSERVE, NULL, 0);
+		return CoAP_AppendOptionToList(&(msg->pOptionsList), OPT_NUM_OBSERVE, NULL, 0);
 	}
 }
 
@@ -105,7 +105,7 @@ CoAP_Result_t _rom CoAP_FreeObserver(CoAP_Observer_t** pObserver)
 	INFO("Releasing pObserver\r\n");
 	coap_mem_stats();
 
-	free_OptionList( &((*pObserver)->pOptList));
+	CoAP_FreeOptionList( &((*pObserver)->pOptList));
 	coap_mem_release((void*)(*pObserver));
 	*pObserver = NULL;
 

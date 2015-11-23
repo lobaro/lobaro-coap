@@ -107,7 +107,7 @@ CoAP_Result_t _rom CoAP_free_Message(CoAP_Message_t** Msg)
 	else if((*Msg)->Type == ACK){INFO("- Message memory freed! (ACK, MID: %d):\r\n", (*Msg)->MessageID);}
 	else if((*Msg)->Type == RST){INFO("- Message memory freed! (RST, MID: %d):\r\n", (*Msg)->MessageID);}
 
-	free_OptionList(&((*Msg)->pOptionsList));
+	CoAP_FreeOptionList(&((*Msg)->pOptionsList));
 	CoAP_free_MsgPayload(Msg);
 
     //finally delete msg body
@@ -221,7 +221,7 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 	CoAP_Result_t ParseOptionsResult = parse_OptionsFromRaw(&(srcArr[offset]), srcArrLength-offset, &pPayloadBegin, &(Msg.pOptionsList));
 
 	if(ParseOptionsResult != COAP_OK) {
-		free_OptionList(&(Msg.pOptionsList));
+		CoAP_FreeOptionList(&(Msg.pOptionsList));
 		return ParseOptionsResult;
 	}
 
@@ -231,7 +231,7 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 		Msg.PayloadLength = srcArrLength - (pPayloadBegin - srcArr);
 		if(Msg.PayloadLength > MAX_PAYLOAD_SIZE)
 		{
-			free_OptionList(&(Msg.pOptionsList));
+			CoAP_FreeOptionList(&(Msg.pOptionsList));
 			return COAP_PARSE_TOO_MUCH_PAYLOAD;
 		}
 	}
@@ -246,7 +246,7 @@ START_MSG_COPY_LABEL:
 
 	if(*rxedMsg== NULL)//out of memory
 	{
-		free_OptionList(&(Msg.pOptionsList));
+		CoAP_FreeOptionList(&(Msg.pOptionsList));
 		return COAP_ERR_OUT_OF_MEMORY;
 	}
 
@@ -267,6 +267,7 @@ int CoAP_GetRawSizeOfMessage(CoAP_Message_t* Msg) {
 	int TotalMsgBytes = 0;
 
 	TotalMsgBytes+=4; //Header
+
 	TotalMsgBytes+= CoAP_NeededMem4PackOptions(Msg->pOptionsList);
 
 	if(Msg->Code != EMPTY) {
@@ -451,8 +452,7 @@ uint64_t _rom CoAP_GenerateToken() {
 
 CoAP_Result_t _rom CoAP_addNewPayloadToMessage(CoAP_Message_t* Msg, uint8_t* pData, uint16_t size)
 {
-	if(size > MAX_PAYLOAD_SIZE)
-	{
+	if(size > MAX_PAYLOAD_SIZE) {
 		ERROR("payload > MAX_PAYLOAD_SIZE");
 		return COAP_ERR_OUT_OF_MEMORY;
 	}

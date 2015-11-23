@@ -38,7 +38,7 @@ static CoAP_Result_t _rom ParseUriQueryFromStringToOption(CoAP_option_t** pUriOp
 				continue;
 			}
 
-			append_OptionToList(pUriOptionsListBegin, OPT_NUM_URI_QUERY, pCurUriPartBegin, cnt); //copy & alloc mem
+			CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_QUERY, pCurUriPartBegin, cnt); //copy & alloc mem
 
 			pCurUriPartBegin = pCurUriPartBegin+cnt+1;//points to char following delimiter '&'
 			cnt=0;
@@ -50,7 +50,7 @@ static CoAP_Result_t _rom ParseUriQueryFromStringToOption(CoAP_option_t** pUriOp
 
 	//last uri part which is not a query string
 	if(cnt != 0){
-		append_OptionToList(pUriOptionsListBegin, OPT_NUM_URI_QUERY, pCurUriPartBegin, cnt); //copy & alloc last uri part
+		CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_QUERY, pCurUriPartBegin, cnt); //copy & alloc last uri part
 	}
 
 	return COAP_OK;
@@ -86,7 +86,7 @@ CoAP_Result_t _rom CoAP_AppendUriOptionsFromString(CoAP_option_t** pUriOptionsLi
 				continue;
 			}
 
-			append_OptionToList(pUriOptionsListBegin, OPT_NUM_URI_PATH, pCurUriPartBegin, cnt); //copy & alloc mem
+			CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_PATH, pCurUriPartBegin, cnt); //copy & alloc mem
 
 			pCurUriPartBegin = pCurUriPartBegin+cnt+1;//points to char following delimiter '/', ' ' or '?'
 
@@ -103,7 +103,7 @@ CoAP_Result_t _rom CoAP_AppendUriOptionsFromString(CoAP_option_t** pUriOptionsLi
 
 	//last uri part which is not a query string
 	if(cnt != 0){
-		append_OptionToList(pUriOptionsListBegin, OPT_NUM_URI_PATH, pCurUriPartBegin, cnt); //copy & alloc last uri part
+		CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_PATH, pCurUriPartBegin, cnt); //copy & alloc last uri part
 	}
 
 	return COAP_OK;
@@ -172,24 +172,7 @@ void _rom CoAP_printUriOptionsList(CoAP_option_t* pOptListBegin)
 	INFO("\r\n");
 }
 
-uint8_t* CoAP_UriQuery_strstr(CoAP_option_t* pUriOpt, const char* str) {
-	if(pUriOpt == NULL) return NULL;
-	if(pUriOpt->Number != OPT_NUM_URI_QUERY) return NULL;
-	if(pUriOpt->Length == 0 || pUriOpt->Length > 255) return NULL;
 
-	//problem pUriOpt data is not a C-String (terminating zero is missing)
-	//todo: implement strstr without memcpy and big local mem
-	char pUriQuery[255]; //max len of query opt
-
-	//Copy into pUriQuery
-	coap_memcpy(pUriQuery, pUriOpt->Value, pUriOpt->Length);
-	pUriQuery[pUriOpt->Length]=0; //terminating char
-
-	char* pLoc = (char*)coap_strstr(pUriQuery,str);
-	if(pLoc == NULL) return NULL;
-
-	return &(pUriOpt->Value[(pLoc-pUriQuery)]); //return pointer to the first occurrence of str in Opt.val, (pLoc-pUriQuery) = actual offset
-}
 
 uint8_t* CoAP_GetUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, uint8_t* pValueLen){
 	if(pUriOpt == NULL) return NULL;
@@ -211,7 +194,7 @@ uint8_t* CoAP_GetUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, uint
 	return &(pUriOpt->Value[prefixLen]);
 }
 
-int8_t CoAP_CompareUriQueryVal2Cstr(CoAP_option_t* pUriOpt, const char* prefixStr, int CmpStrCnt, ...) {
+int8_t CoAP_FindUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, int CmpStrCnt, ...) {
 	va_list ap; //compare string pointer
 	int i,j;
 	char* pStr=NULL;
@@ -245,46 +228,4 @@ int8_t CoAP_CompareUriQueryVal2Cstr(CoAP_option_t* pUriOpt, const char* prefixSt
 	 return 0; //not found
 }
 
-bool CoAP_UriQuery_KeyCorrect(CoAP_option_t* pUriOpt, const char* Key){
-
-	uint8_t KeyLen;
-	uint8_t* pVal = CoAP_GetUriQueryVal(pUriOpt, "key=", &KeyLen);
-
-
-	if(pVal == NULL || KeyLen != coap_strlen(Key)) return false;
-
-	int i=0;
-	for(;i<KeyLen;i++) {
-		if(Key[i]!=pVal[i]) {
-			return false;
-		}
-	}
-	return true;
-}
-
-//
-//CoAp_Result_t dbgUriPath(CoAP_uri_t* uri)
-//{
-//	INFO("\r\n>>Uri Path\r\n");
-//	INFO("- Path=/");
-//
-//	for(int i=0; i<uri->UriPathLevels;i++)
-//	{
-//		INFO("%s/",uri->UriPath[i]);
-//	}
-//	INFO("\r\n");
-//
-//	return COAP_OK;
-//}
-//
-//
-//CoAp_Result_t TransformUriToString(CoAP_uri_t* uri, uint8_t* pStr)
-//{
-//	pStr[0] = 0; //string termination
-//	for(int i=0; i<uri->UriPathLevels;i++)
-//	{
-//		strcat(pStr,"/");
-//		strcat(pStr,uri->UriPath[i]);
-//	}
-//	return
 
