@@ -318,6 +318,7 @@ static bool ICACHE_FLASH_ATTR ESP8266_Config_Station(void)
 
 	if(wifi_station_set_config(&config)){
 		ets_uart_printf("- Connecting to as station to external WIFI AP/Router [ssid=\"%s\"] \r\n", config.ssid);
+		wifi_station_connect();
 		return true;
 	}
 	else {
@@ -330,6 +331,7 @@ LOCAL void ICACHE_FLASH_ATTR connection_timer_cb(void *arg) {
     static uint8_t failRetryCnt=0;
 	uint8_t conStatus = wifi_station_get_connect_status();
 
+
 	if (conStatus == STATION_GOT_IP) { //just got ip
 		if(conStatus == CoAP_ESP8266_States.StationConStatus) {
 			return; //connected
@@ -338,7 +340,7 @@ LOCAL void ICACHE_FLASH_ATTR connection_timer_cb(void *arg) {
 			ets_uart_printf("\r\n- Got IP from external AP! -> ");
 			struct ip_info ipconfig;
 			if(wifi_get_ip_info(STATION_IF, &ipconfig)){
-				  ets_uart_printf("%d.%d.%d.%d",IP2STR(&ipconfig.ip));
+				  ets_uart_printf("%d.%d.%d.%d\r\n",IP2STR(&ipconfig.ip));
 			}
 			else ets_uart_printf("ERROR!!\r\n");
 		}
@@ -394,5 +396,3 @@ bool ICACHE_FLASH_ATTR CoAP_ESP8266_ConfigDevice(){
 
 	return true;
 }
-
-
