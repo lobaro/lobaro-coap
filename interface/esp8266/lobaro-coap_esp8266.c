@@ -38,7 +38,7 @@
 
 extern int ets_uart_printf(const char *fmt, ...);
 
-CoAP_ESP8266_States_t CoAP_ESP8266_States = {.TxSocketIdle=true, .StationConStatus=STATION_IDLE};
+CoAP_ESP8266_States_t CoAP_ESP8266_States = {.TxSocketIdle=true, .StationConStatus=0xff};
 
 //implement internaly used functions (see also lobaro-coap/interface/coap_interface.h)
 void hal_uart_puts(char *s) {
@@ -362,6 +362,10 @@ LOCAL void ICACHE_FLASH_ATTR connection_timer_cb(void *arg) {
 		ets_uart_printf("(!!!) Connect Fail\r\n");
 		wifi_station_connect();
 	}
+//	}else if(conStatus == STATION_IDLE && conStatus!=CoAP_ESP8266_States.StationConStatus ){
+//		failRetryCnt++;
+//		ets_uart_printf("(!!!) Idle, maybe no SSID/PW configured?\r\n");
+//	}
 
 	CoAP_ESP8266_States.StationConStatus = conStatus;
 
@@ -379,11 +383,29 @@ LOCAL void ICACHE_FLASH_ATTR connection_timer_cb(void *arg) {
 
 bool ICACHE_FLASH_ATTR CoAP_ESP8266_ConfigDevice(){
 
+	struct station_config cfg;
+
+
 #if SOFTAP_ALLWAYS_ON == 1
 	ESP8266_Config_SoftAP(); //enables STATION+SOFTAP mode
 #else
 	wifi_set_opmode(STATION_MODE);
 #endif
+
+
+	wifi_station_get_config(&cfg);
+
+	//if no config found (e.g. 1st start after flash clear) -> write some valid but dummy config to get statemachine working
+	if(coap_strlen(cfg.ssid)==0) {
+		wifi_station_disconnect();
+		ets_uart_printf("ssid not configured!\r\n");
+		coap_strcpy(cfg.ssid,"not configured!");
+		cfg.bssid_set = 0;
+		coap_strcpy(cfg.password,"12345678");
+		wifi_station_set_config(&cfg);
+	}
+
+
 	if(ESP8266_Config_Station()==false) { //no valid config/could not start station connect
 		ets_uart_printf("(!!!) Could not start connecto to external AP. Try config via softap interface (coap://192.168.4.1:5683) and reset esp8266\r\n");
 		ESP8266_Config_SoftAP(); //enables STATION+SOFTAP mode
