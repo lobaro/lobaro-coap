@@ -261,11 +261,14 @@ bool  ICACHE_FLASH_ATTR CoAP_ESP8266_SendDatagram(uint8_t ifID, NetPacket_t* pck
 //########################### Wifi connection management ##############################
 LOCAL os_timer_t Connection_timer;
 
-static bool ICACHE_FLASH_ATTR ESP8266_Config_SoftAP(){
+static bool ESP8266_Config_SoftAP(){
 	struct softap_config config;
 	struct ip_info info;
+	char macaddr[6];
 
 	wifi_set_opmode(STATIONAP_MODE);
+	wifi_softap_get_config(&config);
+	wifi_softap_reset_dhcps_lease_time();
 
 	wifi_softap_dhcps_stop();
 	IP4_ADDR(&info.ip, 192, 168, 4, 1);
@@ -273,33 +276,29 @@ static bool ICACHE_FLASH_ATTR ESP8266_Config_SoftAP(){
 	IP4_ADDR(&info.netmask, 255, 255, 255, 0);
 	wifi_set_ip_info(SOFTAP_IF, &info);
 	wifi_softap_dhcps_start();
+	wifi_get_macaddr(SOFTAP_IF, macaddr);
 
-	config.authmode = AUTH_WPA2_PSK;
-	config.beacon_interval = 100;
-	config.channel = 7;
-	config.max_connection = 4;
-	os_memset(config.ssid, 0, 32);
-	os_memset(config.password, 0, 64);
-	os_memcpy(config.ssid, "Lobaro-CoAP (ESP8266)", 21);
-	os_memcpy(config.password, "lobaro!!", 8); //min. length 8!
+	os_memset(config.ssid, 0, sizeof(config.ssid));
+	config.ssid_len = os_sprintf(config.ssid, "Lobaro-CoAP(%02x%02x%02x%02x%02x%02x)", MAC2STR(macaddr));
+	os_memset(config.password, 0, sizeof(config.password));
+	os_strcpy(config.password,"lobaro!!");
 	config.ssid_hidden = 0;
-	config.ssid_len = 21;
-	if(wifi_softap_set_config(&config)){
+	config.authmode = 4; //AUTH_WPA_WPA2_PSK;
+	config.beacon_interval=100;
+	config.channel=1;
+	config.max_connection = 4; // how many stations can connect to ESP8266 softAP at most.
 
-		struct ip_info ipconfig;
-		if(wifi_get_ip_info(SOFTAP_IF, &ipconfig)){
-					  ets_uart_printf("- SoftAP started at IP -> %d.%d.%d.%d\r\n",IP2STR(&ipconfig.ip));
-		}
+	wifi_softap_set_config_current(&config);// Set ESP8266 softap config
 
-		return true;
-	}
-	else {
-		ets_uart_printf("ESP8266_Config_SoftAP(): ERROR\r\n");
-		return false;
-	}
+	struct ip_info ipconfig;
+	wifi_get_ip_info(SOFTAP_IF, &ipconfig);
+	ets_uart_printf("- SoftAP started at IP -> %d.%d.%d.%d pw=%s ssid=%s\r\n",IP2STR(&ipconfig.ip), config.password,config.ssid);
+
+	return true;
+
 }
 
-static bool ICACHE_FLASH_ATTR ESP8266_Config_Station(void)
+static bool  ESP8266_Config_Station(void)
 {
 	struct station_config config;
 
@@ -318,6 +317,7 @@ static bool ICACHE_FLASH_ATTR ESP8266_Config_Station(void)
 
 	if(wifi_station_set_config(&config)){
 		ets_uart_printf("- Connecting to as station to external WIFI AP/Router [ssid=\"%s\"] \r\n", config.ssid);
+		wifi_set_opmode(STATION_MODE);
 		wifi_station_connect();
 		return true;
 	}
@@ -329,6 +329,14 @@ static bool ICACHE_FLASH_ATTR ESP8266_Config_Station(void)
 
 LOCAL void ICACHE_FLASH_ATTR connection_timer_cb(void *arg) {
     static uint8_t failRetryCnt=0;
+
+//    uint8 opmode = wifi_get_opmode();
+//    if(opmode==SOFTAP_MODE || opmode==){
+//    	ets_uart_printf(".");
+//    	return;
+//    }
+
+
 	uint8_t conStatus = wifi_station_get_connect_status();
 
 
@@ -381,10 +389,11 @@ LOCAL void ICACHE_FLASH_ATTR connection_timer_cb(void *arg) {
 	}
 }
 
-bool ICACHE_FLASH_ATTR CoAP_ESP8266_ConfigDevice(){
+bool  CoAP_ESP8266_ConfigDevice(){
 
 	struct station_config cfg;
 
+	wifi_set_phy_mode(PHY_MODE_11G);
 
 #if SOFTAP_ALLWAYS_ON == 1
 	ESP8266_Config_SoftAP(); //enables STATION+SOFTAP mode
@@ -392,15 +401,22 @@ bool ICACHE_FLASH_ATTR CoAP_ESP8266_ConfigDevice(){
 	wifi_set_opmode(STATION_MODE);
 #endif
 
-
 	wifi_station_get_config(&cfg);
+
+
 
 	//if no config found (e.g. 1st start after flash clear) -> write some valid but dummy config to get statemachine working
 	if(coap_strlen(cfg.ssid)==0) {
 		wifi_station_disconnect();
-		ets_uart_printf("ssid not configured!\r\n");
-		coap_strcpy(cfg.ssid,"not configured!");
+
+		os_memset(cfg.ssid, 0, 32);
+		os_memset(cfg.password, 0, 64);
+		os_memset(cfg.bssid, 0, 6);
 		cfg.bssid_set = 0;
+
+
+		ets_uart_printf("ssid not configured!\r\n");
+		coap_strcpy(cfg.ssid,"not_configured!");
 		coap_strcpy(cfg.password,"12345678");
 		wifi_station_set_config(&cfg);
 	}
