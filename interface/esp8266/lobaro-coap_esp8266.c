@@ -261,8 +261,8 @@ bool  ICACHE_FLASH_ATTR CoAP_ESP8266_SendDatagram(uint8_t ifID, NetPacket_t* pck
 //########################### Wifi connection management ##############################
 LOCAL os_timer_t Connection_timer;
 
-static bool ESP8266_Config_SoftAP(){
-	struct softap_config config;
+static bool ICACHE_FLASH_ATTR ESP8266_Config_SoftAP(){
+	static struct softap_config config;
 	struct ip_info info;
 	char macaddr[6];
 
@@ -270,25 +270,29 @@ static bool ESP8266_Config_SoftAP(){
 	wifi_softap_get_config(&config);
 	wifi_softap_reset_dhcps_lease_time();
 
+
+
+	wifi_get_macaddr(SOFTAP_IF, macaddr);
+	os_memset((void*)config.ssid, 0, sizeof(config.ssid));
+	os_sprintf(config.ssid, "Lobaro-CoAP(%02x%02x%02x%02x%02x%02x)", MAC2STR(macaddr));
+	config.ssid_len = 0;
+	os_memset((void*)config.password, 0, sizeof(config.password));
+	os_memcpy(config.password,"lobaro!!",8);
+
+	config.ssid_hidden = 0;
+	config.authmode = AUTH_WPA2_PSK;//AUTH_WPA_WPA2_PSK; //AUTH_WPA_WPA2_PSK;
+	config.beacon_interval=250;
+	config.channel=1;
+	config.max_connection = 4; // how many stations can connect to ESP8266 softAP at most.
+
+	wifi_softap_set_config_current(&config);// Set ESP8266 softap config
+
 	wifi_softap_dhcps_stop();
 	IP4_ADDR(&info.ip, 192, 168, 4, 1);
 	IP4_ADDR(&info.gw, 192, 168, 4, 1);
 	IP4_ADDR(&info.netmask, 255, 255, 255, 0);
 	wifi_set_ip_info(SOFTAP_IF, &info);
 	wifi_softap_dhcps_start();
-	wifi_get_macaddr(SOFTAP_IF, macaddr);
-
-	os_memset(config.ssid, 0, sizeof(config.ssid));
-	config.ssid_len = os_sprintf(config.ssid, "Lobaro-CoAP(%02x%02x%02x%02x%02x%02x)", MAC2STR(macaddr));
-	os_memset(config.password, 0, sizeof(config.password));
-	os_strcpy(config.password,"lobaro!!");
-	config.ssid_hidden = 0;
-	config.authmode = 4; //AUTH_WPA_WPA2_PSK;
-	config.beacon_interval=100;
-	config.channel=1;
-	config.max_connection = 4; // how many stations can connect to ESP8266 softAP at most.
-
-	wifi_softap_set_config_current(&config);// Set ESP8266 softap config
 
 	struct ip_info ipconfig;
 	wifi_get_ip_info(SOFTAP_IF, &ipconfig);
@@ -298,7 +302,7 @@ static bool ESP8266_Config_SoftAP(){
 
 }
 
-static bool  ESP8266_Config_Station(void)
+static bool  ICACHE_FLASH_ATTR ESP8266_Config_Station(void)
 {
 	struct station_config config;
 
@@ -330,15 +334,7 @@ static bool  ESP8266_Config_Station(void)
 LOCAL void ICACHE_FLASH_ATTR connection_timer_cb(void *arg) {
     static uint8_t failRetryCnt=0;
 
-//    uint8 opmode = wifi_get_opmode();
-//    if(opmode==SOFTAP_MODE || opmode==){
-//    	ets_uart_printf(".");
-//    	return;
-//    }
-
-
 	uint8_t conStatus = wifi_station_get_connect_status();
-
 
 	if (conStatus == STATION_GOT_IP) { //just got ip
 		if(conStatus == CoAP_ESP8266_States.StationConStatus) {
@@ -389,7 +385,7 @@ LOCAL void ICACHE_FLASH_ATTR connection_timer_cb(void *arg) {
 	}
 }
 
-bool  CoAP_ESP8266_ConfigDevice(){
+bool ICACHE_FLASH_ATTR CoAP_ESP8266_ConfigDevice(){
 
 	struct station_config cfg;
 
@@ -400,10 +396,7 @@ bool  CoAP_ESP8266_ConfigDevice(){
 #else
 	wifi_set_opmode(STATION_MODE);
 #endif
-
 	wifi_station_get_config(&cfg);
-
-
 
 	//if no config found (e.g. 1st start after flash clear) -> write some valid but dummy config to get statemachine working
 	if(coap_strlen(cfg.ssid)==0) {
