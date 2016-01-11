@@ -407,7 +407,6 @@ bool ICACHE_FLASH_ATTR CoAP_ESP8266_ConfigDevice(){
 		os_memset(cfg.bssid, 0, 6);
 		cfg.bssid_set = 0;
 
-
 		ets_uart_printf("ssid not configured!\r\n");
 		coap_strcpy(cfg.ssid,"not_configured!");
 		coap_strcpy(cfg.password,"12345678");
