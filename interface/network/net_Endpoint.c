@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
+
 #include "../../coap.h"
 
 const NetAddr_IPv6_t NetAddr_IPv6_unspecified = {.u8 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }};
@@ -29,7 +30,6 @@ const NetAddr_IPv6_t NetAddr_IPv6_mulitcast = {.u8 = {0xff, 0x02, 0, 0, 0, 0, 0,
 	 if(!ep_A || !ep_B){return false;}
 	 if(ep_A->NetType != ep_B->NetType){return false;}
 	 if(ep_A->NetPort != ep_B->NetPort){ return false;}
-
 
 	 if(ep_A->NetType == IPV6){
 		 if(ep_A->NetAddr.IPv6.u32[0]!= ep_B->NetAddr.IPv6.u32[0]
@@ -49,7 +49,6 @@ const NetAddr_IPv6_t NetAddr_IPv6_mulitcast = {.u8 = {0xff, 0x02, 0, 0, 0, 0, 0,
 		 }
 	 }
 
-
 	 return true;
  }
 
@@ -57,7 +56,6 @@ const NetAddr_IPv6_t NetAddr_IPv6_mulitcast = {.u8 = {0xff, 0x02, 0, 0, 0, 0, 0,
  {
 	 memmove((void*)Destination, (void*)Source, sizeof(NetEp_t));
  }
-
 
  void _rom PrintEndpoint(NetEp_t* ep)
  {

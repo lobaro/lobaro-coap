@@ -22,6 +22,9 @@
 #ifndef COM_NET_EP_H
 #define COM_NET_EP_H
 
+#include <stdint.h>
+#include <stdbool.h>
+
 #define  IPv6_IP(A3, A2, A1, A0)   \
 		{ (A3 >> 24 & 0xff), (A3 >> 16 & 0xff), (A3 >> 8 & 0xff), (A3 >> 0 & 0xff), \
 		  (A2 >> 24 & 0xff), (A2 >> 16 & 0xff), (A2 >> 8 & 0xff), (A2 >> 0 & 0xff), \
@@ -77,7 +80,6 @@ extern const NetAddr_IPv6_t NetAddr_IPv6_mulitcast;
 
 bool EpAreEqual(NetEp_t* ep_A, NetEp_t* ep_B);
 void PrintEndpoint(NetEp_t* ep);
-
 void CopyEndpoints(NetEp_t* Source, NetEp_t* Destination);
 
 #endif

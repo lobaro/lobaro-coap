@@ -19,62 +19,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-#include "../../coap.h"
+#include "../coap_interface.h"
 
-typedef struct
-{
-	NetSocket_t SocketMemory[MAX_ACTIVE_SOCKETS];
-	bool initDone;
-}NetSocketCtrl_t;
-
-static NetSocketCtrl_t SocketCtrl = {.initDone = false};
-
-NetSocket_t* _rom AllocSocket()
-{
-	int i;
-	if(!SocketCtrl.initDone)
-	{
-		for(i=0; i<MAX_ACTIVE_SOCKETS; i++) SocketCtrl.SocketMemory[i].Alive = false;
-		SocketCtrl.initDone = true;
-	}
-
-	for(i=0; i<MAX_ACTIVE_SOCKETS; i++)
-	{
-		if(SocketCtrl.SocketMemory[i].Alive == false)
-		{
-			return &(SocketCtrl.SocketMemory[i]);
-		}
-	}
-
-	return NULL; //no free memory
-}
-
-NetSocket_t* _rom RetrieveSocket(SocketHandle_t handle)
-{
-	int i;
-	for(i=0; i<MAX_ACTIVE_SOCKETS; i++ )
-	{
-		if(SocketCtrl.SocketMemory[i].Alive &&
-				SocketCtrl.SocketMemory[i].Handle == handle) //corresponding socket found!
-		{
-			return &(SocketCtrl.SocketMemory[i]);
-		}
-
-	}
-	return NULL; //not found
-}
-
-NetSocket_t* _rom RetrieveSocket2(uint8_t ifID)
-{
-	int i;
-	for(i=0; i<MAX_ACTIVE_SOCKETS; i++ )
-	{
-		if(SocketCtrl.SocketMemory[i].Alive &&
-				SocketCtrl.SocketMemory[i].ifID == ifID) //corresponding socket found!
-		{
-			return &(SocketCtrl.SocketMemory[i]);
-		}
-
-	}
-	return NULL; //not found
-}
+char dbgBuf[DEBUG_BUF_SIZE];

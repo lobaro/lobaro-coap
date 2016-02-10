@@ -67,8 +67,10 @@ typedef enum {
 
 #define COAP_VERSION (1)
 
-#include "coap_debug.h"
-#include "coap_mem.h"
+//V1.2
+#define LOBARO_COAP_VERSION_MAJOR (1)
+#define LOBARO_COAP_VERSION_MINOR (2)
+
 #include "coap_options.h"
 #include "coap_message.h"
 #include "option-types/coap_option_blockwise.h"

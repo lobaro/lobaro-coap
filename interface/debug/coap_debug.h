@@ -56,8 +56,6 @@ do { \
 			if(!(VAL)) { PRINTF("!!! ASSERT FAILED [line: %d at %s]!!!\r\n", __LINE__, __FILE__); } \
 } while(0)
 
-
-
 #define INFO(...) \
 do { \
 	PRINTF(__VA_ARGS__); \

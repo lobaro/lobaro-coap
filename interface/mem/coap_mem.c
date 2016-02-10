@@ -23,7 +23,35 @@
 //"BGET is in the public domain. You can do anything you like with it."
 //Thank you Mr. Walker for your great work!
 
-#include "coap.h"
+#include "../coap_interface.h"
+
+#ifndef DONT_USE_LOBARO_COAP_MEMORY_ALLOCATOR //only use this memory allocator implementation if user does not supply its own
+
+#ifndef _
+#ifdef PROTOTYPES
+#define  _(x)  x		      /* If compiler knows prototypes */
+#else
+#define  _(x)  ()                     /* It it doesn't */
+#endif /* PROTOTYPES */
+#endif
+
+typedef int16_t bufsize;
+void	bpool	    _((void *buffer, bufsize len));
+void   *bget	    _((bufsize size));
+void   *bgetz	    _((bufsize size));
+void   *bgetr	    _((void *buffer, bufsize newsize));
+void	brel	    _((void *buf));
+void	bectl	    _((int (*compact)(bufsize sizereq, int sequence),
+		       void *(*acquire)(bufsize size),
+		       void (*release)(void *buf), bufsize pool_incr));
+void	bstats	    _((bufsize *curalloc, bufsize *totfree, bufsize *maxfree,
+		       long *nget, long *nrel));
+void	bstatse     _((bufsize *pool_incr, long *npool, long *npget,
+		       long *nprel, long *ndget, long *ndrel));
+void	bufdump     _((void *buf));
+void	bpoold	    _((void *pool, int dumpalloc, int dumpfree));
+int	bpoolv	    _((void *pool));
+
 
 static uint8_t* pMemArea;
 static int16_t TotalBufBytes=0;
@@ -38,10 +66,6 @@ uint8_t* _rom coap_mem_buf_highEnd(){
 
 void _rom coap_mem_init(uint8_t* pMemoryArea, int16_t size)
 {
-//	int i;
-//	for(i=0; i<size; i++) {
-//		buf[i]=0xaa;
-//	}
 	if(pMemoryArea == NULL) return;
 	pMemArea = pMemoryArea;
 	TotalBufBytes = size;
@@ -49,15 +73,13 @@ void _rom coap_mem_init(uint8_t* pMemoryArea, int16_t size)
 	bpool(pMemArea, TotalBufBytes);
 }
 
-void* _rom coap_mem_get(bufsize size)
-{
+void* _rom coap_mem_get(bufsize size) {
 	void* ptr = bget(size);
-//	INFO("- mem req: %d got: %d ptr %x\r\n", size, bsize(ptr), ptr);
+//	INFO("- mem req: %d got: %d ptr %x\r\n", size, coap_mem_size(ptr), ptr);
 	return ptr;
 }
 
-void* _rom coap_mem_get0(bufsize size)
-{
+void* _rom coap_mem_get0(bufsize size) {
 	//INFO("- mem req: %d byte\r\n", size);
 	return bgetz(size);
 }
@@ -68,9 +90,7 @@ void _rom coap_mem_release(void* buf)
 	brel(buf);
 }
 
-
 int32_t StaticAllocation = 0;
-
 void coap_mem_determinateStaticMem() {
 	bufsize curalloc, totfree, maxfree;
 	int32_t nget,nrel;
@@ -84,7 +104,6 @@ void _rom coap_mem_stats()
 	int32_t nget,nrel;
 
 	bstats(&curalloc, &totfree, &maxfree, &nget, &nrel);
-
 	INFO("- CoAP mem usage: dynamic: [%ld] dynamic+static: [%ld] free: [%ld] biggest shunk: [%ld] get/releases: [%ld|%ld]\r\n",(int32_t)curalloc-StaticAllocation, (int32_t)curalloc, (int32_t)totfree, (int32_t)maxfree,nget,nrel );
 }
 
@@ -655,10 +674,9 @@ static bufsize pool_len = 0;	      /* 0: no bpool calls have been made
 
 
 //get size of user databuffer
-int32_t _rom bsize(uint8_t* buf)
+int32_t _rom coap_mem_size(uint8_t* buf)
 {
-	if(!buf)
-	{
+	if(!buf){
 		assert(true); //buffer undef error!
 		return 0;
 	}
@@ -1708,4 +1726,6 @@ int main()
 
     return 0;
 }
+#endif
+
 #endif
