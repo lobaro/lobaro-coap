@@ -51,7 +51,7 @@ do { \
 } while(0)
 
 
-#define assert(VAL) \
+#define assert_coap(VAL) \
 do { \
 			if(!(VAL)) { PRINTF("!!! ASSERT FAILED [line: %d at %s]!!!\r\n", __LINE__, __FILE__); } \
 } while(0)
