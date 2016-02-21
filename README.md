@@ -1,5 +1,6 @@
 # lobaro-coap
 
+[![Build Status](https://travis-ci.org/Lobaro/lobaro-coap.svg?branch=master)](https://travis-ci.org/Lobaro/lobaro-coap)
 [![Gitter Chat](http://img.shields.io/badge/chat-online-brightgreen.svg)](https://gitter.im/lobaro-iot/Lobby)
 
 Complete CoAP Implementation in C.
