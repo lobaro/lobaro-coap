@@ -23,6 +23,10 @@
 #ifndef COAP_H_
 #define COAP_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //"glue" and actual system related functions
 //go there to see what to do adapting the library to your platform
 #include "interface/coap_interface.h"
@@ -87,5 +91,9 @@ typedef struct {
 }CoAP_t;
 
 extern CoAP_t CoAP; //Stack global variables
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* COAP_H_ */
