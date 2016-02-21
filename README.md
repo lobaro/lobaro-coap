@@ -1,4 +1,7 @@
 # lobaro-coap
+
+[![Build Status](https://travis-ci.org/Lobaro/lobaro-coap.svg?branch=master)](https://travis-ci.org/Lobaro/lobaro-coap)
+
 Complete CoAP Implementation in C.
 see http://www.lobaro.com/lobaro-coap/ for further information
 
