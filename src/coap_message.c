@@ -232,7 +232,7 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t *srcArr, uint16_t srcAr
 
 //Payload (if any)
 	if (pPayloadBegin != NULL) {
-		Msg.PayloadLength = srcArrLength - (pPayloadBegin - srcArr);
+		Msg.PayloadLength = srcArrLength - (uint16_t)(pPayloadBegin - srcArr);
 		if (Msg.PayloadLength > MAX_PAYLOAD_SIZE) {
 			CoAP_FreeOptionList(&(Msg.pOptionsList));
 			return COAP_PARSE_TOO_MUCH_PAYLOAD;
@@ -368,7 +368,7 @@ CoAP_Result_t _rom CoAP_SendEmptyRST(uint16_t MessageID, SocketHandle_t socketHa
 CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t *Msg, SocketHandle_t socketHandle, NetEp_t *Receiver) {
 	int i;
 	uint16_t bytesToSend = 0;
-	CoAP_Result_t res;
+
 	CoAP_Socket_t *pSocket = RetrieveSocket(socketHandle);
 	NetTransmit_fn SendPacket = pSocket->Tx;
 	uint8_t quickBuf[16]; //speed up sending of tiny messages
