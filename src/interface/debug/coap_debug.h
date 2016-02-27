@@ -22,6 +22,8 @@
 #ifndef COM_DEBUG_H
 #define COM_DEBUG_H
 
+#pragma warning( disable : 4996 )
+
 #define DEBUG_BUF_SIZE (500)
 extern char dbgBuf[DEBUG_BUF_SIZE];
 
