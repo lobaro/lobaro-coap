@@ -1,0 +1,52 @@
+sudo: false
+language: cpp
+
+env:
+  global:  
+   - GTEST_DIR=${TRAVIS_BUILD_DIR}/gtest
+
+matrix:
+  include:
+    - compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-4.8','libgtest-dev']
+      env: SCRIPT=cmake CMAKE_CXX_COMPILER=g++-4.8
+    - compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-4.9','libgtest-dev']
+      env: SCRIPT=cmake CMAKE_CXX_COMPILER=g++-4.9
+    - compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-5','libgtest-dev']
+      env: SCRIPT=cmake CMAKE_CXX_COMPILER=g++-5
+    - compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test','llvm-toolchain-precise-3.5']
+          packages: ['clang-3.5','libgtest-dev']
+      env: SCRIPT=cmake CMAKE_CXX_COMPILER=clang++-3.5
+    - compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test','llvm-toolchain-precise-3.6']
+          packages: ['clang-3.6','libgtest-dev']
+      env: SCRIPT=cmake CMAKE_CXX_COMPILER=clang++-3.6
+    - compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test','llvm-toolchain-precise-3.7']
+          packages: ['clang-3.7','libgtest-dev']
+      env: SCRIPT=cmake CMAKE_CXX_COMPILER=clang++-3.7
+    - env: SCRIPT=arduino VERSION=1.6.7 BOARD=arduino:avr:mega:cpu=atmega1280
+    - env: SCRIPT=platformio BOARD=megaatmega1280
+    - env: SCRIPT=platformio BOARD=esp01
+cache:
+  directories:
+    - "~/.platformio"
+script: test/$SCRIPT.sh

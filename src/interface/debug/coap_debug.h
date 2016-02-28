@@ -22,6 +22,8 @@
 #ifndef COM_DEBUG_H
 #define COM_DEBUG_H
 
+#pragma warning( disable : 4996 )
+
 #define DEBUG_BUF_SIZE (500)
 extern char dbgBuf[DEBUG_BUF_SIZE];
 
@@ -51,7 +53,7 @@ do { \
 } while(0)
 
 
-#define assert(VAL) \
+#define assert_coap(VAL) \
 do { \
 			if(!(VAL)) { PRINTF("!!! ASSERT FAILED [line: %d at %s]!!!\r\n", __LINE__, __FILE__); } \
 } while(0)

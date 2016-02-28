@@ -27,6 +27,9 @@
 
 #ifndef DONT_USE_LOBARO_COAP_MEMORY_ALLOCATOR //only use this memory allocator implementation if user does not supply its own
 
+// Either include <assert.h>, use assert_coap or define NDEBUG
+#define assert assert_coap
+
 #ifndef _
 #ifdef PROTOTYPES
 #define  _(x)  x		      /* If compiler knows prototypes */

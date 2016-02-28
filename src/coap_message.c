@@ -53,7 +53,7 @@ static void _rom CoAP_InitToEmptyResetMsg(CoAP_Message_t* msg)
 //returns "false" if buf is external to pMsg else "true"
 static bool _rom bufferIsPartOfMsg(uint8_t* buf, CoAP_Message_t* pMsg)
 {
-	assert( buf!=NULL && pMsg!=NULL);
+	assert_coap( buf!=NULL && pMsg!=NULL);
 	//case 1: buffer before Msg Mem
 	//case 2: buffer after Msg Mem
 	if( (buf < (uint8_t*)(pMsg)) || (buf > ((uint8_t*)(pMsg))+coap_mem_size((uint8_t*)pMsg))) return false; //bsize gives total alloc size of msg (user data only)
@@ -228,7 +228,7 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 //Payload (if any)
 	if(pPayloadBegin != NULL)
 	{
-		Msg.PayloadLength = srcArrLength - (pPayloadBegin - srcArr);
+		Msg.PayloadLength = srcArrLength - (uint16_t)(pPayloadBegin - srcArr);
 		if(Msg.PayloadLength > MAX_PAYLOAD_SIZE)
 		{
 			CoAP_FreeOptionList(&(Msg.pOptionsList));
@@ -372,7 +372,7 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, uint8_t ifID, NetEp_t* Rece
 {
 	int i;
 	uint16_t bytesToSend = 0;
-	CoAP_Result_t res;
+	//CoAP_Result_t res;
 	NetSocket_t* pSocket = RetrieveSocket2(ifID);
 	NetTransmit_fn SendPacket = pSocket->Tx;
 	uint8_t quickBuf[16]; //speed up sending of tiny messages
@@ -528,7 +528,7 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 			INFO(" %c[", pOption->Value[j]);
 			INFO("%02x]", pOption->Value[j]);
 			}else {
-				INFO("  [00]", pOption->Value[j]);
+				INFO("  [00]");
 			}
 		}
 		INFO("\r\n");
