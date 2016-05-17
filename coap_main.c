@@ -21,7 +21,7 @@
  *******************************************************************************/
 #include "coap.h"
 
-CoAP_t CoAP;
+CoAP_t CoAP = {.pInteractions = NULL, .receiveBlocked=NULL};
 
 CoAP_Result_t _rom CoAP_Init(uint8_t* pMemory, int16_t MemorySize)
 {
@@ -40,6 +40,8 @@ void _ram CoAP_onNewPacketHandler(uint8_t ifID, NetPacket_t* pckt)
 	bool isRequest = false;
 	CoAP_Res_t* pRes = NULL;
 	CoAP_Result_t res = COAP_OK;
+
+	if(CoAP.receiveBlocked != NULL && CoAP.receiveBlocked()) return;
 
 	//Try to parse packet of bytes into CoAP message
 	INFO("\r\n<<<<<<<<<<<<<<<<<<<<<<\r\nNew Datagram received [%d Bytes], Interface #%u\r\n", pckt->size, ifID); //PrintRawPacket(pckt);
@@ -307,6 +309,7 @@ void _rom CoAP_doWork()
 {
 	CoAP_Interaction_t* pIA = CoAP_GetLongestPendingInteraction();
 	CoAP_Result_t result;
+
 
 
 	if(pIA == NULL) return; //nothing to do now

@@ -82,8 +82,11 @@ typedef enum {
 #include "coap_interaction.h"
 #include "coap_main.h"
 
+typedef bool (*CoAP_BlockReceive_fn_t)();
+
 typedef struct {
 	CoAP_Interaction_t* pInteractions;
+	CoAP_BlockReceive_fn_t receiveBlocked; //function can be set externally to allow (ret val = true) or dissallow receiving
 }CoAP_t;
 
 extern CoAP_t CoAP; //Stack global variables

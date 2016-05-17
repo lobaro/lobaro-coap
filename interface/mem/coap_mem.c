@@ -25,7 +25,7 @@
 
 #include "../coap_interface.h"
 
-#ifndef DONT_USE_LOBARO_COAP_MEMORY_ALLOCATOR //only use this memory allocator implementation if user does not supply its own
+#ifndef LOBARO_COAP_USE_EXTERNAL_MEMORY_ALLOCATOR //only use this memory allocator implementation if user does not supply its own
 
 #ifndef _
 #ifdef PROTOTYPES
