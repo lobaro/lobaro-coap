@@ -25,6 +25,13 @@ CoAP_t CoAP = {.pInteractions = NULL, .receiveBlocked=NULL};
 
 CoAP_Result_t _rom CoAP_Init(uint8_t* pMemory, int16_t MemorySize)
 {
+	INFO("CoAP_init!\r\n");
+	INFO("CoAP Interaction size: %d byte\r\n",sizeof(CoAP_Interaction_t));
+	INFO("CoAP_Res_t size: %d byte\r\n",sizeof(CoAP_Res_t));
+	INFO("CoAP_Message_t size: %d byte\r\n",sizeof(CoAP_Message_t));
+	INFO("CoAP_option_t size: %d byte\r\n",sizeof(CoAP_option_t));
+	INFO("CoAP_Observer_t size: %d byte\r\n",sizeof(CoAP_Observer_t));
+
 	coap_mem_init(pMemory, MemorySize);
 	CoAP_InitResources();
 	//CoAP_NVloadObservers();
