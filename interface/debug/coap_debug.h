@@ -56,10 +56,12 @@ do { \
 			if(!(VAL)) { PRINTF("!!! ASSERT FAILED [line: %d at %s]!!!\r\n", __LINE__, __FILE__); } \
 } while(0)
 
+#ifndef INFO
 #define INFO(...) \
 do { \
 	PRINTF(__VA_ARGS__); \
 } while(0)
+#endif
 
 #define PRINT_IPV6(IP) \
 do { \
