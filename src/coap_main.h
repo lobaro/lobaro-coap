@@ -39,8 +39,6 @@
 #define DEFAULT_LEISURE (5) //todo implement
 #define PROBING_RATE (1)        //[client]
 
-
-
 //#####################
 // Receive of packets
 //#####################
@@ -49,7 +47,7 @@
 // should be passed to the CoAP stack.
 // "socketHandle" can be chosen arbitrary by calling network driver,
 // but can be considered constant over runtime.
-void CoAP_onNewPacketHandler(SocketHandle_t socketHandle, NetPacket_t* pckt);
+void CoAP_onNewPacketHandler(SocketHandle_t socketHandle, NetPacket_t *pckt);
 
 //#####################
 // Transmit of packets
