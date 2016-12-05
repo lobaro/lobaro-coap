@@ -21,32 +21,29 @@
  *******************************************************************************/
 #include "coap.h"
 
-CoAP_t CoAP = {.pInteractions = NULL, .receiveBlocked=NULL};
+CoAP_t CoAP = {.pInteractions = NULL, .api = {0}, .cfg = {0}};
 
-CoAP_Result_t CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg) {
-	INFO("CoAP_init!\r\n");
-	INFO("CoAP Interaction size: %d byte\r\n", sizeof(CoAP_Interaction_t));
-	INFO("CoAP_Res_t size: %d byte\r\n", sizeof(CoAP_Res_t));
-	INFO("CoAP_Message_t size: %d byte\r\n", sizeof(CoAP_Message_t));
-	INFO("CoAP_option_t size: %d byte\r\n", sizeof(CoAP_option_t));
-	INFO("CoAP_Observer_t size: %d byte\r\n", sizeof(CoAP_Observer_t));
+void hal_debug_puts(char* s) {
+	if (CoAP.api.debugPuts != NULL) {
+		CoAP.api.debugPuts(s);
+	}
+}
 
-	coap_mem_init(cfg.Memory, cfg.MemorySize);
-	CoAP_InitResources();
-	//CoAP_NVloadObservers();
-	return COAP_OK;
+void hal_debug_putc(char c) {
+	if (CoAP.api.debugPutc != NULL) {
+		CoAP.api.debugPutc(c);
+	}
 }
 
 //Called by network interfaces to pass rawData which is parsed to CoAP messages.
 //lifetime of pckt only during function invoke
 //can be called from irq (???sure) since more expensive work is done in CoAP_doWork loop
-void _ram CoAP_onNewPacketHandler(SocketHandle_t socketHandle, NetPacket_t *pckt) {
-	CoAP_Message_t *pMsg = NULL;
+void _ram CoAP_onNewPacketHandler(SocketHandle_t socketHandle, NetPacket_t* pckt) {
+	CoAP_Message_t* pMsg = NULL;
 	bool isRequest = false;
-	CoAP_Res_t *pRes = NULL;
+	CoAP_Res_t* pRes = NULL;
 	CoAP_Result_t res = COAP_OK;
 
-	if (CoAP.receiveBlocked != NULL && CoAP.receiveBlocked()) return;
 
 	//Try to parse packet of bytes into CoAP message
 	INFO("\r\n<<<<<<<<<<<<<<<<<<<<<<\r\nNew Datagram received [%d Bytes], Interface #%x\r\n", pckt->size,
@@ -112,7 +109,7 @@ void _ram CoAP_onNewPacketHandler(SocketHandle_t socketHandle, NetPacket_t *pckt
 			goto END;
 
 		case ACK:;
-			CoAP_Interaction_t *pIA = NULL;
+			CoAP_Interaction_t* pIA = NULL;
 			if ((pIA = CoAP_ApplyReliabilityStateToInteraction(ACK_SET, pMsg->MessageID, socketHandle, &(pckt->Sender))) ==
 				NULL) { //apply "ACK received" to req (client) or resp (server)
 				INFO("- (?) Got ACK on (no more?) existing message id: %d\r\n", pMsg->MessageID);
@@ -154,7 +151,7 @@ void _ram CoAP_onNewPacketHandler(SocketHandle_t socketHandle, NetPacket_t *pckt
 
 			} else { //pMsg carries a separate response (=no piggyback!) to our client request...
 				//find in interaction list request with same token & endpoint
-				CoAP_Interaction_t *pIA;
+				CoAP_Interaction_t* pIA;
 				for (pIA = CoAP.pInteractions; pIA != NULL; pIA = pIA->next) {
 					if (pIA->Role == COAP_ROLE_CLIENT && pIA->pReqMsg->Token64 == pMsg->Token64 &&
 						EpAreEqual(&(pckt->Sender), &(pIA->RemoteEp))) {
@@ -193,7 +190,7 @@ void _ram CoAP_onNewPacketHandler(SocketHandle_t socketHandle, NetPacket_t *pckt
 	CoAP_free_Message(&pMsg); //free if not used inside interaction
 }
 
-static CoAP_Result_t _rom SendResp(CoAP_Interaction_t *pIA, CoAP_InteractionState_t nextIAState) {
+static CoAP_Result_t _rom SendResp(CoAP_Interaction_t* pIA, CoAP_InteractionState_t nextIAState) {
 	if (CoAP_SendMsg(pIA->pRespMsg, pIA->socketHandle, &(pIA->RemoteEp)) == COAP_OK) {
 
 		if (pIA->pRespMsg->Type == ACK) { //piggy back resp
@@ -215,7 +212,7 @@ static CoAP_Result_t _rom SendResp(CoAP_Interaction_t *pIA, CoAP_InteractionStat
 	return COAP_OK;
 }
 
-static CoAP_Result_t _rom SendReq(CoAP_Interaction_t *pIA, CoAP_InteractionState_t nextIAState) {
+static CoAP_Result_t _rom SendReq(CoAP_Interaction_t* pIA, CoAP_InteractionState_t nextIAState) {
 	if (CoAP_SendMsg(pIA->pReqMsg, pIA->socketHandle, &(pIA->RemoteEp)) == COAP_OK) {
 
 		if (pIA->pReqMsg->Type == CON) {
@@ -236,7 +233,7 @@ static CoAP_Result_t _rom SendReq(CoAP_Interaction_t *pIA, CoAP_InteractionState
 }
 
 //used on [server]
-static CoAP_Result_t _rom CheckRespStatus(CoAP_Interaction_t *pIA) {
+static CoAP_Result_t _rom CheckRespStatus(CoAP_Interaction_t* pIA) {
 
 	if (pIA->RespReliabilityState == RST_SET) {
 		INFO("- Response reset by remote client -> Interaction aborted\r\n");
@@ -258,7 +255,7 @@ static CoAP_Result_t _rom CheckRespStatus(CoAP_Interaction_t *pIA) {
 			//todo: call success callback to user
 			return COAP_OK;
 		} else { //check ACK/RST timeout of our CON response
-			if (hal_rtc_1Hz_Cnt() > pIA->AckTimeout) {
+			if (CoAP.api.rtc1HzCnt() > pIA->AckTimeout) {
 				if (pIA->RetransCounter + 1 > MAX_RETRANSMIT) { //give up
 					INFO("- (!) ACK timeout on sending response, giving up! Resp.MiD: %d\r\n",
 						 pIA->pRespMsg->MessageID);
@@ -278,7 +275,7 @@ static CoAP_Result_t _rom CheckRespStatus(CoAP_Interaction_t *pIA) {
 }
 
 //used on [CLIENT] side request to check progress of interaction
-static CoAP_Result_t _rom CheckReqStatus(CoAP_Interaction_t *pIA) {
+static CoAP_Result_t _rom CheckReqStatus(CoAP_Interaction_t* pIA) {
 
 	if (pIA->ReqReliabilityState == RST_SET) {
 		INFO("- Response reset by remote server -> Interaction aborted\r\n");
@@ -297,7 +294,7 @@ static CoAP_Result_t _rom CheckReqStatus(CoAP_Interaction_t *pIA) {
 			INFO("- Request ACKed separate by server -> Waiting for actual response\r\n");
 			return COAP_WAITING;
 		} else { //check ACK/RST timeout of our CON request
-			if (hal_rtc_1Hz_Cnt() > pIA->AckTimeout) {
+			if (CoAP.api.rtc1HzCnt() > pIA->AckTimeout) {
 				if (pIA->RetransCounter + 1 > MAX_RETRANSMIT) { //give up
 					INFO("- (!) ACK timeout on sending request, giving up! MiD: %d", pIA->pReqMsg->MessageID);
 					return COAP_ERR_OUT_OF_ATTEMPTS;
@@ -329,12 +326,12 @@ CoAP_Socket_t* CoAP_NewSocket(SocketHandle_t handle) {
 
 //must be called regularly
 void _rom CoAP_doWork() {
-	CoAP_Interaction_t *pIA = CoAP_GetLongestPendingInteraction();
+	CoAP_Interaction_t* pIA = CoAP_GetLongestPendingInteraction();
 	CoAP_Result_t result;
 
 
 	if (pIA == NULL) return; //nothing to do now
-	if (pIA->SleepUntil > hal_rtc_1Hz_Cnt()) {
+	if (pIA->SleepUntil > CoAP.api.rtc1HzCnt()) {
 		CoAP_EnqueueLastInteraction(pIA);
 		return;
 	}
@@ -425,7 +422,7 @@ void _rom CoAP_doWork() {
 						pIA->ReqReliabilityState = ACK_SET;
 						pIA->State = COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT;
 						pIA->SleepUntil =
-								hal_rtc_1Hz_Cnt() + POSTPONE_WAIT_TIME_SEK; //give resource some time to become ready
+								CoAP.api.rtc1HzCnt() + POSTPONE_WAIT_TIME_SEK; //give resource some time to become ready
 
 						CoAP_EnqueueLastInteraction(pIA);
 						INFO("Resource not ready, postponed response until %d\r\n", pIA->SleepUntil);

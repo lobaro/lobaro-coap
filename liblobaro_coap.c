@@ -19,18 +19,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-#ifndef COM_NET_SOCKET_H
-#define COM_NET_SOCKET_H
 
-#include <stdbool.h>
-#include <stdint.h>
-#include "../../liblobaro_coap.h"
+#include "liblobaro_coap.h"
+#include "coap.h"
+#include "coap_main.h"
 
-//function pointer typedefs, used below in struct
+void CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg) {
+	CoAP.api = api;
+	CoAP.cfg = cfg;
 
-#define MAX_ACTIVE_SOCKETS (5)
+	INFO("CoAP_init!\r\n");
+	INFO("CoAP Interaction size: %d byte\r\n", sizeof(CoAP_Interaction_t));
+	INFO("CoAP_Res_t size: %d byte\r\n", sizeof(CoAP_Res_t));
+	INFO("CoAP_Message_t size: %d byte\r\n", sizeof(CoAP_Message_t));
+	INFO("CoAP_option_t size: %d byte\r\n", sizeof(CoAP_option_t));
+	INFO("CoAP_Observer_t size: %d byte\r\n", sizeof(CoAP_Observer_t));
 
-CoAP_Socket_t *AllocSocket();
-CoAP_Socket_t *RetrieveSocket(SocketHandle_t handle);
 
-#endif
+
+	coap_mem_init(cfg.Memory, cfg.MemorySize);
+	CoAP_InitResources();
+}
