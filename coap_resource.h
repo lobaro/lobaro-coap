@@ -72,6 +72,6 @@ void CoAP_InitResources();
 CoAP_Result_t CoAP_NVsaveObservers();
 CoAP_Result_t CoAP_NVloadObservers();
 
-CoAP_Result_t CoAP_RemoveObserverFromResource(CoAP_Observer_t** pObserverList, uint8_t IfID, NetEp_t* pRemoteEP, uint64_t token);
+CoAP_Result_t CoAP_RemoveObserverFromResource(CoAP_Observer_t **pObserverList, SocketHandle_t socketHandle, NetEp_t *pRemoteEP, uint64_t token);
 
 #endif /* SRC_COAP_COAP_RESOURCES_H_ */

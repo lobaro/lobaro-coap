@@ -79,8 +79,8 @@
 //----------------------------------------------------------------------------------
 //Interface "glue" to surrounding project/software
 //Lobaro CoAP manages external network send and receive function in a pool of
-//interfaces addressed by a InterfaceID ("IfID"). To port the lib you must do the following:
-//1) Get a free interface buffer from the CoAP stack by calling "NetSocket_t* AllocSocket2()"
+//interfaces addressed by a InterfaceID ("socketHandle"). To port the lib you must do the following:
+//1) Get a free interface buffer from the CoAP stack by calling "CoAP_Socket_t* AllocSocket2()"
 //   This will give you a prefilled structure to work with.
 //2) Attach your Send/TX data function/callback following the "NetTransmit_fn" function signature
 //In the rx function you must determinate (or remember) your interface id because steht stack uses only this as key
@@ -90,7 +90,7 @@
 #include "network/net_Packet.h"
 #include "network/net_Socket.h"
 
-NetSocket_t* GetFreeInterface();
+CoAP_Socket_t* GetFreeInterface();
 
 //-------------------------------------------------------------------------
 //Implementation for these function prototypes must be provided externally:

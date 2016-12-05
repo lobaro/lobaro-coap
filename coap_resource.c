@@ -45,7 +45,7 @@ CoAP_Result_t _rom CoAP_NVsaveObservers(){
 
 				//Store Uri of external Oberserver as option
 				CoAP_AppendOptionToList(&pOptList, OPT_NUM_URI_HOST, (uint8_t*)&(pObserverList->Ep), sizeof(NetEp_t)); //IP+Port of external Observer
-				CoAP_AppendOptionToList(&pOptList, OPT_NUM_URI_PORT, &(pObserverList->IfID), 1); //IfID as pseudo "Port"
+				CoAP_AppendOptionToList(&pOptList, OPT_NUM_URI_PORT, (uint8_t*)&(pObserverList->socketHandle), sizeof(SocketHandle_t)); //socketHandle as pseudo "Port"
 
 				CoAP_option_t* pOptionsTemp = pList->pUri;
 
@@ -131,7 +131,7 @@ CoAP_Result_t _rom CoAP_NVloadObservers() {
 					coap_memcpy( (void*) &(pNewObserver->Ep), pOpt->Value, sizeof(NetEp_t) );
 					break;
 				case OPT_NUM_URI_PORT: //"hack" netID, remove if netID removal cleanup done!
-					coap_memcpy( (void*) &(pNewObserver->IfID), pOpt->Value, 1 );
+					coap_memcpy( (void*) &(pNewObserver->socketHandle), pOpt->Value, sizeof(SocketHandle_t) );
 					break;
 				case OPT_NUM_URI_PATH:
 					break; //dont copy path to observe struct (it's connected to its resource anyway!)
@@ -364,12 +364,12 @@ void _rom CoAP_PrintAllResources() {
 }
 
 
-CoAP_Result_t _rom CoAP_RemoveObserverFromResource(CoAP_Observer_t** pObserverList, uint8_t IfID, NetEp_t* pRemoteEP, uint64_t token) {
+CoAP_Result_t _rom CoAP_RemoveObserverFromResource(CoAP_Observer_t **pObserverList, SocketHandle_t socketHandle, NetEp_t *pRemoteEP, uint64_t token) {
 	CoAP_Observer_t* pObserver = *pObserverList;
 
 	while(pObserver != NULL) { //found right existing observation -> delete it
 
-		if(token == pObserver->Token && IfID == pObserver->IfID && EpAreEqual(pRemoteEP, &(pObserver->Ep))) {
+		if(token == pObserver->Token && socketHandle == pObserver->socketHandle && EpAreEqual(pRemoteEP, &(pObserver->Ep))) {
 
 			INFO("- (!) Unlinking observer from resource\r\n");
 			CoAP_UnlinkObserverFromList(pObserverList, pObserver, true);

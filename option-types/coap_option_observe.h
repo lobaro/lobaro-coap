@@ -25,28 +25,32 @@
 #define OBSERVE_OPT_REGISTER (0)
 #define OBSERVE_OPT_DEREGISTER (1)
 
-CoAP_Result_t AddObserveOptionToMsg(CoAP_Message_t* msg, uint32_t val);
-CoAP_Result_t GetObserveOptionFromMsg(CoAP_Message_t* msg, uint32_t* val);
-CoAP_Result_t RemoveObserveOptionFromMsg(CoAP_Message_t* msg);
-CoAP_Result_t UpdateObserveOptionInMsg(CoAP_Message_t* msg, uint32_t val);
+CoAP_Result_t AddObserveOptionToMsg(CoAP_Message_t *msg, uint32_t val);
 
-struct CoAP_Observer
-{
-	NetEp_t Ep; 		//[16B]
-	uint8_t IfID;		//[1B]
-	uint8_t FailCount;	//[1B]
-	uint64_t Token;		//[8B]
-	CoAP_option_t* pOptList; // [xxB](uri-host) <- will be removed if attached, uri-query, observe (for seq number)
+CoAP_Result_t GetObserveOptionFromMsg(CoAP_Message_t *msg, uint32_t *val);
 
-	struct CoAP_Observer* next; //[4B] pointer (linked list) (not saved while sleeping)
+CoAP_Result_t RemoveObserveOptionFromMsg(CoAP_Message_t *msg);
+
+CoAP_Result_t UpdateObserveOptionInMsg(CoAP_Message_t *msg, uint32_t val);
+
+struct CoAP_Observer {
+	NetEp_t Ep;                  // [16B]
+	SocketHandle_t socketHandle; // [4B]
+	uint8_t FailCount;           // [1B]
+	uint64_t Token;              // [8B]
+	CoAP_option_t *pOptList;     // [xxB](uri-host) <- will be removed if attached, uri-query, observe (for seq number)
+
+	struct CoAP_Observer *next;  // [4B] pointer (linked list) (not saved while sleeping)
 };
 
 typedef struct CoAP_Observer CoAP_Observer_t;
 
-CoAP_Observer_t* CoAP_AllocNewObserver();
-CoAP_Result_t CoAP_FreeObserver(CoAP_Observer_t** pObserver);
-CoAP_Result_t CoAP_AppendObserverToList(CoAP_Observer_t** pListStart, CoAP_Observer_t* pObserverToAdd);
+CoAP_Observer_t *CoAP_AllocNewObserver();
 
-CoAP_Result_t CoAP_UnlinkObserverFromList(CoAP_Observer_t** pListStart, CoAP_Observer_t* pObserverToRemove, bool FreeUnlinked);
+CoAP_Result_t CoAP_FreeObserver(CoAP_Observer_t **pObserver);
+
+CoAP_Result_t CoAP_AppendObserverToList(CoAP_Observer_t **pListStart, CoAP_Observer_t *pObserverToAdd);
+
+CoAP_Result_t CoAP_UnlinkObserverFromList(CoAP_Observer_t **pListStart, CoAP_Observer_t *pObserverToRemove, bool FreeUnlinked);
 
 #endif
