@@ -79,11 +79,11 @@
 //----------------------------------------------------------------------------------
 //Interface "glue" to surrounding project/software
 //Lobaro CoAP manages external network send and receive function in a pool of
-//interfaces addressed by a InterfaceID ("socketHandle"). To port the lib you must do the following:
-//1) Get a free interface buffer from the CoAP stack by calling "CoAP_Socket_t* AllocSocket2()"
+//interfaces addressed by a socketHandle. To port the lib you must do the following:
+//1) Get a free interface buffer from the CoAP stack by calling "CoAP_Socket_t* CoAP_NewSocket(SocketHandle_t handle)"
 //   This will give you a prefilled structure to work with.
 //2) Attach your Send/TX data function/callback following the "NetTransmit_fn" function signature
-//In the rx function you must determinate (or remember) your interface id because steht stack uses only this as key
+//In the rx function you must determinate (or remember) your socket handle, because the stack uses only this as key
 //3) Listen to socket
 //----------------------------------------------------------------------------------
 #include "network/net_Endpoint.h"
@@ -96,10 +96,8 @@ CoAP_Socket_t* GetFreeInterface();
 //Implementation for these function prototypes must be provided externally:
 //-------------------------------------------------------------------------
 //Uart/Display function to print debug/status messages to
-void hal_uart_puts(char *s);
-void hal_uart_putc(char c);
-//1Hz Clock used by timeout logic
-uint32_t hal_rtc_1Hz_Cnt(void);
+void hal_debug_puts(char *s);
+void hal_debug_putc(char c);
 
 
 #endif

@@ -35,7 +35,7 @@ set(SOURCE_FILES
     coap_options.c
     coap_options.h
     coap_resource.c
-    coap_resource.h)
+    coap_resource.h liblobaro_coap.h liblobaro_coap.c)
 
 add_library(lobaro_coap ${SOURCE_FILES})
 set_property(TARGET lobaro_coap PROPERTY C_STANDARD 99)

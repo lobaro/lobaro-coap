@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  *******************************************************************************/
 #include "coap.h"
+#include "coap_main.h"
 
 CoAP_Result_t CoAP_HandleObservationInReq(CoAP_Interaction_t *pIA);
 
@@ -181,7 +182,7 @@ static CoAP_Result_t _rom CoAP_MoveInteractionToListEnd(CoAP_Interaction_t **pLi
 
 
 CoAP_Result_t _rom CoAP_SetSleepInteraction(CoAP_Interaction_t *pIA, uint32_t seconds) {
-	pIA->SleepUntil = hal_rtc_1Hz_Cnt() + seconds;
+	pIA->SleepUntil = CoAP.api.rtc1HzCnt() + seconds;
 	return COAP_OK;
 }
 
@@ -192,7 +193,7 @@ CoAP_Result_t _rom CoAP_EnableAckTimeout(CoAP_Interaction_t *pIA, uint8_t retryN
 		waitTime *= ACK_TIMEOUT;
 	}
 
-	pIA->AckTimeout = hal_rtc_1Hz_Cnt() + waitTime;
+	pIA->AckTimeout = CoAP.api.rtc1HzCnt() + waitTime;
 	return COAP_OK;
 }
 

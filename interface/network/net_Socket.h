@@ -24,29 +24,13 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "../../liblobaro_coap.h"
 
 //function pointer typedefs, used below in struct
-typedef void *SocketHandle_t;
-
-typedef void ( *NetReceiveCallback_fn )(SocketHandle_t socketHandle, NetPacket_t *pckt);
-
-typedef bool ( *NetTransmit_fn )(SocketHandle_t socketHandle, NetPacket_t *pckt);
-
-
-typedef struct {
-	SocketHandle_t Handle;  // Handle to identify the socket
-
-	NetEp_t EpLocal;
-	NetEp_t EpRemote;
-	NetReceiveCallback_fn RxCB; //callback function on receiving data (normally set to "CoAP_onNewPacketHandler")
-	NetTransmit_fn Tx;            //ext. function called by coap stack to send data after finding socket by socketHandle (internally)
-	bool Alive;
-} CoAP_Socket_t;
 
 #define MAX_ACTIVE_SOCKETS (5)
 
 CoAP_Socket_t *AllocSocket();
-
 CoAP_Socket_t *RetrieveSocket(SocketHandle_t handle);
 
 #endif

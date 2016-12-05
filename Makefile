@@ -392,6 +392,33 @@ interface/network/net_Socket.c.s:
 	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/interface/network/net_Socket.c.s
 .PHONY : interface/network/net_Socket.c.s
 
+liblobaro_coap.obj: liblobaro_coap.c.obj
+
+.PHONY : liblobaro_coap.obj
+
+# target to build an object file
+liblobaro_coap.c.obj:
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/liblobaro_coap.c.obj
+.PHONY : liblobaro_coap.c.obj
+
+liblobaro_coap.i: liblobaro_coap.c.i
+
+.PHONY : liblobaro_coap.i
+
+# target to preprocess a source file
+liblobaro_coap.c.i:
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/liblobaro_coap.c.i
+.PHONY : liblobaro_coap.c.i
+
+liblobaro_coap.s: liblobaro_coap.c.s
+
+.PHONY : liblobaro_coap.s
+
+# target to generate assembly for a file
+liblobaro_coap.c.s:
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/liblobaro_coap.c.s
+.PHONY : liblobaro_coap.c.s
+
 option-types/coap_option_ETag.obj: option-types/coap_option_ETag.c.obj
 
 .PHONY : option-types/coap_option_ETag.obj
@@ -566,6 +593,9 @@ help:
 	@echo ... interface/network/net_Socket.obj
 	@echo ... interface/network/net_Socket.i
 	@echo ... interface/network/net_Socket.s
+	@echo ... liblobaro_coap.obj
+	@echo ... liblobaro_coap.i
+	@echo ... liblobaro_coap.s
 	@echo ... option-types/coap_option_ETag.obj
 	@echo ... option-types/coap_option_ETag.i
 	@echo ... option-types/coap_option_ETag.s

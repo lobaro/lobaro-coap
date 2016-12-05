@@ -19,51 +19,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
-#ifndef COAP_MAIN_H_
-#define COAP_MAIN_H_
 
 #include "liblobaro_coap.h"
-#include "coap_interaction.h"
+#include "coap.h"
+#include "coap_main.h"
 
-#define HOLDTIME_AFTER_NON_TRANSACTION_END (0)
-#define POSTPONE_WAIT_TIME_SEK (3)
-#define POSTPONE_MAX_WAIT_TIME (30)
-#define CLIENT_MAX_RESP_WAIT_TIME (45)
+void CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg) {
+	CoAP.api = api;
+	CoAP.cfg = cfg;
 
-#define USE_RFC7641_ADVANCED_TRANSMISSION (1) //Update representation of resource during retry of observe sendout
-
-#define ACK_TIMEOUT (2)
-#define ACK_RANDOM_FACTOR (1.5)
-#define MAX_RETRANSMIT (4)
-#define NSTART (1) //todo implement
-#define DEFAULT_LEISURE (5) //todo implement
-#define PROBING_RATE (1)        //[client]
+	INFO("CoAP_init!\r\n");
+	INFO("CoAP Interaction size: %d byte\r\n", sizeof(CoAP_Interaction_t));
+	INFO("CoAP_Res_t size: %d byte\r\n", sizeof(CoAP_Res_t));
+	INFO("CoAP_Message_t size: %d byte\r\n", sizeof(CoAP_Message_t));
+	INFO("CoAP_option_t size: %d byte\r\n", sizeof(CoAP_option_t));
+	INFO("CoAP_Observer_t size: %d byte\r\n", sizeof(CoAP_Observer_t));
 
 
 
-//#####################
-// Receive of packets
-//#####################
-// This function must be called by network drivers
-// on reception of a new network packets which
-// should be passed to the CoAP stack.
-// "socketHandle" can be chosen arbitrary by calling network driver,
-// but can be considered constant over runtime.
-void CoAP_onNewPacketHandler(SocketHandle_t socketHandle, NetPacket_t* pckt);
-
-//#####################
-// Transmit of packets
-//#####################
-
-
-typedef struct {
-	CoAP_Interaction_t *pInteractions;
-	CoAP_API_t api;
-	CoAP_Config_t cfg;
-} CoAP_t;
-
-extern CoAP_t CoAP; //Stack global variables
-
-
-
-#endif
+	coap_mem_init(cfg.Memory, cfg.MemorySize);
+	CoAP_InitResources();
+}

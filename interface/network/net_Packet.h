@@ -22,43 +22,7 @@
 #ifndef COM_NET_PACKET_H
 #define COM_NET_PACKET_H
 
-typedef enum
-{
-	META_INFO_NONE,
-	META_INFO_RF_PATH,
-	META_INFO_MULTICAST,
-}MetaInfoType_t;
-
-typedef struct
-{
-	uint8_t HopCount;
-	int32_t RSSI;
-}MetaInfo_RfPath_t;
-
-typedef union
-{
-	MetaInfo_RfPath_t RfPath;
-}MetaInfoUnion_t;
-
-typedef struct {
-	MetaInfoType_t Type;
-	MetaInfoUnion_t Dat;
-}MetaInfo_t;
-
-//################################
-// general network packet
-// received in callbacks and sendout
-// in network send routines
-//################################
-typedef struct
-{
-	uint8_t* pData;
-	uint16_t size;
-	NetEp_t Sender;
-	NetEp_t Receiver;
-	MetaInfo_t MetaInfo;
-}NetPacket_t;
-//################################
+#include "../../liblobaro_coap.h"
 
 void PrintRawPacket(NetPacket_t* pckt);
 

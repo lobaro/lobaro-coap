@@ -24,56 +24,13 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "../../liblobaro_coap.h"
 
 #define  IPv6_IP(A3, A2, A1, A0)   \
-		{ (A3 >> 24 & 0xff), (A3 >> 16 & 0xff), (A3 >> 8 & 0xff), (A3 >> 0 & 0xff), \
-		  (A2 >> 24 & 0xff), (A2 >> 16 & 0xff), (A2 >> 8 & 0xff), (A2 >> 0 & 0xff), \
-		  (A1 >> 24 & 0xff), (A1 >> 16 & 0xff), (A1 >> 8 & 0xff), (A1 >> 0 & 0xff), \
-		  (A0 >> 24 & 0xff), (A0 >> 16 & 0xff), (A0 >> 8 & 0xff), (A0 >> 0 & 0xff)}
-
-//IPv6 address
-typedef union {
-  uint8_t    u8 [ 16 ];
-  uint16_t   u16 [ 8 ];
-  uint32_t   u32 [ 4 ];
-}  NetAddr_IPv6_t;
-
-//IPv4 address
-typedef union {
-  uint8_t    u8 [ 4 ];
-  uint16_t   u16 [ 2 ];
-  uint32_t   u32 [ 1 ];
-} NetAddr_IPv4_t;
-
-//UART address
-typedef struct {
-  uint8_t    ComPortID;
-} NetAddr_Uart_t;
-
-//general address
-#define NetAddr_MAX_LENGTH (16)
-typedef union {
-	NetAddr_IPv6_t IPv6;
-	NetAddr_IPv4_t IPv4;
-	NetAddr_Uart_t Uart;
-	uint8_t mem[NetAddr_MAX_LENGTH]; //used for init and comparisons of addresses
-} NetAddr_t;
-
-typedef enum {
-	IPV6, IPV4, BTLE, UART
-}NetInterfaceType_t;
-
-//################################
-// general network endpoint
-// used by drivers and network libs
-//################################
-typedef struct
-{
-	NetInterfaceType_t NetType;
-	NetAddr_t NetAddr;
-	uint16_t  NetPort;
-}NetEp_t;
-//################################
+        { (A3 >> 24 & 0xff), (A3 >> 16 & 0xff), (A3 >> 8 & 0xff), (A3 >> 0 & 0xff), \
+          (A2 >> 24 & 0xff), (A2 >> 16 & 0xff), (A2 >> 8 & 0xff), (A2 >> 0 & 0xff), \
+          (A1 >> 24 & 0xff), (A1 >> 16 & 0xff), (A1 >> 8 & 0xff), (A1 >> 0 & 0xff), \
+          (A0 >> 24 & 0xff), (A0 >> 16 & 0xff), (A0 >> 8 & 0xff), (A0 >> 0 & 0xff)}
 
 extern const NetAddr_IPv6_t NetAddr_IPv6_unspecified;
 extern const NetAddr_IPv6_t NetAddr_IPv6_mulitcast;
