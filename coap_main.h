@@ -34,7 +34,26 @@
 #define MAX_RETRANSMIT (4)
 #define NSTART (1) //todo implement
 #define DEFAULT_LEISURE (5) //todo implement
-#define PROBING_RATE (1) 		//[client]
+#define PROBING_RATE (1)        //[client]
+
+/*
+ * Configuration for the CoAP stack. All fields need to be initialized.
+ * Fields marked as optional can be initialized with 0
+ */
+typedef struct {
+	// Pointer to the memory that will be used by the CoAP Stack
+	uint8_t *Memory;
+	int16_t MemorySize;
+} CoAP_Config_t;
+
+/*
+ * API functions used by the CoAP stack. All fields need to be initialized.
+ *
+ * Fields marked as optional can be initialized with NULL
+ */
+typedef struct {
+
+} CoAP_API_t;
 
 //#####################
 // Receive of packets
@@ -42,16 +61,24 @@
 // This function must be called by network drivers
 // on reception of a new network packets which
 // should be passed to the CoAP stack.
-// "ifID" can be chosen arbitrary by calling network driver,
+// "socketHandle" can be chosen arbitrary by calling network driver,
 // but can be considered constant over runtime.
-void CoAP_onNewPacketHandler( uint8_t ifID, NetPacket_t* pckt);
+void CoAP_onNewPacketHandler(SocketHandle_t socketHandle, NetPacket_t *pckt);
 
 //#####################
 // Transmit of packets
 //#####################
-//stack uses "NetSocket_t* RetrieveSocket2(uint8_t ifID)" function to get socket / send function inside socket
 
-CoAP_Result_t  CoAP_Init(uint8_t* pMemory, int16_t MemorySize);
+/**
+ * Initialize the CoAP stack with a set of API functions used by the stack and a config struct.
+ * @param api Struct with API functions that need to be defined for the stack to work
+ * @param cfg Configuration values to setup the stack
+ * @return A result code
+ */
+CoAP_Result_t CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg);
+
+CoAP_Socket_t *CoAP_NewSocket(void *handle);
+
 void CoAP_doWork();
 
 #endif

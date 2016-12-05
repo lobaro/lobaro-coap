@@ -21,27 +21,24 @@
  *******************************************************************************/
 #include "../../coap.h"
 
-typedef struct
-{
-	NetSocket_t SocketMemory[MAX_ACTIVE_SOCKETS];
+typedef struct {
+	CoAP_Socket_t SocketMemory[MAX_ACTIVE_SOCKETS];
 	bool initDone;
-}NetSocketCtrl_t;
+} CoAP_SocketCtrl_t;
 
-static NetSocketCtrl_t SocketCtrl = {.initDone = false};
+static CoAP_SocketCtrl_t SocketCtrl = {.initDone = false};
 
-NetSocket_t* _rom AllocSocket()
-{
+CoAP_Socket_t *_rom AllocSocket() {
 	int i;
-	if(!SocketCtrl.initDone)
-	{
-		for(i=0; i<MAX_ACTIVE_SOCKETS; i++) SocketCtrl.SocketMemory[i].Alive = false;
+	if (!SocketCtrl.initDone) {
+		for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {
+			SocketCtrl.SocketMemory[i].Alive = false;
+		}
 		SocketCtrl.initDone = true;
 	}
 
-	for(i=0; i<MAX_ACTIVE_SOCKETS; i++)
-	{
-		if(SocketCtrl.SocketMemory[i].Alive == false)
-		{
+	for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {
+		if (SocketCtrl.SocketMemory[i].Alive == false) {
 			return &(SocketCtrl.SocketMemory[i]);
 		}
 	}
@@ -49,19 +46,17 @@ NetSocket_t* _rom AllocSocket()
 	return NULL; //no free memory
 }
 
-NetSocket_t* _rom GetFreeInterface()
-{
+CoAP_Socket_t *_rom GetFreeInterface() {
 	int i;
-	if(!SocketCtrl.initDone)
-	{
-		for(i=0; i<MAX_ACTIVE_SOCKETS; i++) SocketCtrl.SocketMemory[i].Alive = false;
+	if (!SocketCtrl.initDone) {
+		for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {
+			SocketCtrl.SocketMemory[i].Alive = false;
+		}
 		SocketCtrl.initDone = true;
 	}
 
-	for(i=0; i<MAX_ACTIVE_SOCKETS; i++)
-	{
-		if(SocketCtrl.SocketMemory[i].Alive == false)
-		{
+	for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {
+		if (SocketCtrl.SocketMemory[i].Alive == false) {
 			SocketCtrl.SocketMemory[i].RxCB = CoAP_onNewPacketHandler;
 
 
@@ -72,28 +67,11 @@ NetSocket_t* _rom GetFreeInterface()
 	return NULL; //no free memory
 }
 
-NetSocket_t* _rom RetrieveSocket(SocketHandle_t handle)
-{
+CoAP_Socket_t *_rom RetrieveSocket(SocketHandle_t handle) {
 	int i;
-	for(i=0; i<MAX_ACTIVE_SOCKETS; i++ )
-	{
-		if(SocketCtrl.SocketMemory[i].Alive &&
-				SocketCtrl.SocketMemory[i].Handle == handle) //corresponding socket found!
-		{
-			return &(SocketCtrl.SocketMemory[i]);
-		}
-
-	}
-	return NULL; //not found
-}
-
-NetSocket_t* _rom RetrieveSocket2(uint8_t ifID)
-{
-	int i;
-	for(i=0; i<MAX_ACTIVE_SOCKETS; i++ )
-	{
-		if(SocketCtrl.SocketMemory[i].Alive &&
-				SocketCtrl.SocketMemory[i].ifID == ifID) //corresponding socket found!
+	for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {
+		if (SocketCtrl.SocketMemory[i].Alive &&
+			SocketCtrl.SocketMemory[i].Handle == handle) //corresponding socket found!
 		{
 			return &(SocketCtrl.SocketMemory[i]);
 		}

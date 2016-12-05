@@ -106,10 +106,10 @@ CoAP_Message_t* CoAP_CreateMessage(CoAP_MessageType_t Type, CoAP_MessageCode_t C
 
 CoAP_Result_t CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcArrLength, CoAP_Message_t** rxedMsg);
 
-CoAP_Result_t CoAP_SendMsg(CoAP_Message_t* Msg, uint8_t ifID, NetEp_t* Receiver);
-CoAP_Result_t CoAP_SendEmptyAck(uint16_t MessageID, uint8_t ifID, NetEp_t* Receiver);
-CoAP_Result_t CoAP_SendEmptyRST(uint16_t MessageID, uint8_t ifID, NetEp_t* Receiver);
-CoAP_Result_t CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, uint64_t token, uint8_t ifID, NetEp_t* Receiver);
+CoAP_Result_t CoAP_SendMsg(CoAP_Message_t *Msg, SocketHandle_t socketHandle, NetEp_t *Receiver);
+CoAP_Result_t CoAP_SendEmptyAck(uint16_t MessageID, SocketHandle_t socketHandle, NetEp_t *Receiver);
+CoAP_Result_t CoAP_SendEmptyRST(uint16_t MessageID, SocketHandle_t socketHandle, NetEp_t *Receiver);
+CoAP_Result_t CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, uint64_t token, SocketHandle_t socketHandle, NetEp_t *Receiver);
 CoAP_Message_t* CoAP_AllocRespMsg(CoAP_Message_t* ReqMsg, uint8_t Code, uint16_t PayloadMaxSize);
 
 CoAP_Result_t CoAP_free_Message(CoAP_Message_t** Msg);
