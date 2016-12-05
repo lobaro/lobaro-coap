@@ -30,3 +30,14 @@
 
 # Debug files
 *.dSYM/
+
+# CMake
+*.cmake
+*.cbp
+CMakeCache.txt
+/CmakeFiles
+/cmake-build-debug
+
+# JetBrains IDE
+*.iml
+/.idea
