@@ -25,8 +25,8 @@
 #define DEBUG_BUF_SIZE (500)
 extern char dbgBuf[DEBUG_BUF_SIZE];
 
-#define UART_PUTS hal_uart_puts
-#define UART_PUTC hal_uart_putc
+#define UART_PUTS hal_debug_puts
+#define UART_PUTC hal_debug_putc
 
 #define PUTS(...) \
 do { \

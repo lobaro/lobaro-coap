@@ -85,7 +85,7 @@ bool _rom CoAP_MsgIsResponse(CoAP_Message_t *pMsg) {
 }
 
 bool _rom CoAP_MsgIsOlderThan(CoAP_Message_t *pMsg, uint32_t timespan) {
-	if (hal_rtc_1Hz_Cnt() - pMsg->Timestamp > timespan) return true;
+	if (CoAP.api.rtc1HzCnt() - pMsg->Timestamp > timespan) return true;
 	else return false;
 }
 
@@ -258,7 +258,7 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t *srcArr, uint16_t srcAr
 		coap_memcpy((void *) ((*rxedMsg)->Payload), (void *) pPayloadBegin, Msg.PayloadLength);
 	}
 
-	(*rxedMsg)->Timestamp = hal_rtc_1Hz_Cnt();
+	(*rxedMsg)->Timestamp = CoAP.api.rtc1HzCnt();
 
 	return COAP_OK;
 }
@@ -417,7 +417,7 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t *Msg, SocketHandle_t socketHandle
 	INFO("\r\n");
 
 	if (SendPacket(socketHandle, &pked) == true) { // send COAP_OK!
-		Msg->Timestamp = hal_rtc_1Hz_Cnt();
+		Msg->Timestamp = CoAP.api.rtc1HzCnt();
 		CoAP_PrintMsg(Msg);
 		INFO(">>>>>>>>>>OK>>>>>>>>>>\r\n");
 		if (pked.pData != quickBuf) { coap_mem_release(pked.pData); }
