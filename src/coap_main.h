@@ -47,7 +47,7 @@
 // should be passed to the CoAP stack.
 // "socketHandle" can be chosen arbitrary by calling network driver,
 // but can be considered constant over runtime.
-void CoAP_onNewPacketHandler(SocketHandle_t socketHandle, NetPacket_t *pckt);
+void CoAP_onNewPacketHandler(SocketHandle_t socketHandle, NetPacket_t* pckt);
 
 //#####################
 // Transmit of packets
