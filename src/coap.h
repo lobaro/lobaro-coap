@@ -34,7 +34,7 @@ extern "C" {
 
 //Internal stack functions
 typedef enum {
-	COAP_OK=0,
+	COAP_OK = 0,
 	COAP_NOT_FOUND, //not found but no error
 	COAP_PARSE_DATAGRAM_TOO_SHORT,
 	COAP_PARSE_UNKOWN_COAP_VERSION,
@@ -65,10 +65,10 @@ typedef enum {
 	COAP_WAITING,
 	COAP_HOLDING_BACK,
 	COAP_RETRY
-}CoAP_Result_t;
+} CoAP_Result_t;
 
-#define MAX_PAYLOAD_SIZE  		(256)  //should not exceed 1024 bytes (see 4.6 RFC7252) (must be power of 2 to fit with blocksize option!)
-#define PREFERED_PAYLOAD_SIZE	(64)   //also size of inital pResp message payload buffer in user resource handler
+#define MAX_PAYLOAD_SIZE        (256)  //should not exceed 1024 bytes (see 4.6 RFC7252) (must be power of 2 to fit with blocksize option!)
+#define PREFERED_PAYLOAD_SIZE    (64)   //also size of inital pResp message payload buffer in user resource handler
 
 #define COAP_VERSION (1)
 
@@ -89,7 +89,7 @@ typedef enum {
 
 
 #ifdef __cplusplus
-}
-#endif
+	}
+	#endif
 
 #endif /* COAP_H_ */

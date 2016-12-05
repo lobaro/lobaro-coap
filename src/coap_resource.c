@@ -50,8 +50,8 @@ CoAP_Result_t _rom CoAP_NVsaveObservers(WriteBuf_fn writeBufFn) {
 			while (pObserverList != NULL) { //iterate over all observers of this resource
 
 				//Store Uri of external Oberserver as option
-				CoAP_AppendOptionToList(&pOptList, OPT_NUM_URI_HOST, (uint8_t *) &(pObserverList->Ep), sizeof(NetEp_t)); //IP+Port of external Observer
-				CoAP_AppendOptionToList(&pOptList, OPT_NUM_URI_PORT, (uint8_t *) &(pObserverList->socketHandle), sizeof(SocketHandle_t)); //socketHandle as pseudo "Port"
+				CoAP_AppendOptionToList(&pOptList, OPT_NUM_URI_HOST, (uint8_t*)&(pObserverList->Ep), sizeof(NetEp_t)); //IP+Port of external Observer
+				CoAP_AppendOptionToList(&pOptList, OPT_NUM_URI_PORT, (uint8_t*)&(pObserverList->socketHandle), sizeof(SocketHandle_t)); //socketHandle as pseudo "Port"
 
 				CoAP_option_t *pOptionsTemp = pList->pUri;
 
@@ -139,7 +139,7 @@ CoAP_Result_t _rom CoAP_NVloadObservers(uint8_t *pRawPage) {
 					coap_memcpy((void *) &(pNewObserver->Ep), pOpt->Value, sizeof(NetEp_t));
 					break;
 				case OPT_NUM_URI_PORT: //"hack" netID, remove if netID removal cleanup done!
-					coap_memcpy((void *) &(pNewObserver->socketHandle), pOpt->Value, sizeof(SocketHandle_t));
+					coap_memcpy( (void*) &(pNewObserver->socketHandle), pOpt->Value, sizeof(SocketHandle_t ));
 					break;
 				case OPT_NUM_URI_PATH:
 					break; //dont copy path to observe struct (it's connected to its resource anyway!)
