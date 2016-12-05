@@ -100,9 +100,6 @@ void hal_uart_puts(char *s);
 void hal_uart_putc(char c);
 //1Hz Clock used by timeout logic
 uint32_t hal_rtc_1Hz_Cnt(void);
-//Non volatile memory e.g. flash/sd-card/eeprom
-//used to store observers during deepsleep of server
-uint8_t* hal_nonVolatile_GetBufPtr();
-bool hal_nonVolatile_WriteBuf(uint8_t* data, uint32_t len);
+
 
 #endif

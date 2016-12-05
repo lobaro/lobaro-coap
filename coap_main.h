@@ -52,7 +52,9 @@ typedef struct {
  * Fields marked as optional can be initialized with NULL
  */
 typedef struct {
-
+	uint32_t (*rtc1HzCnt)(void);
+	void (*debugPutc)(char c);
+	void (*debugPuts)(char *s);
 } CoAP_API_t;
 
 //#####################
@@ -77,6 +79,11 @@ void CoAP_onNewPacketHandler(SocketHandle_t socketHandle, NetPacket_t *pckt);
  */
 CoAP_Result_t CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg);
 
+/**
+ * Each CoAP implementation
+ * @param handle
+ * @return
+ */
 CoAP_Socket_t *CoAP_NewSocket(void *handle);
 
 void CoAP_doWork();
