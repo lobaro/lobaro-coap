@@ -75,12 +75,12 @@ void _rom CoAP_free_MsgPayload(CoAP_Message_t **Msg) {
 }
 
 bool _rom CoAP_MsgIsRequest(CoAP_Message_t *pMsg) {
-	if (pMsg->Code != EMPTY && pMsg->Code <= REQ_DELETE) return true;
+	if (pMsg->Code != EMPTY && pMsg->Code <= REQ_LAST) return true;
 	return false;
 }
 
 bool _rom CoAP_MsgIsResponse(CoAP_Message_t *pMsg) {
-	if (pMsg->Code != EMPTY && pMsg->Code >= RESP_SUCCESS_CREATED_2_01) return true;
+	if (pMsg->Code != EMPTY && pMsg->Code >= RESP_FIRST) return true;
 	return false;
 }
 

@@ -24,7 +24,7 @@
 
 
 
-
+// Used in Critical Option Check.
 uint16_t KNOWN_OPTIONS[KNOWN_OPTIONS_COUNT] = {OPT_NUM_URI_PATH, OPT_BLOCK2, OPT_BLOCK1, OPT_NUM_ETAG, OPT_NUM_CONTENT_FORMAT, OPT_NUM_URI_QUERY};
 
 //#########################################################################################################
@@ -407,6 +407,15 @@ CoAP_Result_t _rom CoAP_FreeOptionList(CoAP_option_t** pOptionsListBegin)
 	return COAP_OK;
 }
 
+/**
+ * Critical Option
+ *   An option that would need to be understood by the endpoint
+ *   ultimately receiving the message in order to properly process the
+ *   message (Section 5.4.1).  Note that the implementation of critical
+ *   options is, as the name "Option" implies, generally optional:
+ *   unsupported critical options lead to an error response or summary
+ *   rejection of the message.
+ */
 uint16_t _rom CoAP_CheckForUnknownCriticalOption(CoAP_option_t* pOptionsListBegin)
 {
 	//uses:

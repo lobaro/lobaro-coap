@@ -46,8 +46,7 @@ void _ram CoAP_onNewPacketHandler(SocketHandle_t socketHandle, NetPacket_t* pckt
 
 
 	//Try to parse packet of bytes into CoAP message
-	INFO("\r\n<<<<<<<<<<<<<<<<<<<<<<\r\nNew Datagram received [%d Bytes], Interface #%x\r\n", pckt->size,
-		 socketHandle); //PrintRawPacket(pckt);
+	INFO("\r\n<<<<<<<<<<<<<<<<<<<<<<\r\nNew Datagram received [%d Bytes], Interface #%x\r\n", pckt->size, socketHandle); //PrintRawPacket(pckt);
 	INFO("Sending Endpoint: ");
 	PrintEndpoint(&(pckt->Sender));
 
@@ -63,131 +62,146 @@ void _ram CoAP_onNewPacketHandler(SocketHandle_t socketHandle, NetPacket_t* pckt
 
 	isRequest = CoAP_MsgIsRequest(pMsg);
 
-	//Filter out bad CODE/TYPE combinations (Table 1, RFC7252 4.3.) by silently ignoring them
+	// Filter out bad CODE/TYPE combinations (Table 1, RFC7252 4.3.) by silently ignoring them
 	if (pMsg->Type == CON && pMsg->Code == EMPTY) {
 		CoAP_SendEmptyRST(pMsg->MessageID, socketHandle, &(pckt->Sender)); //a.k.a "CoAP Ping"
 		CoAP_free_Message(&pMsg); //free if not used inside interaction
 		coap_mem_stats();
 		return;
-	} else if (pMsg->Type == CON && pMsg->Code == EMPTY) goto END;
-	else if (pMsg->Type == ACK && isRequest) goto END;
-	else if (pMsg->Type == RST && pMsg->Code != EMPTY) goto END;
+	} else if (pMsg->Type == ACK && isRequest) {
+		goto END;
+	} else if (pMsg->Type == RST && pMsg->Code != EMPTY) {
+		goto END;
+	} else if (pMsg->Type == NON && pMsg->Code == EMPTY) {
+		goto END;
+	}
 
-	//Requested uri present?
+	// Requested uri present?
+	// Then call the handler, else send 4.04 response
 	if (isRequest) {
 		pRes = CoAP_FindResourceByUri(NULL, pMsg->pOptionsList);
 		if (pRes == NULL || pRes->Handler == NULL) { //unknown resource requested
-			if (pMsg->Type == CON)
+			if (pMsg->Type == CON) {
 				CoAP_SendShortResp(ACK, RESP_NOT_FOUND_4_04, pMsg->MessageID, pMsg->Token64, socketHandle, &(pckt->Sender));
-			else CoAP_SendShortResp(NON, RESP_NOT_FOUND_4_04, CoAP_GetNextMid(), pMsg->Token64, socketHandle, &(pckt->Sender));
+			} else { // usually NON, but we better catch all
+				CoAP_SendShortResp(NON, RESP_NOT_FOUND_4_04, CoAP_GetNextMid(), pMsg->Token64, socketHandle, &(pckt->Sender));
+			}
 			goto END;
 		}
 	}
 
-	//Unknown critical Option check
-	uint16_t criticalOptNum = CoAP_CheckForUnknownCriticalOption(
-			pMsg->pOptionsList); // !=0 if at least one unknown option found
+	// Unknown critical Option check
+	uint16_t criticalOptNum = CoAP_CheckForUnknownCriticalOption(pMsg->pOptionsList); // !=0 if at least one unknown option found
 	if (criticalOptNum) {
 		INFO("- (!) Received msg has unknown critical option!!!\r\n");
-		if (pMsg->Type == NON || pMsg->Type == ACK) goto END; //NON messages are just silently ignored
-		else if (pMsg->Type == CON) {
-			if (isRequest)
-				CoAP_SendShortResp(ACK, RESP_BAD_OPTION_4_02, pMsg->MessageID, pMsg->Token64, socketHandle,
-								   &(pckt->Sender)); //todo: add diagnostic payload which option rejectet
-			else CoAP_SendEmptyRST(pMsg->MessageID, socketHandle, &(pckt->Sender)); //reject externals servers response
+		if (pMsg->Type == NON || pMsg->Type == ACK) {
+			// NON messages are just silently ignored
+			goto END;
+		} else if (pMsg->Type == CON) {
+			if (isRequest) {
+				//todo: add diagnostic payload which option rejectet
+				CoAP_SendShortResp(ACK, RESP_BAD_OPTION_4_02, pMsg->MessageID, pMsg->Token64, socketHandle, &(pckt->Sender));
+			} else {
+				//reject externals servers response
+				CoAP_SendEmptyRST(pMsg->MessageID, socketHandle, &(pckt->Sender));
+			}
 		}
 		goto END;
 	}
 
+	//*****************
+	// Prechecks done
+	//*****************
 
-	//Prechecks done...try to include message into new or existing server/client interaction
+	// try to include message into new or existing server/client interaction
 	switch (pMsg->Type) {
-		case RST:
-			if (CoAP_ApplyReliabilityStateToInteraction(RST_SET, pMsg->MessageID, socketHandle, &(pckt->Sender)) == NULL) {
+		case RST: {
+			if (CoAP_ApplyReliabilityStateToInteraction(RST_SET, pMsg->MessageID, &(pckt->Sender)) == NULL) {
 				INFO("- (?) Got Reset on (no more?) existing message id: %d\r\n", pMsg->MessageID);
 			}
 			goto END;
-
-		case ACK:;
+		}
+		case ACK: {
 			CoAP_Interaction_t* pIA = NULL;
-			if ((pIA = CoAP_ApplyReliabilityStateToInteraction(ACK_SET, pMsg->MessageID, socketHandle, &(pckt->Sender))) ==
-				NULL) { //apply "ACK received" to req (client) or resp (server)
+			// apply "ACK received" to req (client) or resp (server)
+			if ((pIA = CoAP_ApplyReliabilityStateToInteraction(ACK_SET, pMsg->MessageID, &(pckt->Sender))) == NULL) {
 				INFO("- (?) Got ACK on (no more?) existing message id: %d\r\n", pMsg->MessageID);
 				goto END;
 			}
 			//piA is NOT NULL in every case here
 			INFO("- piggybacked response received\r\n");
-			if (pMsg->Code !=
-				EMPTY) { //no "simple" ACK => must be piggybacked RESPONSE to our [client] request. corresponding IA has been found before
-				if (pIA->Role == COAP_ROLE_CLIENT && pIA->pReqMsg->Token64 == pMsg->Token64 &&
-					pIA->State == COAP_STATE_WAITING_RESPONSE) {
-					if (pIA->pRespMsg != NULL)
-						CoAP_free_Message(
-								&(pIA->pRespMsg)); //free eventually present older response (todo: check if this is possible!?)
+			if (pMsg->Code != EMPTY) {
+				//no "simple" ACK => must be piggybacked RESPONSE to our [client] request. corresponding Interaction has been found before
+				if (pIA->Role == COAP_ROLE_CLIENT && pIA->pReqMsg->Token64 == pMsg->Token64 && pIA->State == COAP_STATE_WAITING_RESPONSE) {
+					if (pIA->pRespMsg != NULL) {
+						CoAP_free_Message(&(pIA->pRespMsg)); //free eventually present older response (todo: check if this is possible!?)
+					}
 					pIA->pRespMsg = pMsg; //attach just received message for further actions in IA [client] state-machine & return
 					pIA->State = COAP_STATE_HANDLE_RESPONSE;
 					return;
 				} else {
 					INFO("- could not piggybacked response to any request!\r\n");
 				}
-
 			}
 			break;
-
+		}
 		case NON:
-		case CON:
-			if (isRequest) {  //pMsg carries an request
+		case CON: {
+			if (isRequest) {
+				// we act as a CoAP Server
+				res = CoAP_StartNewServerInteraction(pMsg, pRes, socketHandle, pckt);
 
-				CoAP_Result_t res = CoAP_StartNewServerInteraction(pMsg, pRes, socketHandle, pckt); //we act as a CoAP Server
-
-				if (res == COAP_OK) return; //new interaction process started (handled by CoAP_doWork())
-				else if (res == COAP_ERR_EXISTING) goto END; //duplicated request detected by messageID
-				else if (res == COAP_ERR_OUT_OF_MEMORY) {
-					if (pMsg->Type == CON)
-						CoAP_SendShortResp(ACK, RESP_INTERNAL_SERVER_ERROR_5_00, pMsg->MessageID, pMsg->Token64, socketHandle,
-										   &(pckt->Sender)); //will free any already allocated mem
+				if (res == COAP_OK) {
+					// new interaction process started (handled by CoAP_doWork())
+					return;
+				} else if (res == COAP_ERR_EXISTING) {
+					//duplicated request detected by messageID
+					goto END;
+				} else if (res == COAP_ERR_OUT_OF_MEMORY) {
+					if (pMsg->Type == CON) {
+						// will free any already allocated mem
+						CoAP_SendShortResp(ACK, RESP_INTERNAL_SERVER_ERROR_5_00, pMsg->MessageID, pMsg->Token64, socketHandle, &(pckt->Sender));
+					}
 					goto END;
 				}
 
-			} else { //pMsg carries a separate response (=no piggyback!) to our client request...
-				//find in interaction list request with same token & endpoint
+			} else { // pMsg carries a separate response (=no piggyback!) to our client request...
+				// find in interaction list request with same token & endpoint
 				CoAP_Interaction_t* pIA;
 				for (pIA = CoAP.pInteractions; pIA != NULL; pIA = pIA->next) {
-					if (pIA->Role == COAP_ROLE_CLIENT && pIA->pReqMsg->Token64 == pMsg->Token64 &&
-						EpAreEqual(&(pckt->Sender), &(pIA->RemoteEp))) {
-
-						if (pIA->State == COAP_STATE_WAITING_RESPONSE ||
-							pIA->State == COAP_STATE_HANDLE_RESPONSE) { //2nd case "updates" received response
-							if (pIA->pRespMsg != NULL)
-								CoAP_free_Message(
-										&(pIA->pRespMsg)); //free eventually present older response (todo: check if this is possible!?)
+					if (pIA->Role == COAP_ROLE_CLIENT && pIA->pReqMsg->Token64 == pMsg->Token64 && EpAreEqual(&(pckt->Sender), &(pIA->RemoteEp))) {
+						// 2nd case "updates" received response
+						if (pIA->State == COAP_STATE_WAITING_RESPONSE || pIA->State == COAP_STATE_HANDLE_RESPONSE) {
+							if (pIA->pRespMsg != NULL) {
+								CoAP_free_Message(&(pIA->pRespMsg)); //free eventually present older response (todo: check if this is possible!?)
+							}
 							pIA->pRespMsg = pMsg; //attach just received message for further actions in IA [client] state-machine & return
 							pIA->State = COAP_STATE_HANDLE_RESPONSE;
 						}
 
 						if (pMsg->Type == CON) {
-							if (CoAP_SendShortResp(ACK, EMPTY, pMsg->MessageID, pMsg->Token64, socketHandle, &(pckt->Sender)) ==
-								COAP_OK) {
+							if (CoAP_SendShortResp(ACK, EMPTY, pMsg->MessageID, pMsg->Token64, socketHandle, &(pckt->Sender)) == COAP_OK) {
 								pIA->RespReliabilityState = ACK_SET;
 							}
 						}
 						return;
 					}
-				}//for loop
+				} // for loop
 
-				//no active interaction found to match remote msg to...
-				CoAP_SendShortResp(RST, EMPTY, pMsg->MessageID, pMsg->Token64, socketHandle,
-								   &(pckt->Sender)); //no matching IA has been found! can't do anything with this msg -> Rejecting it (also NON msg) (see RFC7252, 4.3.)
+				// no active interaction found to match remote msg to...
+				// no matching IA has been found! can't do anything with this msg -> Rejecting it (also NON msg) (see RFC7252, 4.3.)
+				CoAP_SendShortResp(RST, EMPTY, pMsg->MessageID, pMsg->Token64, socketHandle, &(pckt->Sender));
 				goto END;
 			}
 
 			break;
-
-		default:
+		}
+		default: {
 			goto END;
+		}
 	}
-	END: //only reached if no interaction has been started (return statement)
-	CoAP_free_Message(&pMsg); //free if not used inside interaction
+	END: // only reached if no interaction has been started (return statement)
+	CoAP_free_Message(&pMsg); // free if not used inside interaction
 }
 
 static CoAP_Result_t _rom SendResp(CoAP_Interaction_t* pIA, CoAP_InteractionState_t nextIAState) {
