@@ -99,7 +99,6 @@ typedef struct {
 typedef struct {
 	uint8_t* pData;
 	uint16_t size;
-	NetEp_t Sender;
 	NetEp_t Receiver;
 	MetaInfo_t MetaInfo; // Meta info that will be translated into in options
 } NetPacket_t;

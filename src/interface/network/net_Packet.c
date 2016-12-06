@@ -35,8 +35,4 @@ void _rom PrintRawPacket(NetPacket_t* pckt)
 	{
 		INFO("%c", pckt->pData[i]);
 	}
-	INFO("\r\nEP Sender: ");
-	PrintEndpoint(&(pckt->Sender));
-	INFO("EP Receiver: ");
-	PrintEndpoint(&(pckt->Receiver));
 }
