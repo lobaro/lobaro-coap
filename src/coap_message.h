@@ -49,6 +49,8 @@ typedef enum
 	REQ_POST 	= CODE(0,2),
 	REQ_PUT 	= CODE(0,3),
 	REQ_DELETE 	= CODE(0,4),
+	REQ_LAST 	= CODE(0,4),
+	RESP_FIRST = CODE(2,0),
 	RESP_SUCCESS_CREATED_2_01 = CODE(2,1), //only used on response to "POST" and "PUT" like HTTP 201
 	RESP_SUCCESS_DELETED_2_02 = CODE(2,2), //only used on response to "DELETE" and "POST" like HTTP 204
 	RESP_SUCCESS_VALID_2_03 = CODE(2,3),
