@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  *******************************************************************************/
 #include "coap.h"
+#include "liblobaro_coap.h"
 
 static uint8_t _rom getTokenByteCount(uint64_t Token) {
 	if (Token == 0) return 0;
@@ -33,7 +34,7 @@ static uint8_t _rom getTokenByteCount(uint64_t Token) {
 	else return 8;
 }
 
-static void _rom CoAP_InitToEmptyResetMsg(CoAP_Message_t *msg) {
+static void _rom CoAP_InitToEmptyResetMsg(CoAP_Message_t* msg) {
 	msg->Type = RST;
 	msg->Code = EMPTY;
 	msg->PayloadLength = 0;
@@ -50,15 +51,15 @@ static void _rom CoAP_InitToEmptyResetMsg(CoAP_Message_t *msg) {
 //During lifetime of msg the pointer to payload buffers could move to other locations
 //this function checks if buf is part of pMsg (which total alloc size is known)
 //returns "false" if buf is external to pMsg else "true"
-static bool _rom bufferIsPartOfMsg(uint8_t *buf, CoAP_Message_t *pMsg) {
+static bool _rom bufferIsPartOfMsg(uint8_t* buf, CoAP_Message_t* pMsg) {
 	assert(buf != NULL && pMsg != NULL);
 	//case 1: buffer before Msg Mem
 	//case 2: buffer after Msg Mem
-	if ((buf < (uint8_t *) (pMsg)) || (buf > ((uint8_t *) (pMsg)) + coap_mem_size((uint8_t *) pMsg))) return false; //bsize gives total alloc size of msg (user data only)
+	if ((buf < (uint8_t*) (pMsg)) || (buf > ((uint8_t*) (pMsg)) + coap_mem_size((uint8_t*) pMsg))) return false; //bsize gives total alloc size of msg (user data only)
 	else return true;
 }
 
-void _rom CoAP_free_MsgPayload(CoAP_Message_t **Msg) {
+void _rom CoAP_free_MsgPayload(CoAP_Message_t** Msg) {
 	if ((*Msg)->Payload == NULL) return;
 
 	//Payload is not under memory allocator control! -> nothing to free here
@@ -67,30 +68,30 @@ void _rom CoAP_free_MsgPayload(CoAP_Message_t **Msg) {
 	}
 
 	if (bufferIsPartOfMsg(((*Msg)->Payload), *Msg) == false) {
-		coap_mem_release((void *) (*Msg)->Payload);
+		coap_mem_release((void*) (*Msg)->Payload);
 		(*Msg)->Payload = NULL;
 		(*Msg)->PayloadBufSize = 0;
 	}
 	//else will be freed together with Message
 }
 
-bool _rom CoAP_MsgIsRequest(CoAP_Message_t *pMsg) {
+bool _rom CoAP_MsgIsRequest(CoAP_Message_t* pMsg) {
 	if (pMsg->Code != EMPTY && pMsg->Code <= REQ_LAST) return true;
 	return false;
 }
 
-bool _rom CoAP_MsgIsResponse(CoAP_Message_t *pMsg) {
+bool _rom CoAP_MsgIsResponse(CoAP_Message_t* pMsg) {
 	if (pMsg->Code != EMPTY && pMsg->Code >= RESP_FIRST) return true;
 	return false;
 }
 
-bool _rom CoAP_MsgIsOlderThan(CoAP_Message_t *pMsg, uint32_t timespan) {
+bool _rom CoAP_MsgIsOlderThan(CoAP_Message_t* pMsg, uint32_t timespan) {
 	if (CoAP.api.rtc1HzCnt() - pMsg->Timestamp > timespan) return true;
 	else return false;
 }
 
 
-CoAP_Result_t _rom CoAP_free_Message(CoAP_Message_t **Msg) {
+CoAP_Result_t _rom CoAP_free_Message(CoAP_Message_t** Msg) {
 	if (*Msg == NULL) {
 		return COAP_OK; //nothing to free
 	}
@@ -104,36 +105,36 @@ CoAP_Result_t _rom CoAP_free_Message(CoAP_Message_t **Msg) {
 	CoAP_free_MsgPayload(Msg);
 
 	//finally delete msg body
-	coap_mem_release((void *) (*Msg));
+	coap_mem_release((void*) (*Msg));
 	*Msg = NULL;
 
 	return COAP_OK;
 }
 
-static CoAP_MessageType_t _rom CoAP_getRespMsgType(CoAP_Message_t *ReqMsg) { //todo inline it
+static CoAP_MessageType_t _rom CoAP_getRespMsgType(CoAP_Message_t* ReqMsg) { //todo inline it
 	if (ReqMsg->Type == CON) return ACK; //for piggybacked responses
 	else return NON;
 }
 
-static uint16_t _rom CoAP_getRespMsgID(CoAP_Message_t *ReqMsg) {
+static uint16_t _rom CoAP_getRespMsgID(CoAP_Message_t* ReqMsg) {
 	if (ReqMsg->Type == CON) return ReqMsg->MessageID; //for piggybacked responses
 	else return CoAP_GetNextMid();
 }
 
-CoAP_Message_t *_rom CoAP_AllocRespMsg(CoAP_Message_t *ReqMsg, uint8_t Code, uint16_t PayloadMaxSize) {
+CoAP_Message_t* _rom CoAP_AllocRespMsg(CoAP_Message_t* ReqMsg, uint8_t Code, uint16_t PayloadMaxSize) {
 	return CoAP_CreateMessage(CoAP_getRespMsgType(ReqMsg), Code, CoAP_getRespMsgID(ReqMsg), NULL, 0, PayloadMaxSize, ReqMsg->Token64);
 }
 
 
-CoAP_Message_t *
+CoAP_Message_t*
 _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
 						CoAP_MessageCode_t Code,
 						uint16_t MessageID,
-						uint8_t *pPayloadInitialContent,
+						uint8_t* pPayloadInitialContent,
 						uint16_t PayloadInitialContentLength,
 						uint16_t PayloadMaxSize,
 						uint64_t Token) {
-	CoAP_Message_t *pMsg = (CoAP_Message_t *) coap_mem_get0(sizeof(CoAP_Message_t) + PayloadMaxSize); //malloc space
+	CoAP_Message_t* pMsg = (CoAP_Message_t*) coap_mem_get0(sizeof(CoAP_Message_t) + PayloadMaxSize); //malloc space
 	if (pMsg == NULL) return NULL;
 
 	//safety checks
@@ -153,14 +154,14 @@ _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
 	pMsg->PayloadLength = PayloadInitialContentLength;
 	if (PayloadMaxSize) {
 		pMsg->PayloadBufSize = PayloadMaxSize;
-		pMsg->Payload = ((uint8_t *) (pMsg)) + sizeof(CoAP_Message_t); //set pointer
-		if (pPayloadInitialContent != NULL) coap_memcpy((void *) ((pMsg)->Payload), (void *) pPayloadInitialContent, PayloadInitialContentLength);
+		pMsg->Payload = ((uint8_t*) (pMsg)) + sizeof(CoAP_Message_t); //set pointer
+		if (pPayloadInitialContent != NULL) coap_memcpy((void*) ((pMsg)->Payload), (void*) pPayloadInitialContent, PayloadInitialContentLength);
 	}
 
 	return pMsg;
 }
 
-CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t *srcArr, uint16_t srcArrLength, CoAP_Message_t **rxedMsg) {
+CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcArrLength, CoAP_Message_t** rxedMsg) {
 	//we use local mem and copy afterwards because we dont know yet the size of payload buffer
 	//but want to allocate one block for complete final "rxedMsg" memory without realloc the buf size later.
 	static CoAP_Message_t Msg;
@@ -218,7 +219,7 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t *srcArr, uint16_t srcAr
 	if (srcArrLength == offset) goto START_MSG_COPY_LABEL;
 
 //Options (if any)
-	uint8_t *pPayloadBegin = NULL;
+	uint8_t* pPayloadBegin = NULL;
 
 	//this allocates memory for every option and puts it in die pOptionsList linked list
 	//start address of payload also given back
@@ -243,7 +244,7 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t *srcArr, uint16_t srcAr
 //Get memory for total message data and copy parsed data
 //Payload Buffers MUST located at end of CoAP_Message_t to let this work!
 	START_MSG_COPY_LABEL:
-	*rxedMsg = (CoAP_Message_t *) coap_mem_get(sizeof(CoAP_Message_t) + Msg.PayloadLength);
+	*rxedMsg = (CoAP_Message_t*) coap_mem_get(sizeof(CoAP_Message_t) + Msg.PayloadLength);
 
 	if (*rxedMsg == NULL)//out of memory
 	{
@@ -251,11 +252,11 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t *srcArr, uint16_t srcAr
 		return COAP_ERR_OUT_OF_MEMORY;
 	}
 
-	coap_memcpy((void *) (*rxedMsg), (void *) &Msg, sizeof(CoAP_Message_t));
+	coap_memcpy((void*) (*rxedMsg), (void*) &Msg, sizeof(CoAP_Message_t));
 
 	if (Msg.PayloadLength) {
-		(*rxedMsg)->Payload = ((uint8_t *) (*rxedMsg)) + sizeof(CoAP_Message_t);
-		coap_memcpy((void *) ((*rxedMsg)->Payload), (void *) pPayloadBegin, Msg.PayloadLength);
+		(*rxedMsg)->Payload = ((uint8_t*) (*rxedMsg)) + sizeof(CoAP_Message_t);
+		coap_memcpy((void*) ((*rxedMsg)->Payload), (void*) pPayloadBegin, Msg.PayloadLength);
 	}
 
 	(*rxedMsg)->Timestamp = CoAP.api.rtc1HzCnt();
@@ -263,7 +264,7 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t *srcArr, uint16_t srcAr
 	return COAP_OK;
 }
 
-int CoAP_GetRawSizeOfMessage(CoAP_Message_t *Msg) {
+int CoAP_GetRawSizeOfMessage(CoAP_Message_t* Msg) {
 	int TotalMsgBytes = 0;
 
 	TotalMsgBytes += 4; //Header
@@ -282,7 +283,7 @@ int CoAP_GetRawSizeOfMessage(CoAP_Message_t *Msg) {
 	return TotalMsgBytes;
 }
 
-static CoAP_Result_t _rom CoAP_BuildDatagram(uint8_t *destArr, uint16_t *pDestArrSize, CoAP_Message_t *Msg) {
+static CoAP_Result_t _rom CoAP_BuildDatagram(uint8_t* destArr, uint16_t* pDestArrSize, CoAP_Message_t* Msg) {
 	uint16_t offset = 0;
 	uint8_t TokenLength;
 
@@ -325,7 +326,7 @@ static CoAP_Result_t _rom CoAP_BuildDatagram(uint8_t *destArr, uint16_t *pDestAr
 		destArr[offset] = 0xff; //Payload Marker
 		offset++;
 
-		coap_memcpy((void *) &(destArr[offset]), (void *) (Msg->Payload), Msg->PayloadLength);
+		coap_memcpy((void*) &(destArr[offset]), (void*) (Msg->Payload), Msg->PayloadLength);
 
 		offset += Msg->PayloadLength;
 	}
@@ -336,39 +337,39 @@ static CoAP_Result_t _rom CoAP_BuildDatagram(uint8_t *destArr, uint16_t *pDestAr
 
 
 //send minimal 4Byte header CoAP empty ACK message
-CoAP_Result_t _rom CoAP_SendEmptyAck(uint16_t MessageID, SocketHandle_t socketHandle, NetEp_t *Receiver) {
+CoAP_Result_t _rom CoAP_SendEmptyAck(uint16_t MessageID, SocketHandle_t socketHandle) {
 	CoAP_Message_t Msg; //put on stack (no need to free)
 
 	CoAP_InitToEmptyResetMsg(&Msg);
 	Msg.Type = ACK;
 	Msg.MessageID = MessageID;
-	return CoAP_SendMsg(&Msg, socketHandle, Receiver);
+	return CoAP_SendMsg(&Msg, socketHandle);
 }
 
 //send short response
-CoAP_Result_t _rom CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, uint64_t token, SocketHandle_t socketHandle, NetEp_t *Receiver) {
+CoAP_Result_t _rom CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, uint64_t token, SocketHandle_t socketHandle) {
 	CoAP_Message_t Msg; //put on stack (no need to free)
 	CoAP_InitToEmptyResetMsg(&Msg);
 	Msg.Type = Type;
 	Msg.MessageID = MessageID;
 	Msg.Code = Code;
 	Msg.Token64 = token;
-	return CoAP_SendMsg(&Msg, socketHandle, Receiver);
+	return CoAP_SendMsg(&Msg, socketHandle);
 }
 
 //send minimal 4Byte header CoAP empty RST message
-CoAP_Result_t _rom CoAP_SendEmptyRST(uint16_t MessageID, SocketHandle_t socketHandle, NetEp_t *Receiver) {
+CoAP_Result_t _rom CoAP_SendEmptyRST(uint16_t MessageID, SocketHandle_t socketHandle) {
 	CoAP_Message_t Msg; //put on stack (no need to free)
 	CoAP_InitToEmptyResetMsg(&Msg);
 	Msg.MessageID = MessageID;
-	return CoAP_SendMsg(&Msg, socketHandle, Receiver);
+	return CoAP_SendMsg(&Msg, socketHandle);
 }
 
-CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t *Msg, SocketHandle_t socketHandle, NetEp_t *Receiver) {
+CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle) {
 	int i;
 	uint16_t bytesToSend = 0;
 	CoAP_Result_t res;
-	CoAP_Socket_t *pSocket = RetrieveSocket(socketHandle);
+	CoAP_Socket_t* pSocket = RetrieveSocket(socketHandle);
 	NetTransmit_fn SendPacket = pSocket->Tx;
 	uint8_t quickBuf[16]; //speed up sending of tiny messages
 
@@ -379,19 +380,13 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t *Msg, SocketHandle_t socketHandle
 
 //build generic packet
 	NetPacket_t pked;
-	pked.Receiver = *Receiver;
-
-//get the socket on which request has been received
-	pked.Sender.NetType = pSocket->EpLocal.NetType;
-	pked.Sender.NetAddr = pSocket->EpLocal.NetAddr;
-	pked.Sender.NetPort = pSocket->EpLocal.NetPort;
 
 //Alloc raw memory
 	pked.size = CoAP_GetRawSizeOfMessage(Msg);
 	if (pked.size <= 16) { //for small messages don't take overhead of mem allocation
 		pked.pData = quickBuf;
 	} else {
-		pked.pData = (uint8_t *) coap_mem_get(pked.size);
+		pked.pData = (uint8_t*) coap_mem_get(pked.size);
 		if (pked.pData == NULL) return COAP_ERR_OUT_OF_MEMORY;
 	}
 
@@ -405,7 +400,7 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t *Msg, SocketHandle_t socketHandle
 
 	INFO("\r\n>>>>>>>>>>>>>>>>>>>>>>\r\nSend Message [%d Bytes], Interface #%u\r\n", bytesToSend, socketHandle);
 	INFO("Receiving Endpoint: ");
-	PrintEndpoint(&(pked.Receiver));
+	PrintEndpoint(&(pSocket->EpRemote));
 
 	for (i = 0; i < pked.size; i++) {
 		if (pked.pData[i] != 0) { //0 = string end
@@ -444,7 +439,7 @@ uint64_t _rom CoAP_GenerateToken() {
 	return Token;
 }
 
-CoAP_Result_t _rom CoAP_addNewPayloadToMessage(CoAP_Message_t *Msg, uint8_t *pData, uint16_t size) {
+CoAP_Result_t _rom CoAP_addNewPayloadToMessage(CoAP_Message_t* Msg, uint8_t* pData, uint16_t size) {
 	if (size > MAX_PAYLOAD_SIZE) {
 		ERROR("payload > MAX_PAYLOAD_SIZE");
 		return COAP_ERR_OUT_OF_MEMORY;
@@ -455,7 +450,7 @@ CoAP_Result_t _rom CoAP_addNewPayloadToMessage(CoAP_Message_t *Msg, uint8_t *pDa
 			coap_memcpy(Msg->Payload, pData, size); //use existing buffer
 		} else { // will move payload buf outside of msg memory frame!
 			CoAP_free_MsgPayload(&Msg); //free old buffer
-			Msg->Payload = (uint8_t *) coap_mem_get(size); //alloc a different new buffer
+			Msg->Payload = (uint8_t*) coap_mem_get(size); //alloc a different new buffer
 			Msg->PayloadBufSize = size;
 
 			coap_memcpy(Msg->Payload, pData, size);
@@ -469,11 +464,11 @@ CoAP_Result_t _rom CoAP_addNewPayloadToMessage(CoAP_Message_t *Msg, uint8_t *pDa
 	return COAP_OK;
 }
 
-CoAP_Result_t _rom CoAP_addTextPayload(CoAP_Message_t *Msg, char *PayloadStr) {
-	return CoAP_addNewPayloadToMessage(Msg, (uint8_t *) PayloadStr, (uint16_t) (strlen(PayloadStr)));
+CoAP_Result_t _rom CoAP_addTextPayload(CoAP_Message_t* Msg, char* PayloadStr) {
+	return CoAP_addNewPayloadToMessage(Msg, (uint8_t*) PayloadStr, (uint16_t) (strlen(PayloadStr)));
 }
 
-void _rom CoAP_PrintMsg(CoAP_Message_t *msg) {
+void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 	INFO("----------------------------\r\n");
 
 	if (msg->Type == CON) { LOG_DEBUG("*Type: CON (0x%02x)\r\n", msg->Type); }
@@ -506,7 +501,7 @@ void _rom CoAP_PrintMsg(CoAP_Message_t *msg) {
 
 	LOG_DEBUG("*MessageId: %u\r\n", msg->MessageID);
 
-	CoAP_option_t *pOption = NULL;
+	CoAP_option_t* pOption = NULL;
 	if (msg->pOptionsList != NULL) {
 		pOption = msg->pOptionsList;
 	}

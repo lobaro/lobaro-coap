@@ -95,7 +95,7 @@ typedef struct CoAP_Interaction {
 
 //called by incoming request
 //we act as a CoAP Server (receiving requests) in this interaction
-CoAP_Result_t CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_Res_t* pRes, SocketHandle_t socketHandle, NetPacket_t* pRawPckt);
+CoAP_Result_t CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_Res_t* pRes, CoAP_Socket_t* pSocket, NetPacket_t* pRawPckt);
 //called by internal requests to external servers (client mode)
 //we act as a CoAP Client (sending requests) in this interaction
 CoAP_Result_t CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, SocketHandle_t socketHandle, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb);

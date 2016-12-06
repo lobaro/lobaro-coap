@@ -21,6 +21,7 @@
  *******************************************************************************/
 #include "coap.h"
 #include "coap_main.h"
+#include "liblobaro_coap.h"
 
 CoAP_Result_t CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA);
 
@@ -375,21 +376,22 @@ CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 }
 
 //we act as a CoAP Server (receiving requests) in this interaction
-CoAP_Result_t _rom CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_Res_t* pRes, SocketHandle_t socketHandle, NetPacket_t* pRawPckt) {
+CoAP_Result_t _rom CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_Res_t* pRes, CoAP_Socket_t* pSocket, NetPacket_t* pRawPckt) {
 	if (!CoAP_MsgIsRequest(pMsgReq)) return COAP_ERR_ARGUMENT;
 
+
 	//NON or CON request
-	NetEp_t* pReqEp = &(pRawPckt->Sender);
+	NetEp_t* pReqEp = &(pSocket->EpRemote);
 	CoAP_Interaction_t* pIA = CoAP.pInteractions;
 
 	//duplicate detection:
 	//same request already received before?
 	//iterate over all interactions
 	for (pIA = CoAP.pInteractions; pIA != NULL; pIA = pIA->next) {
-		if (pIA->Role == COAP_ROLE_SERVER && pIA->socketHandle == socketHandle && pIA->pReqMsg->MessageID == pMsgReq->MessageID && EpAreEqual(&(pIA->RemoteEp), pReqEp)) {
+		if (pIA->Role == COAP_ROLE_SERVER && pIA->socketHandle == pSocket->Handle && pIA->pReqMsg->MessageID == pMsgReq->MessageID && EpAreEqual(&(pIA->RemoteEp), pReqEp)) {
 			//implements 4.5. "SHOULD"s
 			if (pIA->pReqMsg->Type == CON && pIA->State == COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT) { //=> must be postponed resource with empty ack already sent, send it again
-				CoAP_SendEmptyAck(pIA->pReqMsg->MessageID, pIA->socketHandle, &(pIA->RemoteEp)); //send another empty ack
+				CoAP_SendEmptyAck(pIA->pReqMsg->MessageID, pIA->socketHandle); //send another empty ack
 			}
 
 			//pIA->ReqReliabilityState
@@ -406,7 +408,7 @@ CoAP_Result_t _rom CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_
 		return COAP_ERR_OUT_OF_MEMORY;
 	}
 
-	newIA->socketHandle = socketHandle;
+	newIA->socketHandle = pSocket;
 	newIA->RespReliabilityState = NOT_SET;
 	newIA->RespCB = NULL;
 	newIA->pRes = pRes;
