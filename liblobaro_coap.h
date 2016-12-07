@@ -59,7 +59,7 @@ typedef union {
 } NetAddr_t;
 
 typedef enum {
-	IPV6, IPV4, BTLE, UART
+	EP_NONE, IPV6, IPV4, BTLE, UART
 } NetInterfaceType_t;
 
 // general network endpoint
@@ -115,11 +115,11 @@ typedef bool ( * NetTransmit_fn )(SocketHandle_t socketHandle, NetPacket_t* pckt
 
 
 typedef struct {
-	SocketHandle_t Handle;  // Handle to identify the socket
+	SocketHandle_t Handle; // Handle to identify the socket
 
 	NetEp_t EpRemote;
-	NetTransmit_fn Tx;            //ext. function called by coap stack to send data after finding socket by socketHandle (internally)
-	bool Alive;
+	NetTransmit_fn Tx;     // ext. function called by coap stack to send data after finding socket by socketHandle (internally)
+	bool Alive;            // We can only deal with sockets that are alive
 } CoAP_Socket_t;
 
 //################################
@@ -176,7 +176,7 @@ CoAP_Socket_t* CoAP_NewSocket(SocketHandle_t handle);
 // should be passed to the CoAP stack.
 // "socketHandle" can be chosen arbitrary by calling network driver,
 // but can be considered constant over runtime.
-void CoAP_HandleIncommingPacket(SocketHandle_t socketHandle, NetPacket_t* pPacket);
+void CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pPacket);
 
 void CoAP_doWork();
 
