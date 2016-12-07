@@ -50,7 +50,7 @@ typedef enum
 	REQ_PUT 	= CODE(0,3),
 	REQ_DELETE 	= CODE(0,4),
 	REQ_LAST 	= CODE(0,4),
-	RESP_FIRST = CODE(2,0),
+	RESP_FIRST_2_00 = CODE(2,0),
 	RESP_SUCCESS_CREATED_2_01 = CODE(2,1), //only used on response to "POST" and "PUT" like HTTP 201
 	RESP_SUCCESS_DELETED_2_02 = CODE(2,2), //only used on response to "DELETE" and "POST" like HTTP 204
 	RESP_SUCCESS_VALID_2_03 = CODE(2,3),
@@ -108,10 +108,10 @@ CoAP_Message_t* CoAP_CreateMessage(CoAP_MessageType_t Type, CoAP_MessageCode_t C
 
 CoAP_Result_t CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcArrLength, CoAP_Message_t** rxedMsg);
 
-CoAP_Result_t CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle);
-CoAP_Result_t CoAP_SendEmptyAck(uint16_t MessageID, SocketHandle_t socketHandle);
-CoAP_Result_t CoAP_SendEmptyRST(uint16_t MessageID, SocketHandle_t socketHandle);
-CoAP_Result_t CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, uint64_t token, SocketHandle_t socketHandle);
+CoAP_Result_t CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle, NetEp_t receiver);
+CoAP_Result_t CoAP_SendEmptyAck(uint16_t MessageID, SocketHandle_t socketHandle, NetEp_t receiver);
+CoAP_Result_t CoAP_SendEmptyRST(uint16_t MessageID, SocketHandle_t socketHandle, NetEp_t receiver);
+CoAP_Result_t CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, uint64_t token, SocketHandle_t socketHandle, NetEp_t receiver);
 CoAP_Message_t* CoAP_AllocRespMsg(CoAP_Message_t* ReqMsg, uint8_t Code, uint16_t PayloadMaxSize);
 
 CoAP_Result_t CoAP_free_Message(CoAP_Message_t** Msg);

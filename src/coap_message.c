@@ -81,7 +81,7 @@ bool _rom CoAP_MsgIsRequest(CoAP_Message_t* pMsg) {
 }
 
 bool _rom CoAP_MsgIsResponse(CoAP_Message_t* pMsg) {
-	if (pMsg->Code != EMPTY && pMsg->Code >= RESP_FIRST) return true;
+	if (pMsg->Code != EMPTY && pMsg->Code >= RESP_FIRST_2_00) return true;
 	return false;
 }
 
@@ -337,35 +337,35 @@ static CoAP_Result_t _rom CoAP_BuildDatagram(uint8_t* destArr, uint16_t* pDestAr
 
 
 //send minimal 4Byte header CoAP empty ACK message
-CoAP_Result_t _rom CoAP_SendEmptyAck(uint16_t MessageID, SocketHandle_t socketHandle) {
+CoAP_Result_t _rom CoAP_SendEmptyAck(uint16_t MessageID, SocketHandle_t socketHandle, NetEp_t receiver) {
 	CoAP_Message_t Msg; //put on stack (no need to free)
 
 	CoAP_InitToEmptyResetMsg(&Msg);
 	Msg.Type = ACK;
 	Msg.MessageID = MessageID;
-	return CoAP_SendMsg(&Msg, socketHandle);
+	return CoAP_SendMsg(&Msg, socketHandle, receiver);
 }
 
 //send short response
-CoAP_Result_t _rom CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, uint64_t token, SocketHandle_t socketHandle) {
+CoAP_Result_t _rom CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, uint64_t token, SocketHandle_t socketHandle, NetEp_t receiver) {
 	CoAP_Message_t Msg; //put on stack (no need to free)
 	CoAP_InitToEmptyResetMsg(&Msg);
 	Msg.Type = Type;
 	Msg.MessageID = MessageID;
 	Msg.Code = Code;
 	Msg.Token64 = token;
-	return CoAP_SendMsg(&Msg, socketHandle);
+	return CoAP_SendMsg(&Msg, socketHandle, receiver);
 }
 
 //send minimal 4Byte header CoAP empty RST message
-CoAP_Result_t _rom CoAP_SendEmptyRST(uint16_t MessageID, SocketHandle_t socketHandle) {
+CoAP_Result_t _rom CoAP_SendEmptyRST(uint16_t MessageID, SocketHandle_t socketHandle, NetEp_t receiver) {
 	CoAP_Message_t Msg; //put on stack (no need to free)
 	CoAP_InitToEmptyResetMsg(&Msg);
 	Msg.MessageID = MessageID;
-	return CoAP_SendMsg(&Msg, socketHandle);
+	return CoAP_SendMsg(&Msg, socketHandle, receiver);
 }
 
-CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle) {
+CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle, NetEp_t receiver) {
 	int i;
 	uint16_t bytesToSend = 0;
 	CoAP_Result_t res;
@@ -380,6 +380,7 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle
 
 //build generic packet
 	NetPacket_t pked;
+	pked.remoteEp = receiver;
 
 //Alloc raw memory
 	pked.size = CoAP_GetRawSizeOfMessage(Msg);
@@ -398,9 +399,9 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle
 	}
 
 
-	INFO("\r\n>>>>>>>>>>>>>>>>>>>>>>\r\nSend Message [%d Bytes], Interface #%u\r\n", bytesToSend, socketHandle);
+	INFO("\r\no>>>>>>>>>>>>>>>>>>>>>>\r\nSend Message [%d Bytes], Interface #%u\r\n", bytesToSend, socketHandle);
 	INFO("Receiving Endpoint: ");
-	PrintEndpoint(&(pSocket->EpRemote));
+	PrintEndpoint(&(pked.remoteEp));
 
 	for (i = 0; i < pked.size; i++) {
 		if (pked.pData[i] != 0) { //0 = string end
@@ -414,12 +415,12 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle
 	if (SendPacket(socketHandle, &pked) == true) { // send COAP_OK!
 		Msg->Timestamp = CoAP.api.rtc1HzCnt();
 		CoAP_PrintMsg(Msg);
-		INFO(">>>>>>>>>>OK>>>>>>>>>>\r\n");
+		INFO("o>>>>>>>>>>OK>>>>>>>>>>\r\n");
 		if (pked.pData != quickBuf) { coap_mem_release(pked.pData); }
 		return COAP_OK;
 	} else {
 		CoAP_PrintMsg(Msg);
-		INFO(">>>>>>>>>>FAIL>>>>>>>>>>\r\n");
+		INFO("o>>>>>>>>>>FAIL>>>>>>>>>>\r\n");
 		if (pked.pData != quickBuf) { coap_mem_release(pked.pData); }
 		return COAP_ERR_NETWORK;
 	}

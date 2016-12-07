@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  *******************************************************************************/
 
+#include "liblobaro_coap.h"
 #include "../../coap.h"
 
 const NetAddr_IPv6_t NetAddr_IPv6_unspecified = {.u8 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }};
@@ -32,62 +33,57 @@ const NetEp_t NetEp_IPv4_mulitcast = { .NetType = IPV4, .NetPort = 5683, .NetAdd
 
  bool _rom EpAreEqual(const NetEp_t* ep_A, const NetEp_t* ep_B)
  {
-	 if(!ep_A || !ep_B){return false;}
-	 if(ep_A->NetType != ep_B->NetType){return false;}
-	 if(ep_A->NetPort != ep_B->NetPort){ return false;}
+	if (!ep_A || !ep_B) { return false; }
+	if (ep_A->NetType != ep_B->NetType) { return false; }
+	if (ep_A->NetPort != ep_B->NetPort) { return false; }
 
-	 if(ep_A->NetType == IPV6){
-		 if(ep_A->NetAddr.IPv6.u32[0]!= ep_B->NetAddr.IPv6.u32[0]
-			||ep_A->NetAddr.IPv6.u32[1]!= ep_B->NetAddr.IPv6.u32[1]
-			||ep_A->NetAddr.IPv6.u32[2]!= ep_B->NetAddr.IPv6.u32[2]
-			||ep_A->NetAddr.IPv6.u32[3]!= ep_B->NetAddr.IPv6.u32[3] ){return false;}
-	 } else if(ep_A->NetType==IPV4) {
-		 if(ep_A->NetAddr.IPv4.u8[0]!= ep_B->NetAddr.IPv4.u8[0]
-			||ep_A->NetAddr.IPv4.u8[1]!= ep_B->NetAddr.IPv4.u8[1]
-			||ep_A->NetAddr.IPv4.u8[2]!= ep_B->NetAddr.IPv4.u8[2]
-			||ep_A->NetAddr.IPv4.u8[3]!= ep_B->NetAddr.IPv4.u8[3] ){return false;}
-	 }
-	 else{
-		 int i;
-		 for(i=0; i< NetAddr_MAX_LENGTH; i++) {
-			 if(ep_A->NetAddr.mem[i] != ep_B->NetAddr.mem[i]){return false;}
-		 }
-	 }
-
-	 return true;
- }
-
- void _rom CopyEndpoints(NetEp_t* Destination, const NetEp_t* Source)
- {
-	 memmove((void*)Destination, (void*)Source, sizeof(NetEp_t));
- }
-
- void _rom PrintEndpoint(const NetEp_t* ep)
- {
-	 /*
-	if(ep->NetType == IPV6)
-	{
-		INFO(" NetType = IPv6\r\n");
-		INFO(" IPv6    = ");
-		PRINT_IPV6(ep->NetAddr.IPv6);
-		INFO("\r\n Port    = %u\r\n", ep->NetPort);
+	if (ep_A->NetType == IPV6) {
+		if (ep_A->NetAddr.IPv6.u32[0] != ep_B->NetAddr.IPv6.u32[0]
+			|| ep_A->NetAddr.IPv6.u32[1] != ep_B->NetAddr.IPv6.u32[1]
+			|| ep_A->NetAddr.IPv6.u32[2] != ep_B->NetAddr.IPv6.u32[2]
+			|| ep_A->NetAddr.IPv6.u32[3] != ep_B->NetAddr.IPv6.u32[3]) { return false; }
+	} else if (ep_A->NetType == IPV4) {
+		if (ep_A->NetAddr.IPv4.u8[0] != ep_B->NetAddr.IPv4.u8[0]
+			|| ep_A->NetAddr.IPv4.u8[1] != ep_B->NetAddr.IPv4.u8[1]
+			|| ep_A->NetAddr.IPv4.u8[2] != ep_B->NetAddr.IPv4.u8[2]
+			|| ep_A->NetAddr.IPv4.u8[3] != ep_B->NetAddr.IPv4.u8[3]) { return false; }
+	} else {
+		int i;
+		for (i = 0; i < NetAddr_MAX_LENGTH; i++) {
+			if (ep_A->NetAddr.mem[i] != ep_B->NetAddr.mem[i]) { return false; }
+		}
 	}
-	else
-	{
+
+	return true;
+}
+
+void _rom CopyEndpoints(NetEp_t* Destination, const NetEp_t* Source) {
+	memmove((void*) Destination, (void*) Source, sizeof(NetEp_t));
+}
+
+void _rom PrintEndpoint(const NetEp_t* ep) {
+	/*
+   if(ep->NetType == IPV6)
+   {
+	   INFO(" NetType = IPv6\r\n");
+	   INFO(" IPv6    = ");
+	   PRINT_IPV6(ep->NetAddr.IPv6);
+	   INFO("\r\n Port    = %u\r\n", ep->NetPort);
+   }
+   else
+   {
+	   ERROR("- Unknown Endpoint Type (%d)\r\n", ep->NetType);
+   }
+   */
+	if (ep->NetType == IPV6) {
+		INFO("IPv6, ");
+		PRINT_IPV6(ep->NetAddr.IPv6);
+		INFO(" at Port: %u\r\n", ep->NetPort);
+	} else if (ep->NetType == IPV4) {
+		INFO("IPv4, %d.%d.%d.%d:%d\r\n", ep->NetAddr.IPv4.u8[0], ep->NetAddr.IPv4.u8[1], ep->NetAddr.IPv4.u8[2], ep->NetAddr.IPv4.u8[3], ep->NetPort);
+	} else if (ep->NetType == UART) {
+		INFO("UART, COM%d", ep->NetAddr.Uart.ComPortID);
+	} else {
 		ERROR("- Unknown Endpoint Type (%d)\r\n", ep->NetType);
 	}
-	*/
-		if(ep->NetType == IPV6)
-		{
-			INFO("IPv6, ");
-			PRINT_IPV6(ep->NetAddr.IPv6);
-			INFO(" at Port: %u\r\n", ep->NetPort);
-		}
-		else if(ep->NetType == IPV4) {
-			INFO("IPv4, %d.%d.%d.%d:%d\r\n",ep->NetAddr.IPv4.u8[0], ep->NetAddr.IPv4.u8[1], ep->NetAddr.IPv4.u8[2], ep->NetAddr.IPv4.u8[3], ep->NetPort);
-		}
-		else
-		{
-			ERROR("- Unknown Endpoint Type (%d)\r\n", ep->NetType);
-		}
- }
+}
