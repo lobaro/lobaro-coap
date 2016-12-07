@@ -366,23 +366,29 @@ CoAP_Result_t _rom CoAP_SendEmptyRST(uint16_t MessageID, SocketHandle_t socketHa
 }
 
 CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle, NetEp_t receiver) {
+	INFO("Sending CoAP msg\r\n");
 	int i;
 	uint16_t bytesToSend = 0;
-	CoAP_Result_t res;
 	CoAP_Socket_t* pSocket = RetrieveSocket(socketHandle);
+
+	if (pSocket == NULL) {
+		ERROR("Socket not found! handle: %d\r\n", socketHandle);
+		return COAP_NOT_FOUND;
+	}
+
 	NetTransmit_fn SendPacket = pSocket->Tx;
 	uint8_t quickBuf[16]; //speed up sending of tiny messages
 
 	if (SendPacket == NULL) {
-		ERROR("SendPacket function not found! idID: %d", socketHandle);
+		ERROR("SendPacket function not found! handle: %d\r\n", socketHandle);
 		return COAP_NOT_FOUND;
 	}
 
-//build generic packet
+	// build generic packet
 	NetPacket_t pked;
 	pked.remoteEp = receiver;
 
-//Alloc raw memory
+	//Alloc raw memory
 	pked.size = CoAP_GetRawSizeOfMessage(Msg);
 	if (pked.size <= 16) { //for small messages don't take overhead of mem allocation
 		pked.pData = quickBuf;
@@ -470,7 +476,7 @@ CoAP_Result_t _rom CoAP_addTextPayload(CoAP_Message_t* Msg, char* PayloadStr) {
 }
 
 void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
-	INFO("----------------------------\r\n");
+	INFO("---------CoAP msg--------\r\n");
 
 	if (msg->Type == CON) { LOG_DEBUG("*Type: CON (0x%02x)\r\n", msg->Type); }
 	else if (msg->Type == NON) { LOG_DEBUG("*Type: NON (0x%02x)\r\n", msg->Type); }

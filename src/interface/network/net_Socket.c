@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
+#include <github.com/Lobaro/lobaro-coap/liblobaro_coap.h>
 #include "../../coap.h"
 
 typedef struct {
@@ -28,7 +29,7 @@ typedef struct {
 
 static CoAP_SocketCtrl_t SocketCtrl = {.initDone = false};
 
-CoAP_Socket_t *_rom AllocSocket() {
+CoAP_Socket_t* _rom AllocSocket() {
 	int i;
 	if (!SocketCtrl.initDone) {
 		for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {
@@ -38,15 +39,18 @@ CoAP_Socket_t *_rom AllocSocket() {
 	}
 
 	for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {
-		if (SocketCtrl.SocketMemory[i].Alive == false) {
-			return &(SocketCtrl.SocketMemory[i]);
+		CoAP_Socket_t* socket = &(SocketCtrl.SocketMemory[i]);
+		if (socket->Alive == false) {
+			memset(socket, 0, sizeof(socket));
+			socket->Alive = true;
+			return socket;
 		}
 	}
 
 	return NULL; //no free memory
 }
 
-CoAP_Socket_t *_rom RetrieveSocket(SocketHandle_t handle) {
+CoAP_Socket_t* _rom RetrieveSocket(SocketHandle_t handle) {
 	int i;
 	for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {
 		if (SocketCtrl.SocketMemory[i].Alive &&

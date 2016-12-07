@@ -33,7 +33,7 @@ void hal_debug_puts(char* s) {
 // Called by network interfaces to pass rawData which is parsed to CoAP messages.
 // lifetime of pckt only during function invoke
 // can be called from irq since more expensive work is done in CoAP_doWork loop
-void _ram CoAP_HandleIncommingPacket(SocketHandle_t socketHandle, NetPacket_t* pPacket) {
+void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pPacket) {
 	CoAP_Message_t* pMsg = NULL;
 	bool isRequest = false;
 	CoAP_Res_t* pRes = NULL;
@@ -56,6 +56,7 @@ void _ram CoAP_HandleIncommingPacket(SocketHandle_t socketHandle, NetPacket_t* p
 
 	isRequest = CoAP_MsgIsRequest(pMsg);
 
+	INFO("Filter out bad CODE/TYPE combinations\r\n");
 	// Filter out bad CODE/TYPE combinations (Table 1, RFC7252 4.3.) by silently ignoring them
 	if (pMsg->Type == CON && pMsg->Code == EMPTY) {
 		CoAP_SendEmptyRST(pMsg->MessageID, socketHandle, pPacket->remoteEp); //a.k.a "CoAP Ping"
@@ -70,8 +71,9 @@ void _ram CoAP_HandleIncommingPacket(SocketHandle_t socketHandle, NetPacket_t* p
 		goto END;
 	}
 
+	INFO("Find the request handler or send 4.04\r\n");
 	// Requested uri present?
-	// Then call the handler, else send 4.04 response
+	// Then find the handler, else send 4.04 response
 	if (isRequest) {
 		pRes = CoAP_FindResourceByUri(NULL, pMsg->pOptionsList);
 		if (pRes == NULL || pRes->Handler == NULL) { //unknown resource requested
@@ -84,6 +86,7 @@ void _ram CoAP_HandleIncommingPacket(SocketHandle_t socketHandle, NetPacket_t* p
 		}
 	}
 
+	INFO("Check for critical options\r\n");
 	// Unknown critical Option check
 	uint16_t criticalOptNum = CoAP_CheckForUnknownCriticalOption(pMsg->pOptionsList); // !=0 if at least one unknown option found
 	if (criticalOptNum) {
@@ -107,6 +110,7 @@ void _ram CoAP_HandleIncommingPacket(SocketHandle_t socketHandle, NetPacket_t* p
 	// Prechecks done
 	//*****************
 
+	INFO("Prechecks done. Handle message by type\r\n");
 	// try to include message into new or existing server/client interaction
 	switch (pMsg->Type) {
 		case RST: {
