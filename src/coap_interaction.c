@@ -376,22 +376,22 @@ CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 }
 
 //we act as a CoAP Server (receiving requests) in this interaction
-CoAP_Result_t _rom CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_Res_t* pRes, CoAP_Socket_t* pSocket, NetPacket_t* pRawPckt) {
+CoAP_Result_t _rom CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_Res_t* pRes, SocketHandle_t socketHandle, NetPacket_t* pPacket) {
 	if (!CoAP_MsgIsRequest(pMsgReq)) return COAP_ERR_ARGUMENT;
 
 
 	//NON or CON request
-	NetEp_t* pReqEp = &(pSocket->EpRemote);
-	CoAP_Interaction_t* pIA = CoAP.pInteractions;
+	NetEp_t* pReqEp = &(pPacket->remoteEp);
+	CoAP_Interaction_t* pIA;
 
 	//duplicate detection:
 	//same request already received before?
 	//iterate over all interactions
 	for (pIA = CoAP.pInteractions; pIA != NULL; pIA = pIA->next) {
-		if (pIA->Role == COAP_ROLE_SERVER && pIA->socketHandle == pSocket->Handle && pIA->pReqMsg->MessageID == pMsgReq->MessageID && EpAreEqual(&(pIA->RemoteEp), pReqEp)) {
+		if (pIA->Role == COAP_ROLE_SERVER && pIA->socketHandle == socketHandle && pIA->pReqMsg->MessageID == pMsgReq->MessageID && EpAreEqual(&(pIA->RemoteEp), pReqEp)) {
 			//implements 4.5. "SHOULD"s
 			if (pIA->pReqMsg->Type == CON && pIA->State == COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT) { //=> must be postponed resource with empty ack already sent, send it again
-				CoAP_SendEmptyAck(pIA->pReqMsg->MessageID, pIA->socketHandle); //send another empty ack
+				CoAP_SendEmptyAck(pIA->pReqMsg->MessageID, pIA->socketHandle, pPacket->remoteEp); //send another empty ack
 			}
 
 			//pIA->ReqReliabilityState
@@ -408,13 +408,13 @@ CoAP_Result_t _rom CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_
 		return COAP_ERR_OUT_OF_MEMORY;
 	}
 
-	newIA->socketHandle = pSocket;
+	newIA->socketHandle = socketHandle;
 	newIA->RespReliabilityState = NOT_SET;
 	newIA->RespCB = NULL;
 	newIA->pRes = pRes;
 	newIA->Role = COAP_ROLE_SERVER;
 	newIA->State = COAP_STATE_HANDLE_REQUEST;
-	newIA->ReqMetaInfo = pRawPckt->MetaInfo;
+	newIA->ReqMetaInfo = pPacket->metaInfo;
 	newIA->ReqReliabilityState = NOT_SET;
 	newIA->pReqMsg = pMsgReq;
 

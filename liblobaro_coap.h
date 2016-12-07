@@ -99,8 +99,10 @@ typedef struct {
 typedef struct {
 	uint8_t* pData;
 	uint16_t size;
-	NetEp_t Receiver;
-	MetaInfo_t MetaInfo; // Meta info that will be translated into in options
+	// The remote EndPoint is either the sender for incoming packets or the receiver for outgoing packets
+	NetEp_t remoteEp;
+	// Optional meta info that will be translated into in options
+	MetaInfo_t metaInfo;
 } NetPacket_t;
 
 //################################
@@ -115,12 +117,14 @@ typedef bool ( * NetTransmit_fn )(SocketHandle_t socketHandle, NetPacket_t* pckt
 typedef struct {
 	SocketHandle_t Handle;  // Handle to identify the socket
 
-	NetEp_t EpLocal;
 	NetEp_t EpRemote;
-	NetReceiveCallback_fn RxCB; //callback function on receiving data (normally set to "CoAP_onNewPacketHandler")
 	NetTransmit_fn Tx;            //ext. function called by coap stack to send data after finding socket by socketHandle (internally)
 	bool Alive;
 } CoAP_Socket_t;
+
+//################################
+// Initialization
+//################################
 
 /*
  * Configuration for the CoAP stack. All fields need to be initialized.
@@ -141,10 +145,13 @@ typedef struct {
 	//1Hz Clock used by timeout logic
 	uint32_t (* rtc1HzCnt)(void);
 	//Uart/Display function to print debug/status messages
-	void (*debugPuts)(char* s);
-	void (*debugPutc)(char c);
+	void (* debugPuts)(char* s);
+	void (* debugPutc)(char c);
 } CoAP_API_t;
 
+//################################
+// Public API
+//################################
 
 /**
  * Initialize the CoAP stack with a set of API functions used by the stack and a config struct.
@@ -160,6 +167,16 @@ void CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg);
  * @return
  */
 CoAP_Socket_t* CoAP_NewSocket(SocketHandle_t handle);
+
+//#####################
+// Receive of packets
+//#####################
+// This function must be called by network drivers
+// on reception of a new network packets which
+// should be passed to the CoAP stack.
+// "socketHandle" can be chosen arbitrary by calling network driver,
+// but can be considered constant over runtime.
+void CoAP_HandleIncommingPacket(SocketHandle_t socketHandle, NetPacket_t* pPacket);
 
 void CoAP_doWork();
 

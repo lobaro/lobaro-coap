@@ -90,8 +90,6 @@
 #include "network/net_Packet.h"
 #include "network/net_Socket.h"
 
-CoAP_Socket_t* GetFreeInterface();
-
 //-------------------------------------------------------------------------
 //Implementation for these function prototypes must be provided externally:
 //-------------------------------------------------------------------------

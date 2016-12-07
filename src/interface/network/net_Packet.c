@@ -24,7 +24,7 @@
 void _rom PrintRawPacket(NetPacket_t* pckt)
 {
 
-	INFO("Packet size:%d rssi:%d hops: %d \r\nRawData (hex) :", pckt->size, pckt->MetaInfo.Dat.RfPath.RSSI, pckt->MetaInfo.Dat.RfPath.HopCount);
+	INFO("Packet size:%d rssi:%d hops: %d \r\nRawData (hex) :", pckt->size, pckt->metaInfo.Dat.RfPath.RSSI, pckt->metaInfo.Dat.RfPath.HopCount);
 	int i;
 	for(i=0; i<pckt->size; i++)
 	{

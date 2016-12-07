@@ -46,27 +46,6 @@ CoAP_Socket_t *_rom AllocSocket() {
 	return NULL; //no free memory
 }
 
-CoAP_Socket_t *_rom GetFreeInterface() {
-	int i;
-	if (!SocketCtrl.initDone) {
-		for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {
-			SocketCtrl.SocketMemory[i].Alive = false;
-		}
-		SocketCtrl.initDone = true;
-	}
-
-	for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {
-		if (SocketCtrl.SocketMemory[i].Alive == false) {
-			SocketCtrl.SocketMemory[i].RxCB = CoAP_onNewPacketHandler;
-
-
-			return &(SocketCtrl.SocketMemory[i]);
-		}
-	}
-
-	return NULL; //no free memory
-}
-
 CoAP_Socket_t *_rom RetrieveSocket(SocketHandle_t handle) {
 	int i;
 	for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {

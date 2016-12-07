@@ -35,7 +35,7 @@ void CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg) {
 	INFO("CoAP_option_t size: %d byte\r\n", sizeof(CoAP_option_t));
 	INFO("CoAP_Observer_t size: %d byte\r\n", sizeof(CoAP_Observer_t));
 
-
+	// TODO: Provide Malloc and Free in API and do not require bget
 
 	coap_mem_init(cfg.Memory, cfg.MemorySize);
 	CoAP_InitResources();
