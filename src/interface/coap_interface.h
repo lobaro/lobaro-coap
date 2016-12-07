@@ -95,7 +95,5 @@
 //-------------------------------------------------------------------------
 //Uart/Display function to print debug/status messages to
 void hal_debug_puts(char *s);
-void hal_debug_putc(char c);
-
 
 #endif

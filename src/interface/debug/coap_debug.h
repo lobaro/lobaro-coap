@@ -28,16 +28,10 @@
 extern char dbgBuf[DEBUG_BUF_SIZE];
 
 #define UART_PUTS hal_debug_puts
-#define UART_PUTC hal_debug_putc
 
 #define PUTS(...) \
 do { \
 	UART_PUTS(__VA_ARGS__); \
-} while(0)
-
-#define PUTC(...) \
-do { \
-	UART_PUTC(__VA_ARGS__); \
 } while(0)
 
 #define PRINTF(...) \
