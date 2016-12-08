@@ -403,8 +403,7 @@ void _rom CoAP_doWork() {
 			// by resource handler with (ownstatic memory OR  "com_mem_get(...)" memory areas.
 			// Any non static memory will be freed along with message! see free_Payload(...) function, even if user overwrites payload pointer!
 			if (pIA->pRespMsg == NULL) { //if postponed before it would have been already allocated
-				pIA->pRespMsg = CoAP_AllocRespMsg(pIA->pReqMsg, EMPTY,
-												  PREFERED_PAYLOAD_SIZE); //matches also TYPE + TOKEN to request
+				pIA->pRespMsg = CoAP_AllocRespMsg(pIA->pReqMsg, EMPTY, PREFERED_PAYLOAD_SIZE); //matches also TYPE + TOKEN to request
 			}
 
 			// Call of external set resource handler
