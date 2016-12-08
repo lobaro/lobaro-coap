@@ -51,14 +51,7 @@ extern uint16_t KNOWN_OPTIONS[KNOWN_OPTIONS_COUNT];
 
 #define MAX_OPTION_VALUE_SIZE (1034) //used in option "Proxy-Uri"
 
-struct CoAP_option {
-	struct CoAP_option* next; //4 byte pointer (linked list)
 
-	uint16_t Number; //2 byte
-	uint16_t Length; //2 byte
-	uint8_t* Value;  //4 byte (should be last in struct!)
-};
-typedef struct CoAP_option CoAP_option_t;
 
 CoAP_Result_t parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uint8_t** pPayloadBeginInSrc, CoAP_option_t** pOptionsListBegin);
 CoAP_Result_t pack_OptionsFromList(uint8_t* pDestArr, uint16_t* pBytesWritten, CoAP_option_t* pOptionsListBegin);
