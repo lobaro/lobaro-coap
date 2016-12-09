@@ -51,7 +51,7 @@ extern uint16_t KNOWN_OPTIONS[KNOWN_OPTIONS_COUNT];
 
 #define MAX_OPTION_VALUE_SIZE (1034) //used in option "Proxy-Uri"
 
-
+#define OPTION_PAYLOAD_MARKER (0xFF)
 
 CoAP_Result_t parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uint8_t** pPayloadBeginInSrc, CoAP_option_t** pOptionsListBegin);
 CoAP_Result_t pack_OptionsFromList(uint8_t* pDestArr, uint16_t* pBytesWritten, CoAP_option_t* pOptionsListBegin);
