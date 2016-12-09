@@ -354,17 +354,14 @@ void _rom CoAP_doWork() {
 	//	INFO("pending Transaction found! ReqTime: %u\r\n", pIA->ReqTime);
 	//	com_mem_stats();
 
-//########################
-//###   ROLE Server    ###
-//########################
-	if(pIA->Role == COAP_ROLE_SERVER)
-	{
-	  //--------------------------------------------------------------------------------------------------------
-		if(pIA->State == COAP_STATE_HANDLE_REQUEST ||
-		   pIA->State == COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT ||
-		   pIA->State == COAP_STATE_RESPONSE_WAITING_LEISURE)
-	  //--------------------------------------------------------------------------------------------------------
-		{
+	//########################
+	//###   ROLE Server    ###
+	//########################
+	if (pIA->Role == COAP_ROLE_SERVER) {
+		if (pIA->State == COAP_STATE_HANDLE_REQUEST ||
+			pIA->State == COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT ||
+			pIA->State == COAP_STATE_RESPONSE_WAITING_LEISURE) {
+
 			if(pIA->ReqMetaInfo.Type == META_INFO_MULTICAST){
 				// Messages sent via multicast MUST be NON-confirmable.
 				if(pIA->pReqMsg->Type == CON){
@@ -384,11 +381,11 @@ void _rom CoAP_doWork() {
 				}
 			}
 
-			if( 	((pIA->pReqMsg->Code == REQ_GET) && !((pIA->pRes->Options).Flags & RES_OPT_GET))
-				||  ((pIA->pReqMsg->Code == REQ_POST) && !((pIA->pRes->Options).Flags & RES_OPT_POST))
-				||  ((pIA->pReqMsg->Code == REQ_PUT) && !((pIA->pRes->Options).Flags & RES_OPT_PUT))
-				||  ((pIA->pReqMsg->Code == REQ_DELETE) && !((pIA->pRes->Options).Flags & RES_OPT_DELETE))
-			){
+			if (((pIA->pReqMsg->Code == REQ_GET) && !((pIA->pRes->Options).AllowedMethods & RES_OPT_GET))
+				|| ((pIA->pReqMsg->Code == REQ_POST) && !((pIA->pRes->Options).AllowedMethods & RES_OPT_POST))
+				|| ((pIA->pReqMsg->Code == REQ_PUT) && !((pIA->pRes->Options).AllowedMethods & RES_OPT_PUT))
+				|| ((pIA->pReqMsg->Code == REQ_DELETE) && !((pIA->pRes->Options).AllowedMethods & RES_OPT_DELETE))
+					) {
 				pIA->pRespMsg = CoAP_AllocRespMsg(pIA->pReqMsg, RESP_METHOD_NOT_ALLOWED_4_05, 0); //matches also TYPE + TOKEN to request
 
 				//o>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

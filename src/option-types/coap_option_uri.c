@@ -25,14 +25,13 @@
 //internal function
 //QueryStr points to char AFTER ? in a uri query string e.g: 'O' in [...]myuri/bla?Option1=Val1&Option2=Val2
 //todo: support percent encoding
-static CoAP_Result_t _rom ParseUriQueryFromStringToOption(CoAP_option_t** pUriOptionsListBegin, char* QueryStr)
-{
+static CoAP_Result_t _rom ParseUriQueryFromStringToOption(CoAP_option_t** pUriOptionsListBegin, char* QueryStr) {
 	char* pCurUriPartBegin = QueryStr;
-	uint32_t cnt =0;
+	uint32_t cnt = 0;
 
-	while(*QueryStr != 0){ //str end
-		if(*QueryStr == '&') {//query delimeter found
-			if(cnt == 0){ //part begins with (another) delimiter -> skip it
+	while (*QueryStr != 0) { //str end
+		if (*QueryStr == '&') {//query delimeter found
+			if (cnt == 0) { //part begins with (another) delimiter -> skip it
 				pCurUriPartBegin++;
 				QueryStr++;
 				continue;
@@ -40,16 +39,15 @@ static CoAP_Result_t _rom ParseUriQueryFromStringToOption(CoAP_option_t** pUriOp
 
 			CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_QUERY, pCurUriPartBegin, cnt); //copy & alloc mem
 
-			pCurUriPartBegin = pCurUriPartBegin+cnt+1;//points to char following delimiter '&'
-			cnt=0;
-		}
-		else cnt++;
+			pCurUriPartBegin = pCurUriPartBegin + cnt + 1;//points to char following delimiter '&'
+			cnt = 0;
+		} else cnt++;
 
 		QueryStr++;
 	}
 
 	//last uri part which is not a query string
-	if(cnt != 0){
+	if (cnt != 0) {
 		CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_QUERY, pCurUriPartBegin, cnt); //copy & alloc last uri part
 	}
 
@@ -57,113 +55,115 @@ static CoAP_Result_t _rom ParseUriQueryFromStringToOption(CoAP_option_t** pUriOp
 }
 
 
+// Appends to list of coap options uri-path and uri-query options from uri-string
+CoAP_Result_t _rom CoAP_AppendUriOptionsFromString(CoAP_option_t** pUriOptionsListBegin, char* UriStr) {
+	// Tested against following URI parts:
+	// "halloWelt/wiegehts/dir?var1=val1&var2=val2&"
+	// "halloWelt/wiegehts/dir"
+	// "/halloWelt/wiegehts/dir?bla&bla&bla&bla"
+	// "halloWelt/wiegehts/dir/?bla&bla=n&bla&bla"
 
-//Appends to list of coap options uri-path and uri-query options from uri-string
-CoAP_Result_t _rom CoAP_AppendUriOptionsFromString(CoAP_option_t** pUriOptionsListBegin, char* UriStr)
-{
-//	Tested against following URI parts:
-//	"halloWelt/wiegehts/dir?var1=val1&var2=val2&"
-//	"halloWelt/wiegehts/dir"
-//	"/halloWelt/wiegehts/dir?bla&bla&bla&bla"
-//	"halloWelt/wiegehts/dir/?bla&bla=n&bla&bla"
-
-	if(UriStr == NULL)
+	if (UriStr == NULL) {
 		return COAP_ERR_ARGUMENT;
+	}
 
 	char* pCurUriPartBegin = UriStr;
-	uint32_t cnt =0;
+	uint32_t cnt = 0;
 
-	while(*UriStr != 0){ //str end
-		if(*UriStr == '/' || *UriStr == ' ' || *UriStr == '?'){ //uri delimeter found - do not count
+	while (*UriStr != 0) { //str end
+		if (*UriStr == '/' || *UriStr == ' ' || *UriStr == '?') { //uri delimeter found - do not count
 
-			if(cnt == 0){ //part begins with (another) delimiter -> skip it
-				if(*UriStr =='?'){
-					return ParseUriQueryFromStringToOption(pUriOptionsListBegin,UriStr+1);
+			if (cnt == 0) { //part begins with (another) delimiter -> skip it
+				if (*UriStr == '?') {
+					return ParseUriQueryFromStringToOption(pUriOptionsListBegin, UriStr + 1);
 				}
 
 				pCurUriPartBegin++;
 				UriStr++;
 				continue;
 			}
-
 			CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_PATH, pCurUriPartBegin, cnt); //copy & alloc mem
 
-			pCurUriPartBegin = pCurUriPartBegin+cnt+1;//points to char following delimiter '/', ' ' or '?'
+			pCurUriPartBegin = pCurUriPartBegin + cnt + 1;//points to char following delimiter '/', ' ' or '?'
 
-			if(*UriStr =='?'){ //case /dir?var1 -> "dir" = path, "var1"=query begin (path component only MAY end with '\')
-				return	ParseUriQueryFromStringToOption(pUriOptionsListBegin, UriStr+1);
+			if (*UriStr == '?') { //case /dir?var1 -> "dir" = path, "var1"=query begin (path component only MAY end with '\')
+				return ParseUriQueryFromStringToOption(pUriOptionsListBegin, UriStr + 1);
 			}
 
-			cnt=0;
-		}
-		else cnt++;
+			cnt = 0;
+		} else cnt++;
 
 		UriStr++;
 	}
 
 	//last uri part which is not a query string
-	if(cnt != 0){
+	if (cnt != 0) {
 		CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_PATH, pCurUriPartBegin, cnt); //copy & alloc last uri part
 	}
 
 	return COAP_OK;
 }
 
-CoAP_Result_t _rom CoAP_AddUriOptionsToMsgFromString(CoAP_Message_t* msg, char* UriStr)
-{
+CoAP_Result_t _rom CoAP_AddUriOptionsToMsgFromString(CoAP_Message_t* msg, char* UriStr) {
 	return CoAP_AppendUriOptionsFromString(&(msg->pOptionsList), UriStr);
 }
 
-//filters out any different to uripath options
-//uses implicit ordering of uri options!
-bool _rom CoAP_UriOptionsAreEqual(CoAP_option_t* OptListA, CoAP_option_t* OptListB){
+// Iterates over all URI_PATH options and match them one by one
+// if any part of the URI does not match, return false
+// uses implicit ordering of uri options!
+bool _rom CoAP_UriOptionsAreEqual(CoAP_option_t* OptListA, CoAP_option_t* OptListB) {
 
 	CoAP_option_t* CurOptA = OptListA;
 	CoAP_option_t* CurOptB = OptListB;
 
-	while(!(CurOptA==NULL && CurOptB==NULL))
-	{
-		while(CurOptA != NULL) {
-			if(CurOptA->Number == OPT_NUM_URI_PATH)break;
+	while (!(CurOptA == NULL && CurOptB == NULL)) {
+		while (CurOptA != NULL) {
+			if (CurOptA->Number == OPT_NUM_URI_PATH) {
+				break;
+			}
 			CurOptA = CurOptA->next;
 		}
 
-		while(CurOptB != NULL) {
-			if(CurOptB->Number == OPT_NUM_URI_PATH)break;
+		while (CurOptB != NULL) {
+			if (CurOptB->Number == OPT_NUM_URI_PATH) {
+				break;
+			}
 			CurOptB = CurOptB->next;
 		}
 
-		if(!CoAP_OptionsAreEqual(CurOptA,CurOptB)) { //returns also true if both NULL! (implicit URI:"/")
+		if (!CoAP_OptionsAreEqual(CurOptA, CurOptB)) { //returns also true if both NULL! (implicit URI:"/")
 			return false;
 		}
 
-		if(CurOptB != NULL)CurOptB = CurOptB->next;
-		if(CurOptA != NULL)CurOptA = CurOptA->next;
+		if (CurOptB != NULL) {
+			CurOptB = CurOptB->next;
+		}
+		if (CurOptA != NULL) {
+			CurOptA = CurOptA->next;
+		}
 	}
 	return true;
 }
 
 
-void _rom CoAP_printUriOptionsList(CoAP_option_t* pOptListBegin)
-{
+void _rom CoAP_printUriOptionsList(CoAP_option_t* pOptListBegin) {
 	bool queryPos = false;
 	int j;
-	while(pOptListBegin != NULL)
-	{
-		if(pOptListBegin->Number == OPT_NUM_URI_PATH) {
-			for(j=0; j< pOptListBegin->Length; j++){
+	while (pOptListBegin != NULL) {
+		if (pOptListBegin->Number == OPT_NUM_URI_PATH) {
+			for (j = 0; j < pOptListBegin->Length; j++) {
 				INFO("%c", pOptListBegin->Value[j]);
 			}
 			INFO("\\");
-		} else if(pOptListBegin->Number == OPT_NUM_URI_QUERY) {
-			if(!queryPos) {
+		} else if (pOptListBegin->Number == OPT_NUM_URI_QUERY) {
+			if (!queryPos) {
 				INFO("?");
-				queryPos=true;
-			}
-			else INFO("&");
+				queryPos = true;
+			} else
+				INFO("&");
 
-			for(j=0; j< pOptListBegin->Length; j++){
-						INFO("%c", pOptListBegin->Value[j]);
+			for (j = 0; j < pOptListBegin->Length; j++) {
+				INFO("%c", pOptListBegin->Value[j]);
 			}
 		}
 
@@ -173,25 +173,21 @@ void _rom CoAP_printUriOptionsList(CoAP_option_t* pOptListBegin)
 }
 
 
-
-
-
-
-uint8_t* CoAP_GetUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, uint8_t* pValueLen){
-	if(pUriOpt == NULL) return NULL;
-	if(pUriOpt->Number != OPT_NUM_URI_QUERY) return NULL;
-	if(pUriOpt->Length == 0 || pUriOpt->Length > 255) return NULL;
+uint8_t* CoAP_GetUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, uint8_t* pValueLen) {
+	if (pUriOpt == NULL) return NULL;
+	if (pUriOpt->Number != OPT_NUM_URI_QUERY) return NULL;
+	if (pUriOpt->Length == 0 || pUriOpt->Length > 255) return NULL;
 
 	int prefixLen = coap_strlen(prefixStr);
-	if(prefixLen >= pUriOpt->Length) return NULL;
+	if (prefixLen >= pUriOpt->Length) return NULL;
 
-	int i=0;
-	for(;i< prefixLen; i++) {
-		if(pUriOpt->Value[i] != prefixStr[i]) return NULL;
+	int i = 0;
+	for (; i < prefixLen; i++) {
+		if (pUriOpt->Value[i] != prefixStr[i]) return NULL;
 	}
 
 	//prefix found
-	if(pValueLen != NULL)
+	if (pValueLen != NULL)
 		*pValueLen = (pUriOpt->Length) - prefixLen;
 
 	return &(pUriOpt->Value[prefixLen]);
@@ -208,55 +204,55 @@ uint8_t* CoAP_GetUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, uint
 //				waitingRespCnt++;
 //				return HANDLER_POSTPONE;
 //		}
-uint8_t* CoAP_GetUriQueryValFromMsg(CoAP_Message_t* pMsg, const char* prefixStr, uint8_t* pValueLen){
+uint8_t* CoAP_GetUriQueryValFromMsg(CoAP_Message_t* pMsg, const char* prefixStr, uint8_t* pValueLen) {
 
 	uint8_t* retVal = NULL;
 	CoAP_option_t* pOpt;
 	for(pOpt =pMsg->pOptionsList ; pOpt != NULL; pOpt = pOpt->next) {
 		retVal = CoAP_GetUriQueryVal(pOpt, prefixStr, pValueLen);
-		if(retVal) break;
+		if (retVal) break;
 	}
 	return retVal;
 }
 
 int8_t CoAP_FindUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, int CmpStrCnt, ...) {
 	va_list ap; //compare string pointer
-	int i,j;
-	char* pStr=NULL;
-	bool Match=false;
+	int i, j;
+	char* pStr = NULL;
+	bool Match = false;
 	uint8_t* pUriQueryVal;
 	uint8_t ValLen;
 
 	pUriQueryVal = CoAP_GetUriQueryVal(pUriOpt, prefixStr, &ValLen);
-	if(pUriQueryVal == NULL) return 0;//-1; //prefix not found, no uri-query
+	if (pUriQueryVal == NULL) return 0;//-1; //prefix not found, no uri-query
 
 	va_start (ap, CmpStrCnt);         // Initialize the argument list.
-	for(i=1;i<CmpStrCnt+1;i++) { //loop over all string arguments to compare the found uri query against
+	for (i = 1; i < CmpStrCnt + 1; i++) { //loop over all string arguments to compare the found uri query against
 		pStr = va_arg(ap, char*);
 
-		if(coap_strlen(pStr) != ValLen) continue; //already length does not match -> try next given string
+		if (coap_strlen(pStr) != ValLen) continue; //already length does not match -> try next given string
 
-		Match=true;
-		for(j=0;j< ValLen; j++) {
-			if(pStr[j] != pUriQueryVal[j]){
-				Match=false;
+		Match = true;
+		for (j = 0; j < ValLen; j++) {
+			if (pStr[j] != pUriQueryVal[j]) {
+				Match = false;
 				break;
 			}
 		}
-		if(Match==false) continue;
+		if (Match == false) continue;
 		//found argument string matching to uri-query value
 		va_end (ap);
 		return i; //return argument number of match
 	}
 
-	 va_end (ap);
-	 return 0; //not found
+	va_end (ap);
+	return 0; //not found
 }
 
-uint32_t CoAP_atoi(uint8_t* Str, uint8_t Len){
+uint32_t CoAP_atoi(uint8_t* Str, uint8_t Len) {
 
-	uint32_t num=0;
-	uint32_t mul=1;//multiplier
+	uint32_t num = 0;
+	uint32_t mul = 1;//multiplier
 
 	if(Len > 10) return 0; //max 32bit num 2,147,483,647
 	int i;

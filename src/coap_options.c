@@ -313,9 +313,9 @@ static CoAP_Result_t _rom append_OptionToListEnd(CoAP_option_t** pOptionsListBeg
 }
 
 
-//this function adds a new option to linked list of options starting at pOptionsListBegin
-//on demand the list gets reordered so that it's sorted ascending by option number (CoAP requirement)
-//copies given buffer to option local buffer
+// this function adds a new option to linked list of options starting at pOptionsListBegin
+// on demand the list gets reordered so that it's sorted ascending by option number (CoAP requirement)
+// copies given buffer to option local buffer
 CoAP_Result_t _rom CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length) {
 	if (*pOptionsListBegin == NULL) //List empty? create 1st option in list
 	{
