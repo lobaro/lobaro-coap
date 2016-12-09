@@ -227,6 +227,7 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 
 	if (ParseOptionsResult != COAP_OK) {
 		CoAP_FreeOptionList(&(Msg.pOptionsList));
+		INFO("CoAP-Parse Options Error\r\n");
 		return ParseOptionsResult;
 	}
 

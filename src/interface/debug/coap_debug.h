@@ -42,7 +42,7 @@ do { \
 
 #define ERROR(...) \
 do { \
-	PRINTF("- (!) ERROR (!) :"); \
+	PRINTF("- (!) ERROR (!) "); \
 	PRINTF(__VA_ARGS__); \
 } while(0)
 
