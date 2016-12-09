@@ -22,31 +22,30 @@
 #ifndef SRC_COAP_COAP_RES_H_
 #define SRC_COAP_COAP_RES_H_
 
-typedef uint32_t (*CoAP_ResourceGetETag_fPtr_t)();
+typedef uint32_t (* CoAP_ResourceGetETag_fPtr_t)();
 
 //Bitfields for resource BitOpts
-#define RES_OPT_GET    (1<<REQ_GET) //1<<1
-#define RES_OPT_POST    (1<<REQ_POST) //1<<2
-#define RES_OPT_PUT        (1<<REQ_PUT) //1<<3
-#define RES_OPT_DELETE    (1<<REQ_DELETE)//1<<4
+#define RES_OPT_GET    (1 << REQ_GET) //1<<1
+#define RES_OPT_POST   (1 << REQ_POST) //1<<2
+#define RES_OPT_PUT    (1 << REQ_PUT) //1<<3
+#define RES_OPT_DELETE (1 << REQ_DELETE)//1<<4
 
 
+typedef bool (* WriteBuf_fn)(uint8_t* data, uint32_t len);
 
-typedef bool (*WriteBuf_fn)(uint8_t *data, uint32_t len);
 
+CoAP_Res_t* CoAP_FindResourceByUri(CoAP_Res_t* pResListToSearchIn, CoAP_option_t* pOptionsToMatch);
+CoAP_Result_t CoAP_NotifyResourceObservers(CoAP_Res_t* pRes);
+CoAP_Result_t CoAP_FreeResource(CoAP_Res_t** pResource);
 
-CoAP_Res_t *CoAP_FindResourceByUri(CoAP_Res_t *pResListToSearchIn, CoAP_option_t *pUriToMatch);
-CoAP_Result_t CoAP_NotifyResourceObservers(CoAP_Res_t *pRes);
-CoAP_Result_t CoAP_FreeResource(CoAP_Res_t **pResource);
-
-void CoAP_PrintResource(CoAP_Res_t *pRes);
+void CoAP_PrintResource(CoAP_Res_t* pRes);
 void CoAP_PrintAllResources();
 
 void CoAP_InitResources();
 
 CoAP_Result_t CoAP_NVsaveObservers(WriteBuf_fn writeBufFn);
-CoAP_Result_t CoAP_NVloadObservers(uint8_t *pRawPage);
+CoAP_Result_t CoAP_NVloadObservers(uint8_t* pRawPage);
 
-CoAP_Result_t CoAP_RemoveObserverFromResource(CoAP_Observer_t **pObserverList, SocketHandle_t socketHandle, NetEp_t *pRemoteEP, uint64_t token);
+CoAP_Result_t CoAP_RemoveObserverFromResource(CoAP_Observer_t** pObserverList, SocketHandle_t socketHandle, NetEp_t* pRemoteEP, uint64_t token);
 
 #endif /* SRC_COAP_COAP_RESOURCES_H_ */

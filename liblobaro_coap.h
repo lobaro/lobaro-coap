@@ -26,6 +26,46 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+
+
+//################################
+// Function Results
+//################################
+
+typedef enum {
+	COAP_OK = 0,
+	COAP_NOT_FOUND, //not found but no error
+	COAP_PARSE_DATAGRAM_TOO_SHORT,
+	COAP_PARSE_UNKOWN_COAP_VERSION,
+	COAP_PARSE_MESSAGE_FORMAT_ERROR,
+	COAP_PARSE_TOO_MANY_OPTIONS,
+	COAP_PARSE_TOO_LONG_OPTION,
+	COAP_PARSE_TOO_MUCH_PAYLOAD,
+	COAP_PACK_TOO_MANY_OPTIONS,
+	COAP_PACK_TOO_LONG_OPTION,
+	COAP_ERR_ARGUMENT,
+	COAP_ERR_SOCKET,
+	COAP_ERR_NETWORK,
+	COAP_ERR_OUT_OF_MEMORY,
+	COAP_ERR_TOO_LONG_URI_PATH,
+	COAP_ERR_NOT_FOUND,
+	COAP_ERR_WRONG_OPTION,
+	COAP_ERR_EXISTING,
+	COAP_TRUE,
+	COAP_FALSE,
+	COAP_ERR_WRONG_REQUEST,
+	COAP_BAD_OPTION_VAL,
+	COAP_BAD_OPTION_LEN,
+	COAP_REMOVED,
+	COAP_ERR_UNKNOWN,
+	COAP_ERR_REMOTE_RST,
+	COAP_ERR_OUT_OF_ATTEMPTS,
+	COAP_ERR_TIMEOUT,
+	COAP_WAITING,
+	COAP_HOLDING_BACK,
+	COAP_RETRY
+} CoAP_Result_t;
+
 //################################
 // Endpoints
 //################################
@@ -180,14 +220,15 @@ typedef struct {
 	uint32_t Timestamp; //set by parse/send network routines
 	//VER is implicit = 1
 	//TKL (Token Length) is calculated dynamically
-	CoAP_MessageType_t Type;                    //[1] T
-	CoAP_MessageCode_t Code;                    //[1] Code
-	uint16_t MessageID;                            //[2] Message ID (maps ACK msg to coresponding CON msg)
-	uint16_t PayloadLength;                        //[2]
-	uint16_t PayloadBufSize;                    //[2] size of allocated msg payload buffer
-	uint64_t Token64;                            //[8] Token (actual send bytes depend on value inside, e.g. Token=0xfa -> only 1 Byte send!)
-	CoAP_option_t* pOptionsList;                //[4] linked list of Options
-	uint8_t* Payload;                            //[4] MUST be last in struct! Because of mem allocation scheme which tries to allocate message mem and payload mem in ONE big data chunk
+	CoAP_MessageType_t Type;                    // [1] T
+	CoAP_MessageCode_t Code;                    // [1] Code
+	uint16_t MessageID;                         // [2] Message ID (maps ACK msg to coresponding CON msg)
+	uint16_t PayloadLength;                     // [2]
+	uint16_t PayloadBufSize;                    // [2] size of allocated msg payload buffer
+	// TODO: Encode token as uint8_t[8] and store an additional TokenLength field to allow leading zeros.
+	uint64_t Token64;                           // [8] Token (actual send bytes depend on value inside, e.g. Token=0xfa -> only 1 Byte send!)
+	CoAP_option_t* pOptionsList;                // [4] linked list of Options
+	uint8_t* Payload;                           // [4] MUST be last in struct! Because of mem allocation scheme which tries to allocate message mem and payload mem in ONE big data chunk
 } CoAP_Message_t; //total of 24 Bytes
 
 //################################
@@ -220,7 +261,7 @@ typedef CoAP_HandlerResult_t (* CoAP_ResourceNotifier_fPtr_t)(CoAP_Observer_t* p
 
 typedef struct {
 	uint16_t Cf;    // Content-Format
-	uint16_t Flags; // Bitwise resource options //todo: Send Response as CON or NON
+	uint16_t AllowedMethods; // Bitwise resource options //todo: Send Response as CON or NON
 	uint16_t ETag;
 } CoAP_ResOpts_t;
 

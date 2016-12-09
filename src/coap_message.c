@@ -121,19 +121,18 @@ static uint16_t _rom CoAP_getRespMsgID(CoAP_Message_t* ReqMsg) {
 	else return CoAP_GetNextMid();
 }
 
-CoAP_Message_t* _rom CoAP_AllocRespMsg(CoAP_Message_t* ReqMsg, uint8_t Code, uint16_t PayloadMaxSize) {
+CoAP_Message_t* _rom CoAP_AllocRespMsg(CoAP_Message_t* ReqMsg, CoAP_MessageCode_t Code, uint16_t PayloadMaxSize) {
 	return CoAP_CreateMessage(CoAP_getRespMsgType(ReqMsg), Code, CoAP_getRespMsgID(ReqMsg), NULL, 0, PayloadMaxSize, ReqMsg->Token64);
 }
 
 
-CoAP_Message_t*
-_rom CoAP_CreateMessage(CoAP_MessageType_t Type,
-						CoAP_MessageCode_t Code,
-						uint16_t MessageID,
-						uint8_t* pPayloadInitialContent,
-						uint16_t PayloadInitialContentLength,
-						uint16_t PayloadMaxSize,
-						uint64_t Token) {
+CoAP_Message_t* _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
+										CoAP_MessageCode_t Code,
+										uint16_t MessageID,
+										uint8_t* pPayloadInitialContent,
+										uint16_t PayloadInitialContentLength,
+										uint16_t PayloadMaxSize,
+										uint64_t Token) {
 	CoAP_Message_t* pMsg = (CoAP_Message_t*) coap_mem_get0(sizeof(CoAP_Message_t) + PayloadMaxSize); //malloc space
 	if (pMsg == NULL) return NULL;
 

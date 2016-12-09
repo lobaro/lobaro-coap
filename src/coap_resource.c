@@ -20,8 +20,9 @@
  * THE SOFTWARE.
  *******************************************************************************/
 #include "coap.h"
+#include "liblobaro_coap.h"
 
-static CoAP_Res_t *pResList = NULL;
+static CoAP_Res_t* pResList = NULL;
 static uint32_t ResListMembers = 0;
 
 uint8_t TempPage[2048];
@@ -34,9 +35,9 @@ uint8_t TempPage[2048];
  * @return
  */
 CoAP_Result_t _rom CoAP_NVsaveObservers(WriteBuf_fn writeBufFn) {
-	CoAP_Res_t *pList = pResList; //List of internal resources
-	CoAP_option_t *pOptList = NULL;
-	uint8_t *pTempPage = TempPage;
+	CoAP_Res_t* pList = pResList; //List of internal resources
+	CoAP_option_t* pOptList = NULL;
+	uint8_t* pTempPage = TempPage;
 	uint32_t TotalPageBytes = 0;
 	bool UriPathHasBeenEncoded = false; //uri path options are only encoded one time for each resource and not for every observer
 
@@ -45,15 +46,15 @@ CoAP_Result_t _rom CoAP_NVsaveObservers(WriteBuf_fn writeBufFn) {
 
 		if (pList->pListObservers != NULL) { //Resource has active observers
 
-			CoAP_Observer_t *pObserverList = pList->pListObservers;
+			CoAP_Observer_t* pObserverList = pList->pListObservers;
 
 			while (pObserverList != NULL) { //iterate over all observers of this resource
 
 				//Store Uri of external Oberserver as option
-				CoAP_AppendOptionToList(&pOptList, OPT_NUM_URI_HOST, (uint8_t *) &(pObserverList->Ep), sizeof(NetEp_t)); //IP+Port of external Observer
-				CoAP_AppendOptionToList(&pOptList, OPT_NUM_URI_PORT, (uint8_t *) &(pObserverList->socketHandle), sizeof(SocketHandle_t)); //socketHandle as pseudo "Port"
+				CoAP_AppendOptionToList(&pOptList, OPT_NUM_URI_HOST, (uint8_t*) &(pObserverList->Ep), sizeof(NetEp_t)); //IP+Port of external Observer
+				CoAP_AppendOptionToList(&pOptList, OPT_NUM_URI_PORT, (uint8_t*) &(pObserverList->socketHandle), sizeof(SocketHandle_t)); //socketHandle as pseudo "Port"
 
-				CoAP_option_t *pOptionsTemp = pList->pUri;
+				CoAP_option_t* pOptionsTemp = pList->pUri;
 
 				//Copy uri-path option of resource
 				if (UriPathHasBeenEncoded == false) {
@@ -71,7 +72,7 @@ CoAP_Result_t _rom CoAP_NVsaveObservers(WriteBuf_fn writeBufFn) {
 					pOptionsTemp = pOptionsTemp->next;
 				}
 
-				CoAP_AppendOptionToList(&pOptList, OPT_NUM_LOBARO_TOKEN_SAVE, (uint8_t *) &(pObserverList->Token), 8);
+				CoAP_AppendOptionToList(&pOptList, OPT_NUM_LOBARO_TOKEN_SAVE, (uint8_t*) &(pObserverList->Token), 8);
 
 				uint16_t BytesWritten = 0;
 				pack_OptionsFromList(pTempPage, &BytesWritten, pOptList);
@@ -102,10 +103,10 @@ CoAP_Result_t _rom CoAP_NVsaveObservers(WriteBuf_fn writeBufFn) {
  * @param pRawPage pointer to the non volatile memory to load the observer from
  * @return
  */
-CoAP_Result_t _rom CoAP_NVloadObservers(uint8_t *pRawPage) {
-	CoAP_option_t *pOptList = NULL;
-	CoAP_Res_t *pRes = NULL;
-	CoAP_Res_t *pResTemp = NULL;
+CoAP_Result_t _rom CoAP_NVloadObservers(uint8_t* pRawPage) {
+	CoAP_option_t* pOptList = NULL;
+	CoAP_Res_t* pRes = NULL;
+	CoAP_Res_t* pResTemp = NULL;
 
 	while (parse_OptionsFromRaw(pRawPage, 2048, &pRawPage, &pOptList) == COAP_OK) { //finds "payload-marker" and sets pointer to its beginning. in this context this is the next stored observe dataset
 		INFO("found flash stored options:\r\n");
@@ -122,7 +123,7 @@ CoAP_Result_t _rom CoAP_NVloadObservers(uint8_t *pRawPage) {
 
 
 		//(re)create observer for resource
-		CoAP_Observer_t *pNewObserver = CoAP_AllocNewObserver();
+		CoAP_Observer_t* pNewObserver = CoAP_AllocNewObserver();
 
 		if (pNewObserver == NULL) {
 			INFO("pNewObserver out of Mem!\r\n");
@@ -130,21 +131,21 @@ CoAP_Result_t _rom CoAP_NVloadObservers(uint8_t *pRawPage) {
 			continue;
 		}
 
-		CoAP_option_t *pOpt = pOptList;
+		CoAP_option_t* pOpt = pOptList;
 		while (pOpt != NULL) {
 			INFO(".");
 
 			switch (pOpt->Number) {
 				case OPT_NUM_URI_HOST:
-					coap_memcpy((void *) &(pNewObserver->Ep), pOpt->Value, sizeof(NetEp_t));
+					coap_memcpy((void*) &(pNewObserver->Ep), pOpt->Value, sizeof(NetEp_t));
 					break;
 				case OPT_NUM_URI_PORT: //"hack" netID, remove if netID removal cleanup done!
-					coap_memcpy((void *) &(pNewObserver->socketHandle), pOpt->Value, sizeof(SocketHandle_t ));
+					coap_memcpy((void*) &(pNewObserver->socketHandle), pOpt->Value, sizeof(SocketHandle_t));
 					break;
 				case OPT_NUM_URI_PATH:
 					break; //dont copy path to observe struct (it's connected to its resource anyway!)
 				case OPT_NUM_LOBARO_TOKEN_SAVE:
-					coap_memcpy((void *) &(pNewObserver->Token), pOpt->Value, 8);
+					coap_memcpy((void*) &(pNewObserver->Token), pOpt->Value, 8);
 					break;
 				default:
 					CoAP_CopyOptionToList(&(pNewObserver->pOptList), pOpt);
@@ -166,7 +167,7 @@ CoAP_Result_t _rom CoAP_NVloadObservers(uint8_t *pRawPage) {
 }
 
 
-CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t *pReq, CoAP_Message_t *pResp) {
+CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Message_t* pResp) {
 //	static uint8_t wellknownStr[500];
 //	uint8_t* pWr = wellknownStr;
 
@@ -177,9 +178,9 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t *pReq, CoAP_Messag
 		return HANDLER_ERROR;
 	}
 
-	CoAP_Res_t *pList = pResList; //List of internal resources
-	uint8_t *pStr = (uint8_t *) coap_mem_get0((ResListMembers + 1) * 64); //first estimation of needed memory
-	uint8_t *pStrStart = pStr;
+	CoAP_Res_t* pList = pResList; //List of internal resources
+	uint8_t* pStr = (uint8_t*) coap_mem_get0((ResListMembers + 1) * 64); //first estimation of needed memory
+	uint8_t* pStrStart = pStr;
 
 	if (pStr == NULL) {
 		INFO("- WellKnown_GetHandler(): Ouf memory error!\r\n");
@@ -190,7 +191,7 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t *pReq, CoAP_Messag
 
 	//TODO: Implement non ram version, e.g. write to memory to eeprom
 	while (pList != NULL) {
-		CoAP_option_t *pUriOpt = pList->pUri;
+		CoAP_option_t* pUriOpt = pList->pUri;
 
 		*pStr = '<';
 		pStr++;
@@ -202,13 +203,13 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t *pReq, CoAP_Messag
 			pUriOpt = pUriOpt->next;
 		}
 		if (pList->Options.Cf == COAP_CF_LINK_FORMAT) {
-			pStr += coap_sprintf((char *) pStr, ">,");
+			pStr += coap_sprintf((char*) pStr, ">,");
 		} else {
-			pStr += coap_sprintf((char *) pStr, ">;title=\"%s\";cf=%d", pList->pDescription, pList->Options.Cf);
+			pStr += coap_sprintf((char*) pStr, ">;title=\"%s\";cf=%d", pList->pDescription, pList->Options.Cf);
 			if (pList->Notifier != NULL) {
-				pStr += coap_sprintf((char *) pStr, ";obs,");
+				pStr += coap_sprintf((char*) pStr, ";obs,");
 			} else {
-				pStr += coap_sprintf((char *) pStr, ",");
+				pStr += coap_sprintf((char*) pStr, ",");
 			}
 		}
 
@@ -217,7 +218,7 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t *pReq, CoAP_Messag
 		//TODO: implement growing of buf/overwrite check
 	}
 
-	CoAP_SetPayload(pReq, pResp, pStrStart, (uint16_t) coap_strlen((char *) pStrStart), true);
+	CoAP_SetPayload(pReq, pResp, pStrStart, (uint16_t) coap_strlen((char*) pStrStart), true);
 	coap_mem_release(pStrStart);
 
 	AddCfOptionToMsg(pResp, COAP_CF_LINK_FORMAT);
@@ -226,11 +227,11 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t *pReq, CoAP_Messag
 }
 
 void _rom CoAP_InitResources() {
-	CoAP_ResOpts_t Options = {.Cf = COAP_CF_LINK_FORMAT, .Flags = RES_OPT_GET};
+	CoAP_ResOpts_t Options = {.Cf = COAP_CF_LINK_FORMAT, .AllowedMethods = RES_OPT_GET};
 	CoAP_CreateResource("/.well-known/core", "\0", Options, WellKnown_GetHandler, NULL);
 }
 
-static CoAP_Result_t _rom CoAP_AppendResourceToList(CoAP_Res_t **pListStart, CoAP_Res_t *pResToAdd) {
+static CoAP_Result_t _rom CoAP_AppendResourceToList(CoAP_Res_t** pListStart, CoAP_Res_t* pResToAdd) {
 	if (pResToAdd == NULL) return COAP_ERR_ARGUMENT;
 
 	if (*pListStart == NULL) //List empty? create new first element
@@ -239,7 +240,7 @@ static CoAP_Result_t _rom CoAP_AppendResourceToList(CoAP_Res_t **pListStart, CoA
 		(*pListStart)->next = NULL;
 	} else //append new element at end
 	{
-		CoAP_Res_t *pRes = *pListStart;
+		CoAP_Res_t* pRes = *pListStart;
 		while (pRes->next != NULL) pRes = pRes->next;
 
 		pRes->next = pResToAdd;
@@ -249,11 +250,11 @@ static CoAP_Result_t _rom CoAP_AppendResourceToList(CoAP_Res_t **pListStart, CoA
 	return COAP_OK;
 }
 
-CoAP_Result_t _rom CoAP_FreeResource(CoAP_Res_t **pResource) {
+CoAP_Result_t _rom CoAP_FreeResource(CoAP_Res_t** pResource) {
 	CoAP_FreeOptionList(&(*pResource)->pUri);
 
 	coap_mem_release((*pResource)->pDescription);
-	coap_mem_release((void *) (*pResource));
+	coap_mem_release((void*) (*pResource));
 	*pResource = NULL;
 	return COAP_OK;
 }
@@ -291,25 +292,37 @@ CoAP_Result_t _rom CoAP_FreeResource(CoAP_Res_t **pResource) {
 //  return COAP_OK;
 //}
 
-CoAP_Res_t *_rom CoAP_FindResourceByUri(CoAP_Res_t *pResListToSearchIn, CoAP_option_t *pUriToMatch) {
-	CoAP_Res_t *pList = pResList;
-
+CoAP_Res_t* _rom CoAP_FindResourceByUri(CoAP_Res_t* pResListToSearchIn, CoAP_option_t* pOptionsToMatch) {
+	CoAP_Res_t* pList = pResList;
 	if (pResListToSearchIn != NULL) {
 		pList = pResListToSearchIn;
 	}
 
 	for (; pList != NULL; pList = pList->next) {
-		if (CoAP_UriOptionsAreEqual(pList->pUri, pUriToMatch))
+		if (CoAP_UriOptionsAreEqual(pList->pUri, pOptionsToMatch)) {
 			return pList;
+		}
 	}
 
 	return NULL;
 }
 
-CoAP_Res_t *_rom CoAP_CreateResource(char *Uri, char *Descr, CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt, CoAP_ResourceNotifier_fPtr_t pNotifierFkt) {
+CoAP_Res_t* _rom CoAP_CreateResource(char* Uri, char* Descr, CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt, CoAP_ResourceNotifier_fPtr_t pNotifierFkt) {
+	INFO("Creating resource %s (%s) AllowedMethods: %x%x%x%x\r\n", Uri, Descr,
+		 !!(Options.AllowedMethods & RES_OPT_GET),
+		 !!(Options.AllowedMethods & RES_OPT_POST),
+		 !!(Options.AllowedMethods & RES_OPT_PUT),
+		 !!(Options.AllowedMethods & RES_OPT_DELETE));
 
-	CoAP_Res_t *pRes = (CoAP_Res_t *) (coap_mem_get0(sizeof(CoAP_Res_t)));
-	if (pRes == NULL) return NULL;
+	if (Options.AllowedMethods == 0) {
+		ERROR("Can not create Resource that does not allow any method!");
+		return NULL;
+	}
+
+	CoAP_Res_t* pRes = (CoAP_Res_t*) (coap_mem_get0(sizeof(CoAP_Res_t)));
+	if (pRes == NULL) {
+		return NULL;
+	}
 
 	pRes->pListObservers = NULL;
 	pRes->pUri = NULL;
@@ -318,7 +331,7 @@ CoAP_Res_t *_rom CoAP_CreateResource(char *Uri, char *Descr, CoAP_ResOpts_t Opti
 	pRes->Options = Options;
 
 	if (*Descr != '\0') {
-		pRes->pDescription = (char *) (coap_mem_get(sizeof(char) * (coap_strlen(Descr) + 1)));
+		pRes->pDescription = (char*) (coap_mem_get(sizeof(char) * (coap_strlen(Descr) + 1)));
 		coap_strcpy(pRes->pDescription, Descr);
 	} else {
 		pRes->pDescription = NULL;
@@ -337,17 +350,17 @@ CoAP_Res_t *_rom CoAP_CreateResource(char *Uri, char *Descr, CoAP_ResOpts_t Opti
 }
 
 
-CoAP_Result_t _rom CoAP_NotifyResourceObservers(CoAP_Res_t *pRes) {
+CoAP_Result_t _rom CoAP_NotifyResourceObservers(CoAP_Res_t* pRes) {
 	pRes->UpdateCnt++;
 	CoAP_StartNotifyInteractions(pRes); //async start of update interaction
 	return COAP_OK;
 }
 
 
-void _rom CoAP_PrintResource(CoAP_Res_t *pRes) {
+void _rom CoAP_PrintResource(CoAP_Res_t* pRes) {
 	CoAP_printUriOptionsList(pRes->pUri);
 	INFO("Observers:\r\n");
-	CoAP_Observer_t *pOpserver = pRes->pListObservers; //point to ListStart
+	CoAP_Observer_t* pOpserver = pRes->pListObservers; //point to ListStart
 	while (pOpserver != NULL) {
 		INFO("Token:%llu - ", pOpserver->Token);
 		PrintEndpoint(&(pOpserver->Ep));
@@ -361,7 +374,7 @@ void _rom CoAP_PrintResource(CoAP_Res_t *pRes) {
 }
 
 void _rom CoAP_PrintAllResources() {
-	CoAP_Res_t *pRes = pResList;
+	CoAP_Res_t* pRes = pResList;
 	while (pRes != NULL) {
 		CoAP_PrintResource(pRes);
 		pRes = pRes->next;
@@ -369,8 +382,8 @@ void _rom CoAP_PrintAllResources() {
 }
 
 
-CoAP_Result_t _rom CoAP_RemoveObserverFromResource(CoAP_Observer_t **pObserverList, SocketHandle_t socketHandle, NetEp_t *pRemoteEP, uint64_t token) {
-	CoAP_Observer_t *pObserver = *pObserverList;
+CoAP_Result_t _rom CoAP_RemoveObserverFromResource(CoAP_Observer_t** pObserverList, SocketHandle_t socketHandle, NetEp_t* pRemoteEP, uint64_t token) {
+	CoAP_Observer_t* pObserver = *pObserverList;
 
 	while (pObserver != NULL) { //found right existing observation -> delete it
 
