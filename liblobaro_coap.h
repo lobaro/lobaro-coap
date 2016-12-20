@@ -134,7 +134,7 @@ typedef struct {
 } MetaInfo_t;
 
 // general network packet
-// received in callbacks and sendout
+// received in callbacks and send out
 // in network send routines
 typedef struct {
 	uint8_t* pData;
@@ -156,7 +156,6 @@ typedef bool ( * NetTransmit_fn )(SocketHandle_t socketHandle, NetPacket_t* pckt
 typedef struct {
 	SocketHandle_t Handle; // Handle to identify the socket
 
-	NetEp_t EpRemote;
 	NetTransmit_fn Tx;     // ext. function called by coap stack to send data after finding socket by socketHandle (internally)
 	bool Alive;            // We can only deal with sockets that are alive
 } CoAP_Socket_t;
@@ -300,7 +299,6 @@ typedef struct {
 	uint32_t (* rtc1HzCnt)(void);
 	//Uart/Display function to print debug/status messages
 	void (* debugPuts)(char* s);
-	void (* debugPutc)(char c);
 } CoAP_API_t;
 
 //################################

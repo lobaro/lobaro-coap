@@ -267,7 +267,7 @@ static CoAP_Result_t _rom CheckRespStatus(CoAP_Interaction_t* pIA) {
 			//todo: call success callback to user
 			return COAP_OK;
 		} else { //check ACK/RST timeout of our CON response
-			if (CoAP.api.rtc1HzCnt() > pIA->AckTimeout) {
+			if (timeAfter(CoAP.api.rtc1HzCnt(), pIA->AckTimeout)) {
 				if (pIA->RetransCounter + 1 > MAX_RETRANSMIT) { //give up
 					INFO("- (!) ACK timeout on sending response, giving up! Resp.MiD: %d\r\n",
 						 pIA->pRespMsg->MessageID);
@@ -306,7 +306,7 @@ static CoAP_Result_t _rom CheckReqStatus(CoAP_Interaction_t* pIA) {
 			INFO("- Request ACKed separate by server -> Waiting for actual response\r\n");
 			return COAP_WAITING;
 		} else { //check ACK/RST timeout of our CON request
-			if (CoAP.api.rtc1HzCnt() > pIA->AckTimeout) {
+			if (timeAfter(CoAP.api.rtc1HzCnt(), pIA->AckTimeout)) {
 				if (pIA->RetransCounter + 1 > MAX_RETRANSMIT) { //give up
 					INFO("- (!) ACK timeout on sending request, giving up! MiD: %d", pIA->pReqMsg->MessageID);
 					return COAP_ERR_OUT_OF_ATTEMPTS;
@@ -346,7 +346,7 @@ void _rom CoAP_doWork() {
 		//nothing to do now
 		return;
 	}
-	if (pIA->SleepUntil > CoAP.api.rtc1HzCnt()) {
+	if (timeAfter(pIA->SleepUntil, CoAP.api.rtc1HzCnt())) {
 		CoAP_EnqueueLastInteraction(pIA);
 		return;
 	}

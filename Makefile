@@ -38,10 +38,10 @@ cmake_force:
 SHELL = cmd.exe
 
 # The CMake executable.
-CMAKE_COMMAND = C:\Users\Tobias\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\171.3224.8\bin\cmake\bin\cmake.exe
+CMAKE_COMMAND = C:\Users\Tobias\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\171.3780.43\bin\cmake\bin\cmake.exe
 
 # The command to remove a file.
-RM = C:\Users\Tobias\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\171.3224.8\bin\cmake\bin\cmake.exe -E remove -f
+RM = C:\Users\Tobias\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\171.3780.43\bin\cmake\bin\cmake.exe -E remove -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -58,7 +58,7 @@ CMAKE_BINARY_DIR = C:\dev\cpath\github.com\Lobaro\lobaro-coap
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
-	C:\Users\Tobias\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\171.3224.8\bin\cmake\bin\cmake.exe -E echo "No interactive CMake dialog available."
+	C:\Users\Tobias\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\171.3780.43\bin\cmake\bin\cmake.exe -E echo "No interactive CMake dialog available."
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -69,7 +69,7 @@ edit_cache/fast: edit_cache
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	C:\Users\Tobias\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\171.3224.8\bin\cmake\bin\cmake.exe -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	C:\Users\Tobias\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\171.3780.43\bin\cmake\bin\cmake.exe -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -110,17 +110,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named LobaroCoapLib
+# Target rules for targets named lobaro_coap
 
 # Build rule for target.
-LobaroCoapLib: cmake_check_build_system
-	$(MAKE) -f CMakeFiles\Makefile2 LobaroCoapLib
-.PHONY : LobaroCoapLib
+lobaro_coap: cmake_check_build_system
+	$(MAKE) -f CMakeFiles\Makefile2 lobaro_coap
+.PHONY : lobaro_coap
 
 # fast build rule for target.
-LobaroCoapLib/fast:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/build
-.PHONY : LobaroCoapLib/fast
+lobaro_coap/fast:
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/build
+.PHONY : lobaro_coap/fast
 
 src/coap_interaction.obj: src/coap_interaction.c.obj
 
@@ -128,7 +128,7 @@ src/coap_interaction.obj: src/coap_interaction.c.obj
 
 # target to build an object file
 src/coap_interaction.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/coap_interaction.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/coap_interaction.c.obj
 .PHONY : src/coap_interaction.c.obj
 
 src/coap_interaction.i: src/coap_interaction.c.i
@@ -137,7 +137,7 @@ src/coap_interaction.i: src/coap_interaction.c.i
 
 # target to preprocess a source file
 src/coap_interaction.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/coap_interaction.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/coap_interaction.c.i
 .PHONY : src/coap_interaction.c.i
 
 src/coap_interaction.s: src/coap_interaction.c.s
@@ -146,7 +146,7 @@ src/coap_interaction.s: src/coap_interaction.c.s
 
 # target to generate assembly for a file
 src/coap_interaction.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/coap_interaction.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/coap_interaction.c.s
 .PHONY : src/coap_interaction.c.s
 
 src/coap_main.obj: src/coap_main.c.obj
@@ -155,7 +155,7 @@ src/coap_main.obj: src/coap_main.c.obj
 
 # target to build an object file
 src/coap_main.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/coap_main.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/coap_main.c.obj
 .PHONY : src/coap_main.c.obj
 
 src/coap_main.i: src/coap_main.c.i
@@ -164,7 +164,7 @@ src/coap_main.i: src/coap_main.c.i
 
 # target to preprocess a source file
 src/coap_main.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/coap_main.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/coap_main.c.i
 .PHONY : src/coap_main.c.i
 
 src/coap_main.s: src/coap_main.c.s
@@ -173,7 +173,7 @@ src/coap_main.s: src/coap_main.c.s
 
 # target to generate assembly for a file
 src/coap_main.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/coap_main.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/coap_main.c.s
 .PHONY : src/coap_main.c.s
 
 src/coap_message.obj: src/coap_message.c.obj
@@ -182,7 +182,7 @@ src/coap_message.obj: src/coap_message.c.obj
 
 # target to build an object file
 src/coap_message.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/coap_message.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/coap_message.c.obj
 .PHONY : src/coap_message.c.obj
 
 src/coap_message.i: src/coap_message.c.i
@@ -191,7 +191,7 @@ src/coap_message.i: src/coap_message.c.i
 
 # target to preprocess a source file
 src/coap_message.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/coap_message.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/coap_message.c.i
 .PHONY : src/coap_message.c.i
 
 src/coap_message.s: src/coap_message.c.s
@@ -200,7 +200,7 @@ src/coap_message.s: src/coap_message.c.s
 
 # target to generate assembly for a file
 src/coap_message.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/coap_message.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/coap_message.c.s
 .PHONY : src/coap_message.c.s
 
 src/coap_options.obj: src/coap_options.c.obj
@@ -209,7 +209,7 @@ src/coap_options.obj: src/coap_options.c.obj
 
 # target to build an object file
 src/coap_options.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/coap_options.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/coap_options.c.obj
 .PHONY : src/coap_options.c.obj
 
 src/coap_options.i: src/coap_options.c.i
@@ -218,7 +218,7 @@ src/coap_options.i: src/coap_options.c.i
 
 # target to preprocess a source file
 src/coap_options.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/coap_options.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/coap_options.c.i
 .PHONY : src/coap_options.c.i
 
 src/coap_options.s: src/coap_options.c.s
@@ -227,7 +227,7 @@ src/coap_options.s: src/coap_options.c.s
 
 # target to generate assembly for a file
 src/coap_options.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/coap_options.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/coap_options.c.s
 .PHONY : src/coap_options.c.s
 
 src/coap_resource.obj: src/coap_resource.c.obj
@@ -236,7 +236,7 @@ src/coap_resource.obj: src/coap_resource.c.obj
 
 # target to build an object file
 src/coap_resource.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/coap_resource.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/coap_resource.c.obj
 .PHONY : src/coap_resource.c.obj
 
 src/coap_resource.i: src/coap_resource.c.i
@@ -245,7 +245,7 @@ src/coap_resource.i: src/coap_resource.c.i
 
 # target to preprocess a source file
 src/coap_resource.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/coap_resource.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/coap_resource.c.i
 .PHONY : src/coap_resource.c.i
 
 src/coap_resource.s: src/coap_resource.c.s
@@ -254,7 +254,7 @@ src/coap_resource.s: src/coap_resource.c.s
 
 # target to generate assembly for a file
 src/coap_resource.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/coap_resource.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/coap_resource.c.s
 .PHONY : src/coap_resource.c.s
 
 src/interface/debug/coap_debug.obj: src/interface/debug/coap_debug.c.obj
@@ -263,7 +263,7 @@ src/interface/debug/coap_debug.obj: src/interface/debug/coap_debug.c.obj
 
 # target to build an object file
 src/interface/debug/coap_debug.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/interface/debug/coap_debug.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/interface/debug/coap_debug.c.obj
 .PHONY : src/interface/debug/coap_debug.c.obj
 
 src/interface/debug/coap_debug.i: src/interface/debug/coap_debug.c.i
@@ -272,7 +272,7 @@ src/interface/debug/coap_debug.i: src/interface/debug/coap_debug.c.i
 
 # target to preprocess a source file
 src/interface/debug/coap_debug.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/interface/debug/coap_debug.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/interface/debug/coap_debug.c.i
 .PHONY : src/interface/debug/coap_debug.c.i
 
 src/interface/debug/coap_debug.s: src/interface/debug/coap_debug.c.s
@@ -281,7 +281,7 @@ src/interface/debug/coap_debug.s: src/interface/debug/coap_debug.c.s
 
 # target to generate assembly for a file
 src/interface/debug/coap_debug.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/interface/debug/coap_debug.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/interface/debug/coap_debug.c.s
 .PHONY : src/interface/debug/coap_debug.c.s
 
 src/interface/mem/coap_mem.obj: src/interface/mem/coap_mem.c.obj
@@ -290,7 +290,7 @@ src/interface/mem/coap_mem.obj: src/interface/mem/coap_mem.c.obj
 
 # target to build an object file
 src/interface/mem/coap_mem.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/interface/mem/coap_mem.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/interface/mem/coap_mem.c.obj
 .PHONY : src/interface/mem/coap_mem.c.obj
 
 src/interface/mem/coap_mem.i: src/interface/mem/coap_mem.c.i
@@ -299,7 +299,7 @@ src/interface/mem/coap_mem.i: src/interface/mem/coap_mem.c.i
 
 # target to preprocess a source file
 src/interface/mem/coap_mem.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/interface/mem/coap_mem.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/interface/mem/coap_mem.c.i
 .PHONY : src/interface/mem/coap_mem.c.i
 
 src/interface/mem/coap_mem.s: src/interface/mem/coap_mem.c.s
@@ -308,7 +308,7 @@ src/interface/mem/coap_mem.s: src/interface/mem/coap_mem.c.s
 
 # target to generate assembly for a file
 src/interface/mem/coap_mem.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/interface/mem/coap_mem.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/interface/mem/coap_mem.c.s
 .PHONY : src/interface/mem/coap_mem.c.s
 
 src/interface/network/net_Endpoint.obj: src/interface/network/net_Endpoint.c.obj
@@ -317,7 +317,7 @@ src/interface/network/net_Endpoint.obj: src/interface/network/net_Endpoint.c.obj
 
 # target to build an object file
 src/interface/network/net_Endpoint.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/interface/network/net_Endpoint.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/interface/network/net_Endpoint.c.obj
 .PHONY : src/interface/network/net_Endpoint.c.obj
 
 src/interface/network/net_Endpoint.i: src/interface/network/net_Endpoint.c.i
@@ -326,7 +326,7 @@ src/interface/network/net_Endpoint.i: src/interface/network/net_Endpoint.c.i
 
 # target to preprocess a source file
 src/interface/network/net_Endpoint.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/interface/network/net_Endpoint.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/interface/network/net_Endpoint.c.i
 .PHONY : src/interface/network/net_Endpoint.c.i
 
 src/interface/network/net_Endpoint.s: src/interface/network/net_Endpoint.c.s
@@ -335,7 +335,7 @@ src/interface/network/net_Endpoint.s: src/interface/network/net_Endpoint.c.s
 
 # target to generate assembly for a file
 src/interface/network/net_Endpoint.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/interface/network/net_Endpoint.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/interface/network/net_Endpoint.c.s
 .PHONY : src/interface/network/net_Endpoint.c.s
 
 src/interface/network/net_Packet.obj: src/interface/network/net_Packet.c.obj
@@ -344,7 +344,7 @@ src/interface/network/net_Packet.obj: src/interface/network/net_Packet.c.obj
 
 # target to build an object file
 src/interface/network/net_Packet.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/interface/network/net_Packet.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/interface/network/net_Packet.c.obj
 .PHONY : src/interface/network/net_Packet.c.obj
 
 src/interface/network/net_Packet.i: src/interface/network/net_Packet.c.i
@@ -353,7 +353,7 @@ src/interface/network/net_Packet.i: src/interface/network/net_Packet.c.i
 
 # target to preprocess a source file
 src/interface/network/net_Packet.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/interface/network/net_Packet.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/interface/network/net_Packet.c.i
 .PHONY : src/interface/network/net_Packet.c.i
 
 src/interface/network/net_Packet.s: src/interface/network/net_Packet.c.s
@@ -362,7 +362,7 @@ src/interface/network/net_Packet.s: src/interface/network/net_Packet.c.s
 
 # target to generate assembly for a file
 src/interface/network/net_Packet.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/interface/network/net_Packet.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/interface/network/net_Packet.c.s
 .PHONY : src/interface/network/net_Packet.c.s
 
 src/interface/network/net_Socket.obj: src/interface/network/net_Socket.c.obj
@@ -371,7 +371,7 @@ src/interface/network/net_Socket.obj: src/interface/network/net_Socket.c.obj
 
 # target to build an object file
 src/interface/network/net_Socket.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/interface/network/net_Socket.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/interface/network/net_Socket.c.obj
 .PHONY : src/interface/network/net_Socket.c.obj
 
 src/interface/network/net_Socket.i: src/interface/network/net_Socket.c.i
@@ -380,7 +380,7 @@ src/interface/network/net_Socket.i: src/interface/network/net_Socket.c.i
 
 # target to preprocess a source file
 src/interface/network/net_Socket.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/interface/network/net_Socket.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/interface/network/net_Socket.c.i
 .PHONY : src/interface/network/net_Socket.c.i
 
 src/interface/network/net_Socket.s: src/interface/network/net_Socket.c.s
@@ -389,7 +389,7 @@ src/interface/network/net_Socket.s: src/interface/network/net_Socket.c.s
 
 # target to generate assembly for a file
 src/interface/network/net_Socket.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/interface/network/net_Socket.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/interface/network/net_Socket.c.s
 .PHONY : src/interface/network/net_Socket.c.s
 
 src/liblobaro_coap.obj: src/liblobaro_coap.c.obj
@@ -398,7 +398,7 @@ src/liblobaro_coap.obj: src/liblobaro_coap.c.obj
 
 # target to build an object file
 src/liblobaro_coap.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/liblobaro_coap.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/liblobaro_coap.c.obj
 .PHONY : src/liblobaro_coap.c.obj
 
 src/liblobaro_coap.i: src/liblobaro_coap.c.i
@@ -407,7 +407,7 @@ src/liblobaro_coap.i: src/liblobaro_coap.c.i
 
 # target to preprocess a source file
 src/liblobaro_coap.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/liblobaro_coap.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/liblobaro_coap.c.i
 .PHONY : src/liblobaro_coap.c.i
 
 src/liblobaro_coap.s: src/liblobaro_coap.c.s
@@ -416,7 +416,7 @@ src/liblobaro_coap.s: src/liblobaro_coap.c.s
 
 # target to generate assembly for a file
 src/liblobaro_coap.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/liblobaro_coap.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/liblobaro_coap.c.s
 .PHONY : src/liblobaro_coap.c.s
 
 src/option-types/coap_option_ETag.obj: src/option-types/coap_option_ETag.c.obj
@@ -425,7 +425,7 @@ src/option-types/coap_option_ETag.obj: src/option-types/coap_option_ETag.c.obj
 
 # target to build an object file
 src/option-types/coap_option_ETag.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/option-types/coap_option_ETag.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/option-types/coap_option_ETag.c.obj
 .PHONY : src/option-types/coap_option_ETag.c.obj
 
 src/option-types/coap_option_ETag.i: src/option-types/coap_option_ETag.c.i
@@ -434,7 +434,7 @@ src/option-types/coap_option_ETag.i: src/option-types/coap_option_ETag.c.i
 
 # target to preprocess a source file
 src/option-types/coap_option_ETag.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/option-types/coap_option_ETag.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/option-types/coap_option_ETag.c.i
 .PHONY : src/option-types/coap_option_ETag.c.i
 
 src/option-types/coap_option_ETag.s: src/option-types/coap_option_ETag.c.s
@@ -443,7 +443,7 @@ src/option-types/coap_option_ETag.s: src/option-types/coap_option_ETag.c.s
 
 # target to generate assembly for a file
 src/option-types/coap_option_ETag.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/option-types/coap_option_ETag.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/option-types/coap_option_ETag.c.s
 .PHONY : src/option-types/coap_option_ETag.c.s
 
 src/option-types/coap_option_blockwise.obj: src/option-types/coap_option_blockwise.c.obj
@@ -452,7 +452,7 @@ src/option-types/coap_option_blockwise.obj: src/option-types/coap_option_blockwi
 
 # target to build an object file
 src/option-types/coap_option_blockwise.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/option-types/coap_option_blockwise.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/option-types/coap_option_blockwise.c.obj
 .PHONY : src/option-types/coap_option_blockwise.c.obj
 
 src/option-types/coap_option_blockwise.i: src/option-types/coap_option_blockwise.c.i
@@ -461,7 +461,7 @@ src/option-types/coap_option_blockwise.i: src/option-types/coap_option_blockwise
 
 # target to preprocess a source file
 src/option-types/coap_option_blockwise.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/option-types/coap_option_blockwise.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/option-types/coap_option_blockwise.c.i
 .PHONY : src/option-types/coap_option_blockwise.c.i
 
 src/option-types/coap_option_blockwise.s: src/option-types/coap_option_blockwise.c.s
@@ -470,7 +470,7 @@ src/option-types/coap_option_blockwise.s: src/option-types/coap_option_blockwise
 
 # target to generate assembly for a file
 src/option-types/coap_option_blockwise.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/option-types/coap_option_blockwise.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/option-types/coap_option_blockwise.c.s
 .PHONY : src/option-types/coap_option_blockwise.c.s
 
 src/option-types/coap_option_cf.obj: src/option-types/coap_option_cf.c.obj
@@ -479,7 +479,7 @@ src/option-types/coap_option_cf.obj: src/option-types/coap_option_cf.c.obj
 
 # target to build an object file
 src/option-types/coap_option_cf.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/option-types/coap_option_cf.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/option-types/coap_option_cf.c.obj
 .PHONY : src/option-types/coap_option_cf.c.obj
 
 src/option-types/coap_option_cf.i: src/option-types/coap_option_cf.c.i
@@ -488,7 +488,7 @@ src/option-types/coap_option_cf.i: src/option-types/coap_option_cf.c.i
 
 # target to preprocess a source file
 src/option-types/coap_option_cf.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/option-types/coap_option_cf.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/option-types/coap_option_cf.c.i
 .PHONY : src/option-types/coap_option_cf.c.i
 
 src/option-types/coap_option_cf.s: src/option-types/coap_option_cf.c.s
@@ -497,7 +497,7 @@ src/option-types/coap_option_cf.s: src/option-types/coap_option_cf.c.s
 
 # target to generate assembly for a file
 src/option-types/coap_option_cf.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/option-types/coap_option_cf.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/option-types/coap_option_cf.c.s
 .PHONY : src/option-types/coap_option_cf.c.s
 
 src/option-types/coap_option_observe.obj: src/option-types/coap_option_observe.c.obj
@@ -506,7 +506,7 @@ src/option-types/coap_option_observe.obj: src/option-types/coap_option_observe.c
 
 # target to build an object file
 src/option-types/coap_option_observe.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/option-types/coap_option_observe.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/option-types/coap_option_observe.c.obj
 .PHONY : src/option-types/coap_option_observe.c.obj
 
 src/option-types/coap_option_observe.i: src/option-types/coap_option_observe.c.i
@@ -515,7 +515,7 @@ src/option-types/coap_option_observe.i: src/option-types/coap_option_observe.c.i
 
 # target to preprocess a source file
 src/option-types/coap_option_observe.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/option-types/coap_option_observe.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/option-types/coap_option_observe.c.i
 .PHONY : src/option-types/coap_option_observe.c.i
 
 src/option-types/coap_option_observe.s: src/option-types/coap_option_observe.c.s
@@ -524,7 +524,7 @@ src/option-types/coap_option_observe.s: src/option-types/coap_option_observe.c.s
 
 # target to generate assembly for a file
 src/option-types/coap_option_observe.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/option-types/coap_option_observe.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/option-types/coap_option_observe.c.s
 .PHONY : src/option-types/coap_option_observe.c.s
 
 src/option-types/coap_option_uri.obj: src/option-types/coap_option_uri.c.obj
@@ -533,7 +533,7 @@ src/option-types/coap_option_uri.obj: src/option-types/coap_option_uri.c.obj
 
 # target to build an object file
 src/option-types/coap_option_uri.c.obj:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/option-types/coap_option_uri.c.obj
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/option-types/coap_option_uri.c.obj
 .PHONY : src/option-types/coap_option_uri.c.obj
 
 src/option-types/coap_option_uri.i: src/option-types/coap_option_uri.c.i
@@ -542,7 +542,7 @@ src/option-types/coap_option_uri.i: src/option-types/coap_option_uri.c.i
 
 # target to preprocess a source file
 src/option-types/coap_option_uri.c.i:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/option-types/coap_option_uri.c.i
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/option-types/coap_option_uri.c.i
 .PHONY : src/option-types/coap_option_uri.c.i
 
 src/option-types/coap_option_uri.s: src/option-types/coap_option_uri.c.s
@@ -551,7 +551,7 @@ src/option-types/coap_option_uri.s: src/option-types/coap_option_uri.c.s
 
 # target to generate assembly for a file
 src/option-types/coap_option_uri.c.s:
-	$(MAKE) -f CMakeFiles\LobaroCoapLib.dir\build.make CMakeFiles/LobaroCoapLib.dir/src/option-types/coap_option_uri.c.s
+	$(MAKE) -f CMakeFiles\lobaro_coap.dir\build.make CMakeFiles/lobaro_coap.dir/src/option-types/coap_option_uri.c.s
 .PHONY : src/option-types/coap_option_uri.c.s
 
 # Help Target
@@ -560,54 +560,57 @@ help:
 	@echo ... all (the default if no target is provided)
 	@echo ... clean
 	@echo ... depend
-	@echo ... LobaroCoapLib
 	@echo ... edit_cache
+	@echo ... lobaro_coap
 	@echo ... rebuild_cache
-	@echo ... coap_interaction.obj
-	@echo ... coap_interaction.i
-	@echo ... coap_interaction.s
-	@echo ... coap_main.obj
-	@echo ... coap_main.i
-	@echo ... coap_main.s
-	@echo ... coap_message.obj
-	@echo ... coap_message.i
-	@echo ... coap_message.s
-	@echo ... coap_options.obj
-	@echo ... coap_options.i
-	@echo ... coap_options.s
-	@echo ... coap_resource.obj
-	@echo ... coap_resource.i
-	@echo ... coap_resource.s
-	@echo ... interface/debug/coap_debug.obj
-	@echo ... interface/debug/coap_debug.i
-	@echo ... interface/debug/coap_debug.s
-	@echo ... interface/mem/coap_mem.obj
-	@echo ... interface/mem/coap_mem.i
-	@echo ... interface/mem/coap_mem.s
-	@echo ... interface/network/net_Endpoint.obj
-	@echo ... interface/network/net_Endpoint.i
-	@echo ... interface/network/net_Endpoint.s
-	@echo ... interface/network/net_Packet.obj
-	@echo ... interface/network/net_Packet.i
-	@echo ... interface/network/net_Packet.s
-	@echo ... interface/network/net_Socket.obj
-	@echo ... interface/network/net_Socket.i
-	@echo ... interface/network/net_Socket.s
-	@echo ... option-types/coap_option_ETag.obj
-	@echo ... option-types/coap_option_ETag.i
-	@echo ... option-types/coap_option_ETag.s
-	@echo ... option-types/coap_option_blockwise.obj
-	@echo ... option-types/coap_option_blockwise.i
-	@echo ... option-types/coap_option_blockwise.s
-	@echo ... option-types/coap_option_cf.obj
-	@echo ... option-types/coap_option_cf.i
-	@echo ... option-types/coap_option_cf.s
-	@echo ... option-types/coap_option_observe.obj
-	@echo ... option-types/coap_option_observe.i
-	@echo ... option-types/coap_option_observe.s
-	@echo ... option-types/coap_option_uri.obj
-	@echo ... option-types/coap_option_uri.i
-	@echo ... option-types/coap_option_uri.s
+	@echo ... src/coap_interaction.obj
+	@echo ... src/coap_interaction.i
+	@echo ... src/coap_interaction.s
+	@echo ... src/coap_main.obj
+	@echo ... src/coap_main.i
+	@echo ... src/coap_main.s
+	@echo ... src/coap_message.obj
+	@echo ... src/coap_message.i
+	@echo ... src/coap_message.s
+	@echo ... src/coap_options.obj
+	@echo ... src/coap_options.i
+	@echo ... src/coap_options.s
+	@echo ... src/coap_resource.obj
+	@echo ... src/coap_resource.i
+	@echo ... src/coap_resource.s
+	@echo ... src/interface/debug/coap_debug.obj
+	@echo ... src/interface/debug/coap_debug.i
+	@echo ... src/interface/debug/coap_debug.s
+	@echo ... src/interface/mem/coap_mem.obj
+	@echo ... src/interface/mem/coap_mem.i
+	@echo ... src/interface/mem/coap_mem.s
+	@echo ... src/interface/network/net_Endpoint.obj
+	@echo ... src/interface/network/net_Endpoint.i
+	@echo ... src/interface/network/net_Endpoint.s
+	@echo ... src/interface/network/net_Packet.obj
+	@echo ... src/interface/network/net_Packet.i
+	@echo ... src/interface/network/net_Packet.s
+	@echo ... src/interface/network/net_Socket.obj
+	@echo ... src/interface/network/net_Socket.i
+	@echo ... src/interface/network/net_Socket.s
+	@echo ... src/liblobaro_coap.obj
+	@echo ... src/liblobaro_coap.i
+	@echo ... src/liblobaro_coap.s
+	@echo ... src/option-types/coap_option_ETag.obj
+	@echo ... src/option-types/coap_option_ETag.i
+	@echo ... src/option-types/coap_option_ETag.s
+	@echo ... src/option-types/coap_option_blockwise.obj
+	@echo ... src/option-types/coap_option_blockwise.i
+	@echo ... src/option-types/coap_option_blockwise.s
+	@echo ... src/option-types/coap_option_cf.obj
+	@echo ... src/option-types/coap_option_cf.i
+	@echo ... src/option-types/coap_option_cf.s
+	@echo ... src/option-types/coap_option_observe.obj
+	@echo ... src/option-types/coap_option_observe.i
+	@echo ... src/option-types/coap_option_observe.s
+	@echo ... src/option-types/coap_option_uri.obj
+	@echo ... src/option-types/coap_option_uri.i
+	@echo ... src/option-types/coap_option_uri.s
 .PHONY : help
 
 
