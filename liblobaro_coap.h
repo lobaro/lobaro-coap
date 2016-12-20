@@ -26,8 +26,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-
-
 //################################
 // Function Results
 //################################
@@ -150,8 +148,8 @@ typedef struct {
 //################################
 typedef void* SocketHandle_t;
 
-typedef void ( * NetReceiveCallback_fn )(SocketHandle_t socketHandle, NetPacket_t* pckt);
-typedef bool ( * NetTransmit_fn )(SocketHandle_t socketHandle, NetPacket_t* pckt);
+typedef void (*NetReceiveCallback_fn)(SocketHandle_t socketHandle, NetPacket_t* pckt);
+typedef bool (*NetTransmit_fn)(SocketHandle_t socketHandle, NetPacket_t* pckt);
 
 typedef struct {
 	SocketHandle_t Handle; // Handle to identify the socket
@@ -227,7 +225,7 @@ typedef struct {
 	// TODO: Encode token as uint8_t[8] and store an additional TokenLength field to allow leading zeros.
 	uint64_t Token64;                           // [8] Token (actual send bytes depend on value inside, e.g. Token=0xfa -> only 1 Byte send!)
 	CoAP_option_t* pOptionsList;                // [4] linked list of Options
-	uint8_t* Payload;                           // [4] MUST be last in struct! Because of mem allocation scheme which tries to allocate message mem and payload mem in ONE big data chunk
+	uint8_t* Payload;                      // [4] MUST be last in struct! Because of mem allocation scheme which tries to allocate message mem and payload mem in ONE big data chunk
 } CoAP_Message_t; //total of 24 Bytes
 
 //################################
@@ -248,15 +246,21 @@ typedef struct CoAP_Observer {
 // Resources
 //################################
 
+//Bitfields for resource BitOpts
+#define RES_OPT_GET    (1 << REQ_GET)    // 1<<1
+#define RES_OPT_POST   (1 << REQ_POST)   // 1<<2
+#define RES_OPT_PUT    (1 << REQ_PUT)    // 1<<3
+#define RES_OPT_DELETE (1 << REQ_DELETE) // 1<<4
+
 typedef enum {
 	HANDLER_OK = 0,
 	HANDLER_POSTPONE = 1,
 	HANDLER_ERROR = 2
 } CoAP_HandlerResult_t;
 
-typedef CoAP_HandlerResult_t (* CoAP_ResourceHandler_fPtr_t)(CoAP_Message_t* pReq, CoAP_Message_t* pResp);
+typedef CoAP_HandlerResult_t (*CoAP_ResourceHandler_fPtr_t)(CoAP_Message_t* pReq, CoAP_Message_t* pResp);
 // TODO: Can we use the CoAP_ResourceHandler_fPtr_t signature also for notifiers?
-typedef CoAP_HandlerResult_t (* CoAP_ResourceNotifier_fPtr_t)(CoAP_Observer_t* pListObservers, CoAP_Message_t* pResp);
+typedef CoAP_HandlerResult_t (*CoAP_ResourceNotifier_fPtr_t)(CoAP_Observer_t* pListObservers, CoAP_Message_t* pResp);
 
 typedef struct {
 	uint16_t Cf;    // Content-Format
@@ -296,9 +300,9 @@ typedef struct {
  */
 typedef struct {
 	//1Hz Clock used by timeout logic
-	uint32_t (* rtc1HzCnt)(void);
+	uint32_t (*rtc1HzCnt)(void);
 	//Uart/Display function to print debug/status messages
-	void (* debugPuts)(char* s);
+	void (*debugPuts)(char* s);
 } CoAP_API_t;
 
 //################################

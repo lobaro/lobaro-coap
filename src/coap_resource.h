@@ -24,13 +24,6 @@
 
 typedef uint32_t (* CoAP_ResourceGetETag_fPtr_t)();
 
-//Bitfields for resource BitOpts
-#define RES_OPT_GET    (1 << REQ_GET) //1<<1
-#define RES_OPT_POST   (1 << REQ_POST) //1<<2
-#define RES_OPT_PUT    (1 << REQ_PUT) //1<<3
-#define RES_OPT_DELETE (1 << REQ_DELETE)//1<<4
-
-
 typedef bool (* WriteBuf_fn)(uint8_t* data, uint32_t len);
 
 
