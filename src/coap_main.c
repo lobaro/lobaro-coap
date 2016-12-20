@@ -597,6 +597,8 @@ void _rom CoAP_doWork() {
 				case COAP_ERR_OUT_OF_ATTEMPTS: //check is resource is a lazy observe delete one
 				case COAP_ERR_REMOTE_RST:
 					CoAP_RemoveInteractionsObserver(pIA, pIA->pRespMsg->Token64);  //remove observer from resource
+					CoAP_DeleteInteraction(pIA);
+					break;
 				default:
 					CoAP_DeleteInteraction(pIA);
 					break;
