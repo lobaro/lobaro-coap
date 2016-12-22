@@ -353,7 +353,7 @@ CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 
 			if (newIA->pRespMsg->Code >= RESP_ERROR_BAD_REQUEST_4_00) { //remove this observer from resource in case of non OK Code (see RFC7641, 3.2., 3rd paragraph)
 				pObserver = pObserver->next; //next statement will free current observer so save its ancestor node right now
-				CoAP_RemoveInteractionsObserver(newIA, newIA->pRespMsg->Token64);
+				CoAP_RemoveInteractionsObserver(newIA, newIA->pRespMsg->Token);
 				continue;
 			} else {
 				AddObserveOptionToMsg(newIA->pRespMsg, pRes->UpdateCnt); // Only 2.xx responses do include an Observe Option.
@@ -423,7 +423,7 @@ CoAP_Result_t _rom CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_
 	return COAP_OK;
 }
 
-CoAP_Result_t _rom CoAP_RemoveInteractionsObserver(CoAP_Interaction_t* pIA, uint64_t token) {
+CoAP_Result_t _rom CoAP_RemoveInteractionsObserver(CoAP_Interaction_t* pIA, CoAP_Token_t token) {
 
 	return CoAP_RemoveObserverFromResource(&((pIA->pRes)->pListObservers), pIA->socketHandle, &(pIA->RemoteEp), token);
 }
@@ -449,7 +449,7 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 		//Copy relevant information for observation from current interaction
 		pObserver->Ep = pIA->RemoteEp;
 		pObserver->socketHandle = pIA->socketHandle;
-		pObserver->Token = pIA->pReqMsg->Token64;
+		pObserver->Token = pIA->pReqMsg->Token;
 		pObserver->next = NULL;
 
 		//Copy relevant Options from Request (uri-query, observe)
@@ -468,7 +468,7 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 
 		//delete eventually existing same observer
 		while (pExistingObserver != NULL) { //found right existing observation -> delete it
-			if (pIA->pReqMsg->Token64 == pExistingObserver->Token && pIA->socketHandle == pExistingObserver->socketHandle && EpAreEqual(&(pIA->RemoteEp), &(pExistingObserver->Ep))) {
+			if (CoAP_TokenEqual(pIA->pReqMsg->Token, pExistingObserver->Token) && pIA->socketHandle == pExistingObserver->socketHandle && EpAreEqual(&(pIA->RemoteEp), &(pExistingObserver->Ep))) {
 				CoAP_UnlinkObserverFromList(&((pIA->pRes)->pListObservers), pExistingObserver, true);
 				break;
 			}
@@ -481,13 +481,13 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 		//Client cancels observation actively (this is an alternative to simply forget the req token and send rst on next notification)
 	} else if (obsVal == OBSERVE_OPT_DEREGISTER) {
 		//find matching observer in resource observers-list
-		CoAP_RemoveInteractionsObserver(pIA, pIA->pReqMsg->Token64); //remove observer identified by token, socketHandle and remote EP from resource
+		CoAP_RemoveInteractionsObserver(pIA, pIA->pReqMsg->Token); //remove observer identified by token, socketHandle and remote EP from resource
 
 		//delete/abort any pending notification interaction
 		CoAP_Interaction_t* pIApending;
 		for (pIApending = CoAP.pInteractions; pIApending != NULL; pIApending = pIApending->next) {
 			if (pIApending->Role == COAP_ROLE_NOTIFICATION) {
-				if (pIApending->pRespMsg->Token64 == pIA->pReqMsg->Token64 && pIApending->socketHandle == pIA->socketHandle && EpAreEqual(&(pIApending->RemoteEp), &(pIA->RemoteEp))) {
+				if (CoAP_TokenEqual(pIApending->pRespMsg->Token, pIA->pReqMsg->Token) && pIApending->socketHandle == pIA->socketHandle && EpAreEqual(&(pIApending->RemoteEp), &(pIA->RemoteEp))) {
 					INFO("Abort of pending notificaton interaction\r\n");
 					CoAP_DeleteInteraction(pIApending);
 					break;

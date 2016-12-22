@@ -382,12 +382,12 @@ void _rom CoAP_PrintAllResources() {
 }
 
 
-CoAP_Result_t _rom CoAP_RemoveObserverFromResource(CoAP_Observer_t** pObserverList, SocketHandle_t socketHandle, NetEp_t* pRemoteEP, uint64_t token) {
+CoAP_Result_t _rom CoAP_RemoveObserverFromResource(CoAP_Observer_t** pObserverList, SocketHandle_t socketHandle, NetEp_t* pRemoteEP, CoAP_Token_t token) {
 	CoAP_Observer_t* pObserver = *pObserverList;
 
 	while (pObserver != NULL) { //found right existing observation -> delete it
 
-		if (token == pObserver->Token && socketHandle == pObserver->socketHandle && EpAreEqual(pRemoteEP, &(pObserver->Ep))) {
+		if (CoAP_TokenEqual(token, pObserver->Token) && socketHandle == pObserver->socketHandle && EpAreEqual(pRemoteEP, &(pObserver->Ep))) {
 
 			INFO("- (!) Unlinking observer from resource\r\n");
 			CoAP_UnlinkObserverFromList(pObserverList, pObserver, true);

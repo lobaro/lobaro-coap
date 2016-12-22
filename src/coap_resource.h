@@ -39,6 +39,6 @@ void CoAP_InitResources();
 CoAP_Result_t CoAP_NVsaveObservers(WriteBuf_fn writeBufFn);
 CoAP_Result_t CoAP_NVloadObservers(uint8_t* pRawPage);
 
-CoAP_Result_t CoAP_RemoveObserverFromResource(CoAP_Observer_t** pObserverList, SocketHandle_t socketHandle, NetEp_t* pRemoteEP, uint64_t token);
+CoAP_Result_t CoAP_RemoveObserverFromResource(CoAP_Observer_t** pObserverList, SocketHandle_t socketHandle, NetEp_t* pRemoteEP, CoAP_Token_t token);
 
 #endif /* SRC_COAP_COAP_RESOURCES_H_ */

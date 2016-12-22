@@ -19,29 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
+#include <stdbool.h>
 #include "coap.h"
 #include "liblobaro_coap.h"
-
-static uint8_t _rom getTokenByteCount(uint64_t Token) {
-	if (Token == 0)
-		return 0;
-	else if (Token <= 0xff)
-		return 1;
-	else if (Token <= 0xffff)
-		return 2;
-	else if (Token <= 0xffffff)
-		return 3;
-	else if (Token <= 0xffffffff)
-		return 4;
-	else if (Token <= 0xffffffffff)
-		return 5;
-	else if (Token <= 0xffffffffffff)
-		return 6;
-	else if (Token <= 0xffffffffffffff)
-		return 7;
-	else
-		return 8;
-}
 
 static void _rom CoAP_InitToEmptyResetMsg(CoAP_Message_t* msg) {
 	msg->Type = RST;
@@ -51,7 +31,8 @@ static void _rom CoAP_InitToEmptyResetMsg(CoAP_Message_t* msg) {
 	msg->MessageID = 0;
 	msg->pOptionsList = NULL;
 	msg->Payload = NULL;
-	msg->Token64 = 0;
+	CoAP_Token_t tok = {.Token= {0,0,0,0,0,0,0,0}, .Length = 0};
+	msg->Token = tok;
 	msg->Timestamp = 0;
 }
 
@@ -68,6 +49,18 @@ static bool _rom bufferIsPartOfMsg(uint8_t* buf, CoAP_Message_t* pMsg) {
 		return false; //bsize gives total alloc size of msg (user data only)
 	else
 		return true;
+}
+
+bool CoAP_TokenEqual(CoAP_Token_t a, CoAP_Token_t b) {
+	if (a.Length != b.Length) {
+		return false;
+	}
+	for (int i = 0; i < a.Length; i++) {
+		if (a.Token[i] != b.Token[i]) {
+			return false;
+		}
+	}
+	return true;
 }
 
 void _rom CoAP_free_MsgPayload(CoAP_Message_t** Msg) {
@@ -151,7 +144,7 @@ static uint16_t _rom CoAP_getRespMsgID(CoAP_Message_t* ReqMsg) {
 }
 
 CoAP_Message_t* _rom CoAP_AllocRespMsg(CoAP_Message_t* ReqMsg, CoAP_MessageCode_t Code, uint16_t PayloadMaxSize) {
-	return CoAP_CreateMessage(CoAP_getRespMsgType(ReqMsg), Code, CoAP_getRespMsgID(ReqMsg), NULL, 0, PayloadMaxSize, ReqMsg->Token64);
+	return CoAP_CreateMessage(CoAP_getRespMsgType(ReqMsg), Code, CoAP_getRespMsgID(ReqMsg), NULL, 0, PayloadMaxSize, ReqMsg->Token);
 }
 
 CoAP_Message_t* _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
@@ -160,7 +153,7 @@ CoAP_Message_t* _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
 		uint8_t* pPayloadInitialContent,
 		uint16_t PayloadInitialContentLength,
 		uint16_t PayloadMaxSize,
-		uint64_t Token) {
+		CoAP_Token_t Token) {
 	CoAP_Message_t* pMsg = (CoAP_Message_t*) coap_mem_get0(sizeof(CoAP_Message_t) + PayloadMaxSize); //malloc space
 	if (pMsg == NULL)
 		return NULL;
@@ -176,15 +169,16 @@ CoAP_Message_t* _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
 	pMsg->Type = Type;
 	pMsg->Code = Code;
 	pMsg->MessageID = MessageID;
-	pMsg->Token64 = Token;
+	pMsg->Token = Token;
 	pMsg->Timestamp = 0;
 
 	pMsg->PayloadLength = PayloadInitialContentLength;
 	if (PayloadMaxSize) {
 		pMsg->PayloadBufSize = PayloadMaxSize;
 		pMsg->Payload = ((uint8_t*) (pMsg)) + sizeof(CoAP_Message_t); //set pointer
-		if (pPayloadInitialContent != NULL)
+		if (pPayloadInitialContent != NULL) {
 			coap_memcpy((void*) ((pMsg)->Payload), (void*) pPayloadInitialContent, PayloadInitialContentLength);
+		}
 	}
 
 	return pMsg;
@@ -240,10 +234,11 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 	}
 
 //Token (if any)
-	Msg.Token64 = 0;
+	CoAP_Token_t tok = {.Token = {0,0,0,0,0,0,0,0}, .Length = TokenLength};
+	Msg.Token = tok;
 	int i;
 	for (i = 0; i < TokenLength; i++) {
-		Msg.Token64 |= ((uint64_t) (srcArr[offset + i])) << (8 * i);
+		Msg.Token.Token[i] = srcArr[offset + i];
 	}
 
 	offset += TokenLength;
@@ -311,7 +306,7 @@ int CoAP_GetRawSizeOfMessage(CoAP_Message_t* Msg) {
 			TotalMsgBytes += Msg->PayloadLength + 1; //+1 = PayloadMarker
 		}
 
-		TotalMsgBytes += getTokenByteCount(Msg->Token64);
+		TotalMsgBytes += Msg->Token.Length;
 	}
 
 	return TotalMsgBytes;
@@ -325,7 +320,7 @@ static CoAP_Result_t _rom CoAP_BuildDatagram(uint8_t* destArr, uint16_t* pDestAr
 		Msg->PayloadLength = 0;
 		TokenLength = 0;
 	} else {
-		TokenLength = getTokenByteCount(Msg->Token64);
+		TokenLength = Msg->Token.Length;
 	}
 
 // 4Byte Header (see p.16 RFC7252)
@@ -342,7 +337,7 @@ static CoAP_Result_t _rom CoAP_BuildDatagram(uint8_t* destArr, uint16_t* pDestAr
 // Token (0 to 8 Bytes)
 	int i;
 	for (i = 0; i < TokenLength; i++) {
-		destArr[offset + i] = ((uint8_t) ((Msg->Token64) >> 8 * i)) & 0xff;
+		destArr[offset + i] = Msg->Token.Token[i];
 	}
 	offset += TokenLength;
 
@@ -380,13 +375,13 @@ CoAP_Result_t _rom CoAP_SendEmptyAck(uint16_t MessageID, SocketHandle_t socketHa
 }
 
 //send short response
-CoAP_Result_t _rom CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, uint64_t token, SocketHandle_t socketHandle, NetEp_t receiver) {
+CoAP_Result_t _rom CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, CoAP_Token_t token, SocketHandle_t socketHandle, NetEp_t receiver) {
 	CoAP_Message_t Msg; //put on stack (no need to free)
 	CoAP_InitToEmptyResetMsg(&Msg);
 	Msg.Type = Type;
 	Msg.MessageID = MessageID;
 	Msg.Code = Code;
-	Msg.Token64 = token;
+	Msg.Token = token;
 	return CoAP_SendMsg(&Msg, socketHandle, receiver);
 }
 
@@ -477,10 +472,12 @@ uint16_t _rom CoAP_GetNextMid() {
 	return MId;
 }
 
-uint64_t _rom CoAP_GenerateToken() {
-	static uint64_t Token = 0xfa;
-	Token++;
-	return Token;
+// TODO: Improove generated tokens
+CoAP_Token_t _rom CoAP_GenerateToken() {
+	static uint8_t currToken = 0x44;
+	currToken++;
+	CoAP_Token_t tok = {.Token = {currToken, 0,0,0,0,0,0,0}, .Length = 1};
+	return tok;
 }
 
 CoAP_Result_t _rom CoAP_addNewPayloadToMessage(CoAP_Message_t* Msg, uint8_t* pData, uint16_t size) {
@@ -531,12 +528,12 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 		LOG_DEBUG("*Type: UNKNOWN! (0x%02x)\r\n", msg->Type);
 	}
 
-	uint8_t tokenBytes = getTokenByteCount(msg->Token64);
+	uint8_t tokenBytes = msg->Token.Length;
 	if (tokenBytes > 0) {
 		LOG_DEBUG("*Token: %u Byte -> 0x", tokenBytes);
 		int i;
 		for (i = 0; i < tokenBytes; i++) {
-			LOG_DEBUG("%02x", TOKEN_BYTE(i, msg->Token64));
+			LOG_DEBUG("%02x", msg->Token.Token[i]);
 		}
 	} else {
 		LOG_DEBUG("*Token: %u Byte -> 0", tokenBytes);

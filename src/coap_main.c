@@ -78,9 +78,9 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 		pRes = CoAP_FindResourceByUri(NULL, pMsg->pOptionsList);
 		if (pRes == NULL || pRes->Handler == NULL) { //unknown resource requested
 			if (pMsg->Type == CON) {
-				CoAP_SendShortResp(ACK, RESP_NOT_FOUND_4_04, pMsg->MessageID, pMsg->Token64, socketHandle, pPacket->remoteEp);
+				CoAP_SendShortResp(ACK, RESP_NOT_FOUND_4_04, pMsg->MessageID, pMsg->Token, socketHandle, pPacket->remoteEp);
 			} else { // usually NON, but we better catch all
-				CoAP_SendShortResp(NON, RESP_NOT_FOUND_4_04, CoAP_GetNextMid(), pMsg->Token64, socketHandle, pPacket->remoteEp);
+				CoAP_SendShortResp(NON, RESP_NOT_FOUND_4_04, CoAP_GetNextMid(), pMsg->Token, socketHandle, pPacket->remoteEp);
 			}
 			goto END;
 		}
@@ -97,7 +97,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 		} else if (pMsg->Type == CON) {
 			if (isRequest) {
 				//todo: add diagnostic payload which option rejectet
-				CoAP_SendShortResp(ACK, RESP_BAD_OPTION_4_02, pMsg->MessageID, pMsg->Token64, socketHandle, pPacket->remoteEp);
+				CoAP_SendShortResp(ACK, RESP_BAD_OPTION_4_02, pMsg->MessageID, pMsg->Token, socketHandle, pPacket->remoteEp);
 			} else {
 				//reject externals servers response
 				CoAP_SendEmptyRST(pMsg->MessageID, socketHandle, pPacket->remoteEp);
@@ -130,7 +130,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 			INFO("- piggybacked response received\r\n");
 			if (pMsg->Code != EMPTY) {
 				//no "simple" ACK => must be piggybacked RESPONSE to our [client] request. corresponding Interaction has been found before
-				if (pIA->Role == COAP_ROLE_CLIENT && pIA->pReqMsg->Token64 == pMsg->Token64 && pIA->State == COAP_STATE_WAITING_RESPONSE) {
+				if (pIA->Role == COAP_ROLE_CLIENT && CoAP_TokenEqual(pIA->pReqMsg->Token, pMsg->Token) && pIA->State == COAP_STATE_WAITING_RESPONSE) {
 					if (pIA->pRespMsg != NULL) {
 						CoAP_free_Message(&(pIA->pRespMsg)); //free eventually present older response (todo: check if this is possible!?)
 					}
@@ -158,7 +158,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 				} else if (res == COAP_ERR_OUT_OF_MEMORY) {
 					if (pMsg->Type == CON) {
 						// will free any already allocated mem
-						CoAP_SendShortResp(ACK, RESP_INTERNAL_SERVER_ERROR_5_00, pMsg->MessageID, pMsg->Token64, socketHandle, pPacket->remoteEp);
+						CoAP_SendShortResp(ACK, RESP_INTERNAL_SERVER_ERROR_5_00, pMsg->MessageID, pMsg->Token, socketHandle, pPacket->remoteEp);
 					}
 					goto END;
 				}
@@ -167,7 +167,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 				// find in interaction list request with same token & endpoint
 				CoAP_Interaction_t* pIA;
 				for (pIA = CoAP.pInteractions; pIA != NULL; pIA = pIA->next) {
-					if (pIA->Role == COAP_ROLE_CLIENT && pIA->pReqMsg->Token64 == pMsg->Token64 && EpAreEqual(&(pPacket->remoteEp), &(pIA->RemoteEp))) {
+					if (pIA->Role == COAP_ROLE_CLIENT && CoAP_TokenEqual(pIA->pReqMsg->Token, pMsg->Token) && EpAreEqual(&(pPacket->remoteEp), &(pIA->RemoteEp))) {
 						// 2nd case "updates" received response
 						if (pIA->State == COAP_STATE_WAITING_RESPONSE || pIA->State == COAP_STATE_HANDLE_RESPONSE) {
 							if (pIA->pRespMsg != NULL) {
@@ -178,7 +178,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 						}
 
 						if (pMsg->Type == CON) {
-							if (CoAP_SendShortResp(ACK, EMPTY, pMsg->MessageID, pMsg->Token64, socketHandle, pPacket->remoteEp) == COAP_OK) {
+							if (CoAP_SendShortResp(ACK, EMPTY, pMsg->MessageID, pMsg->Token, socketHandle, pPacket->remoteEp) == COAP_OK) {
 								pIA->RespReliabilityState = ACK_SET;
 							}
 						}
@@ -188,7 +188,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 
 				// no active interaction found to match remote msg to...
 				// no matching IA has been found! can't do anything with this msg -> Rejecting it (also NON msg) (see RFC7252, 4.3.)
-				CoAP_SendShortResp(RST, EMPTY, pMsg->MessageID, pMsg->Token64, socketHandle, pPacket->remoteEp);
+				CoAP_SendShortResp(RST, EMPTY, pMsg->MessageID, pMsg->Token, socketHandle, pPacket->remoteEp);
 				goto END;
 			}
 
@@ -549,7 +549,7 @@ void _rom CoAP_doWork() {
 						//call notifier
 						if (pIA->pRes->Notifier(pIA->pObserver, pIA->pRespMsg) >= RESP_ERROR_BAD_REQUEST_4_00) {
 							RemoveObserveOptionFromMsg(pIA->pRespMsg);
-							CoAP_RemoveInteractionsObserver(pIA, pIA->pRespMsg->Token64);
+							CoAP_RemoveInteractionsObserver(pIA, pIA->pRespMsg->Token);
 						} else { //good response
 							UpdateObserveOptionInMsg(pIA->pRespMsg, pIA->pRes->UpdateCnt);
 						}
@@ -582,7 +582,7 @@ void _rom CoAP_doWork() {
 						//call notifier
 						if (pIA->pRes->Notifier(pIA->pObserver, pIA->pRespMsg) >= RESP_ERROR_BAD_REQUEST_4_00) {
 							RemoveObserveOptionFromMsg(pIA->pRespMsg);
-							CoAP_RemoveInteractionsObserver(pIA, pIA->pRespMsg->Token64);
+							CoAP_RemoveInteractionsObserver(pIA, pIA->pRespMsg->Token);
 						} else { //good response
 							UpdateObserveOptionInMsg(pIA->pRespMsg, pIA->pRes->UpdateCnt);
 						}
@@ -596,7 +596,7 @@ void _rom CoAP_doWork() {
 
 				case COAP_ERR_OUT_OF_ATTEMPTS: //check is resource is a lazy observe delete one
 				case COAP_ERR_REMOTE_RST:
-					CoAP_RemoveInteractionsObserver(pIA, pIA->pRespMsg->Token64);  //remove observer from resource
+					CoAP_RemoveInteractionsObserver(pIA, pIA->pRespMsg->Token);  //remove observer from resource
 					CoAP_DeleteInteraction(pIA);
 					break;
 				default:

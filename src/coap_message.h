@@ -24,6 +24,7 @@
 #define COAP_MESSAGE_H_
 
 #include "coap_options.h"
+#include "liblobaro_coap.h"
 
 #define TOKEN_BYTE(num, token) (((uint8_t*)(&token))[num])
 #define TOKEN2STR(token) TOKEN_BYTE(0,token), \
@@ -35,15 +36,17 @@
 		TOKEN_BYTE(6,token), \
 		TOKEN_BYTE(7,token)
 
+bool CoAP_TokenEqual(CoAP_Token_t a, CoAP_Token_t b);
+
 CoAP_Message_t* CoAP_CreateMessage(CoAP_MessageType_t Type, CoAP_MessageCode_t Code,
-		uint16_t MessageID, uint8_t* pPayloadInitialContent, uint16_t PayloadInitialContentLength, uint16_t PayloadMaxSize, uint64_t Token);
+		uint16_t MessageID, uint8_t* pPayloadInitialContent, uint16_t PayloadInitialContentLength, uint16_t PayloadMaxSize, CoAP_Token_t Token);
 
 CoAP_Result_t CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcArrLength, CoAP_Message_t** rxedMsg);
 
 CoAP_Result_t CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle, NetEp_t receiver);
 CoAP_Result_t CoAP_SendEmptyAck(uint16_t MessageID, SocketHandle_t socketHandle, NetEp_t receiver);
 CoAP_Result_t CoAP_SendEmptyRST(uint16_t MessageID, SocketHandle_t socketHandle, NetEp_t receiver);
-CoAP_Result_t CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, uint64_t token, SocketHandle_t socketHandle, NetEp_t receiver);
+CoAP_Result_t CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, CoAP_Token_t token, SocketHandle_t socketHandle, NetEp_t receiver);
 CoAP_Message_t* CoAP_AllocRespMsg(CoAP_Message_t* ReqMsg, CoAP_MessageCode_t Code, uint16_t PayloadMaxSize);
 
 CoAP_Result_t CoAP_free_Message(CoAP_Message_t** Msg);
@@ -63,6 +66,6 @@ CoAP_Result_t CoAP_addTextPayload(CoAP_Message_t* Msg, char* PayloadStr);
 CoAP_Result_t CoAP_addNewPayloadToMessage(CoAP_Message_t* Msg, uint8_t* pData, uint16_t size);
 
 uint16_t CoAP_GetNextMid();
-uint64_t CoAP_GenerateToken();
+CoAP_Token_t CoAP_GenerateToken();
 
 #endif /* COAP_MESSAGE_H_ */
