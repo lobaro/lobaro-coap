@@ -214,6 +214,11 @@ typedef enum {
 } CoAP_MessageCode_t;
 
 typedef struct {
+	uint8_t Length;
+	uint8_t Token[8];
+} CoAP_Token_t;
+
+typedef struct {
 	uint32_t Timestamp; //set by parse/send network routines
 	//VER is implicit = 1
 	//TKL (Token Length) is calculated dynamically
@@ -222,11 +227,10 @@ typedef struct {
 	uint16_t MessageID;                         // [2] Message ID (maps ACK msg to coresponding CON msg)
 	uint16_t PayloadLength;                     // [2]
 	uint16_t PayloadBufSize;                    // [2] size of allocated msg payload buffer
-	// TODO: Encode token as uint8_t[8] and store an additional TokenLength field to allow leading zeros.
-	uint64_t Token64;                           // [8] Token (actual send bytes depend on value inside, e.g. Token=0xfa -> only 1 Byte send!)
+	CoAP_Token_t Token;                         // [9] Token (1 byte Length + up to 8 Byte for the token content)
 	CoAP_option_t* pOptionsList;                // [4] linked list of Options
-	uint8_t* Payload;                      // [4] MUST be last in struct! Because of mem allocation scheme which tries to allocate message mem and payload mem in ONE big data chunk
-} CoAP_Message_t; //total of 24 Bytes
+	uint8_t* Payload;                           // [4] MUST be last in struct! Because of mem allocation scheme which tries to allocate message mem and payload mem in ONE big data chunk
+} CoAP_Message_t; //total of 25 Bytes
 
 //################################
 // Observer
@@ -236,7 +240,7 @@ typedef struct CoAP_Observer {
 	NetEp_t Ep;                  // [16B]
 	SocketHandle_t socketHandle; // [4B]
 	uint8_t FailCount;           // [1B]
-	uint64_t Token;              // [8B]
+	CoAP_Token_t Token;          // [9B]
 	CoAP_option_t *pOptList;     // [xxB](uri-host) <- will be removed if attached, uri-query, observe (for seq number)
 
 	struct CoAP_Observer *next;  // [4B] pointer (linked list) (not saved while sleeping)
@@ -306,7 +310,7 @@ typedef struct {
 } CoAP_API_t;
 
 //################################
-// Public API
+// Public API (setup)
 //################################
 
 /**
@@ -337,8 +341,26 @@ CoAP_Socket_t* CoAP_NewSocket(SocketHandle_t handle);
 CoAP_Res_t* CoAP_CreateResource(char* Uri, char* Descr, CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt, CoAP_ResourceNotifier_fPtr_t pNotifierFkt);
 
 //#####################
-// Receive of packets
+// Message API
 //#####################
+
+// Set payload in resource handlers
+// pMsgReq: The request message
+// pMsgResp: The response message
+// pPayload: The payload to be send
+// payloadTotalSize: The size of pPayload
+// payloadIsVolatile: Set to true for volatile memory.
+//   If false, pPayload MUST point to static memory that is not freed before the interaction ends
+//   which is hard to detect.
+CoAP_Result_t CoAP_SetPayload(CoAP_Message_t* pMsgReq, CoAP_Message_t* pMsgResp, uint8_t* pPayload, uint16_t payloadTotalSize, bool payloadIsVolatile);
+
+// Adds an option to the CoAP message
+CoAP_Result_t CoAP_AddOption(CoAP_Message_t* pMsg, uint16_t OptNumber, uint8_t* buf, uint16_t length);
+
+//########################################
+// Interaction processing API
+//########################################
+
 // This function must be called by network drivers
 // on reception of a new network packets which
 // should be passed to the CoAP stack.
@@ -346,6 +368,7 @@ CoAP_Res_t* CoAP_CreateResource(char* Uri, char* Descr, CoAP_ResOpts_t Options, 
 // but can be considered constant over runtime.
 void CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pPacket);
 
+// doWork must be called regularly to process pending interactions
 void CoAP_doWork();
 
 #endif //LIBLOBARO_COAP_H

@@ -312,6 +312,10 @@ static CoAP_Result_t _rom append_OptionToListEnd(CoAP_option_t** pOptionsListBeg
 	return COAP_OK;
 }
 
+CoAP_Result_t _rom CoAP_AddOption(CoAP_Message_t* pMsg, uint16_t OptNumber, uint8_t* buf, uint16_t length) {
+	CoAP_AppendOptionToList(&pMsg->pOptionsList, OptNumber, buf, length);
+}
+
 
 // this function adds a new option to linked list of options starting at pOptionsListBegin
 // on demand the list gets reordered so that it's sorted ascending by option number (CoAP requirement)
