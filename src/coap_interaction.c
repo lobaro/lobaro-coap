@@ -28,7 +28,8 @@ CoAP_Result_t CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA);
 static CoAP_Interaction_t* _rom CoAP_AllocNewInteraction() {
 	CoAP_Interaction_t* newInteraction = (CoAP_Interaction_t*) (coap_mem_get0(sizeof(CoAP_Interaction_t)));
 	if (newInteraction == NULL) {
-		INFO("- (!!!) CoAP_AllocNewInteraction() Out of Memory!!!\r\n");
+		coap_mem_stats();
+		INFO("- (!!!) CoAP_AllocNewInteraction() Out of Memory (Needed %d bytes) !!!\r\n", sizeof(CoAP_Interaction_t));
 		return NULL;
 	}
 
@@ -327,10 +328,13 @@ CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 			}
 		}
 
-		if (SameNotificationOngoing) {
-			pObserver = pObserver->next; //skip this observer, don't start a 2nd notification now
-			continue;
-		}
+		// This keeps the NSTART limit to 1.
+		// But since NSTART is a client parameter the server should not care to start a second interaction
+		// TODO: Test also with firefox plugin
+		//if (SameNotificationOngoing) {
+		//	pObserver = pObserver->next; //skip this observer, don't start a 2nd notification now
+		//	continue;
+		//}
 
 		//Start new IA for this observer
 		newIA = CoAP_AllocNewInteraction();

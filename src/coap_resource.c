@@ -174,7 +174,7 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 	if (pReq->Code != REQ_GET) {
 		char errMsg[] = {"CoAP GET only!"};
 		pResp->Code = RESP_ERROR_BAD_REQUEST_4_00;
-		CoAP_SetPayload(pReq, pResp, errMsg, (uint16_t) coap_strlen(errMsg), true);
+		CoAP_SetPayload(pResp, errMsg, (uint16_t) coap_strlen(errMsg), true);
 		return HANDLER_ERROR;
 	}
 
@@ -218,7 +218,7 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 		//TODO: implement growing of buf/overwrite check
 	}
 
-	CoAP_SetPayload(pReq, pResp, pStrStart, (uint16_t) coap_strlen((char*) pStrStart), true);
+	CoAP_SetPayload(pResp, pStrStart, (uint16_t) coap_strlen((char*) pStrStart), true);
 	coap_mem_release(pStrStart);
 
 	AddCfOptionToMsg(pResp, COAP_CF_LINK_FORMAT);

@@ -264,7 +264,7 @@ typedef enum {
 
 typedef CoAP_HandlerResult_t (*CoAP_ResourceHandler_fPtr_t)(CoAP_Message_t* pReq, CoAP_Message_t* pResp);
 // TODO: Can we use the CoAP_ResourceHandler_fPtr_t signature also for notifiers?
-typedef CoAP_HandlerResult_t (*CoAP_ResourceNotifier_fPtr_t)(CoAP_Observer_t* pListObservers, CoAP_Message_t* pResp);
+typedef CoAP_HandlerResult_t (*CoAP_ResourceNotifier_fPtr_t)(CoAP_Observer_t* pObserver, CoAP_Message_t* pResp);
 
 typedef struct {
 	uint16_t Cf;    // Content-Format
@@ -275,7 +275,7 @@ typedef struct {
 typedef struct CoAP_Res {
 	struct CoAP_Res* next; //4 byte pointer (linked list)
 	char* pDescription;
-	uint32_t UpdateCnt;
+	uint32_t UpdateCnt; // Used as value for the Observe option
 	CoAP_ResOpts_t Options;
 	CoAP_option_t* pUri; //linked list of this resource URI options
 	CoAP_Observer_t* pListObservers; //linked list of this resource observers
@@ -352,7 +352,7 @@ CoAP_Res_t* CoAP_CreateResource(char* Uri, char* Descr, CoAP_ResOpts_t Options, 
 // payloadIsVolatile: Set to true for volatile memory.
 //   If false, pPayload MUST point to static memory that is not freed before the interaction ends
 //   which is hard to detect.
-CoAP_Result_t CoAP_SetPayload(CoAP_Message_t* pMsgReq, CoAP_Message_t* pMsgResp, uint8_t* pPayload, uint16_t payloadTotalSize, bool payloadIsVolatile);
+CoAP_Result_t CoAP_SetPayload(CoAP_Message_t* pMsgResp, uint8_t* pPayload, uint16_t payloadTotalSize, bool payloadIsVolatile);
 
 // Adds an option to the CoAP message
 CoAP_Result_t CoAP_AddOption(CoAP_Message_t* pMsg, uint16_t OptNumber, uint8_t* buf, uint16_t length);

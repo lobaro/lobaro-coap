@@ -172,7 +172,7 @@ void _rom CoAP_printUriOptionsList(CoAP_option_t* pOptListBegin) {
 	INFO("\r\n");
 }
 
-
+// Return the value of
 uint8_t* CoAP_GetUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, uint8_t* pValueLen) {
 	if (pUriOpt == NULL) return NULL;
 	if (pUriOpt->Number != OPT_NUM_URI_QUERY) return NULL;
@@ -187,8 +187,13 @@ uint8_t* CoAP_GetUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, uint
 	}
 
 	//prefix found
-	if (pValueLen != NULL)
+	if (pValueLen != NULL) {
+		// Strip possible equal sign after prefix
+		if (pUriOpt->Length >= prefixLen + 1 && pUriOpt->Value[prefixLen] == '=') {
+			prefixLen++;
+		}
 		*pValueLen = (pUriOpt->Length) - prefixLen;
+	}
 
 	return &(pUriOpt->Value[prefixLen]);
 }
@@ -215,6 +220,7 @@ uint8_t* CoAP_GetUriQueryValFromMsg(CoAP_Message_t* pMsg, const char* prefixStr,
 	return retVal;
 }
 
+// Find by Value
 int8_t CoAP_FindUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, int CmpStrCnt, ...) {
 	va_list ap; //compare string pointer
 	int i, j;

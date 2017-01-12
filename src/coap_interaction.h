@@ -25,8 +25,8 @@
 typedef enum {
 	COAP_ROLE_NOT_SET,
 	COAP_ROLE_SERVER,        //[server]
-	COAP_ROLE_NOTIFICATION,    //[notificator]
-	COAP_ROLE_CLIENT        //[client]
+	COAP_ROLE_NOTIFICATION,  //[notificator]
+	COAP_ROLE_CLIENT         //[client]
 } CoAP_InteractionRole_t;
 
 typedef enum {

@@ -71,7 +71,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 		goto END;
 	}
 
-	INFO("Find the request handler or send 4.04\r\n");
+	//INFO("Find the request handler or send 4.04\r\n");
 	// Requested uri present?
 	// Then find the handler, else send 4.04 response
 	if (isRequest) {
@@ -86,7 +86,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 		}
 	}
 
-	INFO("Check for critical options\r\n");
+	//INFO("Check for critical options\r\n");
 	// Unknown critical Option check
 	uint16_t criticalOptNum = CoAP_CheckForUnknownCriticalOption(pMsg->pOptionsList); // !=0 if at least one unknown option found
 	if (criticalOptNum) {
@@ -110,7 +110,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 	// Prechecks done
 	//*****************
 
-	INFO("Prechecks done. Handle message by type\r\n");
+	//INFO("Prechecks done. Handle message by type\r\n");
 	// try to include message into new or existing server/client interaction
 	switch (pMsg->Type) {
 		case RST: {
@@ -478,6 +478,8 @@ void _rom CoAP_doWork() {
 					INFO("- Observation activated\r\n");
 				} else if (result == COAP_REMOVED) {
 					INFO("- Observation actively removed by client\r\n");
+				} else {
+					INFO("- Observation failed\r\n");
 				}
 
 			}
@@ -521,8 +523,6 @@ void _rom CoAP_doWork() {
 		if (pIA->State == COAP_STATE_READY_TO_NOTIFY) {
 			//------------------------------------------
 
-
-
 			//o>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			SendResp(pIA, COAP_STATE_NOTIFICATION_SENT); //transmit response & move to next state
 			//o>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -553,6 +553,7 @@ void _rom CoAP_doWork() {
 						} else { //good response
 							UpdateObserveOptionInMsg(pIA->pRespMsg, pIA->pRes->UpdateCnt);
 						}
+						// TODO: Check why pIA->pRespMsg->Type would change and document the side-effect better
 						pIA->pRespMsg->Type = TypeSave; //Type of resent should stay the same, e.g. one CON between many NON messages should be preserved
 					}
 #endif

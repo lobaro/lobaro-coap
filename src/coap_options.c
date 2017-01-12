@@ -22,9 +22,8 @@
 
 #include "coap.h"
 
-
 // Used in Critical Option Check.
-uint16_t KNOWN_OPTIONS[KNOWN_OPTIONS_COUNT] = {OPT_NUM_URI_PATH, OPT_BLOCK2, OPT_BLOCK1, OPT_NUM_ETAG, OPT_NUM_CONTENT_FORMAT, OPT_NUM_URI_QUERY};
+uint16_t KNOWN_OPTIONS[KNOWN_OPTIONS_COUNT] = { OPT_NUM_URI_PATH, OPT_BLOCK2, OPT_BLOCK1, OPT_NUM_ETAG, OPT_NUM_CONTENT_FORMAT, OPT_NUM_URI_QUERY };
 
 //#########################################################################################################
 //### This function packs multiple CoAP options to the format specified at
@@ -96,7 +95,8 @@ CoAP_Result_t _rom pack_OptionsFromList(uint8_t* pDestArr, uint16_t* pBytesWritt
 			offset++;
 		}
 
-		if (pOption->next == NULL) break;
+		if (pOption->next == NULL)
+			break;
 		pOption = pOption->next;
 	} while (1);
 
@@ -113,7 +113,7 @@ uint16_t _rom CoAP_NeededMem4PackOptions(CoAP_option_t* pOptionsListBegin) {
 
 	CoAP_option_t* pOption = pOptionsListBegin;
 
-	if (pOption == NULL) {//no options - list empty - can happen no error
+	if (pOption == NULL) {         //no options - list empty - can happen no error
 		return 0;
 	}
 
@@ -128,34 +128,41 @@ uint16_t _rom CoAP_NeededMem4PackOptions(CoAP_option_t* pOptionsListBegin) {
 		offset++;
 
 		//Delta Bytes
-		if (currDelta < 13) { ; }
-		else if (currDelta < 269) offset++;
-		else offset += 2;
-
+		if (currDelta < 13) {
+			;
+		}
+		else if (currDelta < 269)
+			offset++;
+		else
+			offset += 2;
 
 		//Length Bytes
-		if (optLength < 13) { ; }
-		else if (optLength < 269) offset++;
-		else offset += 2;
+		if (optLength < 13) {
+			;
+		}
+		else if (optLength < 269)
+			offset++;
+		else
+			offset += 2;
 
 		//Option Values
 		int t;
-		for (t = 0; t < optLength; t++) offset++;
+		for (t = 0; t < optLength; t++)
+			offset++;
 
-		if (pOption->next == NULL) break;
+		if (pOption->next == NULL)
+			break;
 		pOption = pOption->next;
 	} while (1);
 
 	return offset;
 }
 
-
 CoAP_Result_t _rom parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uint8_t** pPayloadBeginInSrc, CoAP_option_t** pOptionsListBegin) {
 	//srcArr points to the beginning of Option section @ raw datagram byte array
 	//length includes payload marker & payload (if any)
 	uint16_t offset = 0;
 	*pPayloadBeginInSrc = NULL;
-
 
 	if (*pOptionsListBegin != NULL) {
 		INFO("- Option list argument must be an empty list!\r\n");
@@ -219,7 +226,7 @@ CoAP_Result_t _rom parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uin
 				currOptLength = ((((uint16_t) srcArr[offset]) << 8) | ((uint16_t) srcArr[offset + 1])) + 269;
 				offset += 2;
 			} else if (currOptLengthField == 15) {
-				INFO("- currOptDeltaField == 15 is not allowed %x (2)\r\n", srcArr[offset-1]);
+				INFO("- currOptDeltaField == 15 is not allowed %x (2)\r\n", srcArr[offset - 1]);
 				return COAP_PARSE_MESSAGE_FORMAT_ERROR;
 			}
 
@@ -236,7 +243,8 @@ CoAP_Result_t _rom parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uin
 
 			//add this option to ordered linked list
 			CoAP_Result_t Res = CoAP_AppendOptionToList(pOptionsListBegin, lastOptionNumber, &(srcArr[offset]), currOptLength);
-			if (Res != COAP_OK) return Res;
+			if (Res != COAP_OK)
+				return Res;
 
 			offset += currOptLength;
 		}
@@ -244,7 +252,6 @@ CoAP_Result_t _rom parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uin
 
 	return COAP_OK;
 }
-
 
 CoAP_Result_t _rom CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, CoAP_option_t* pOptionToRemove) {
 	CoAP_option_t* currP;
@@ -256,7 +263,7 @@ CoAP_Result_t _rom CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, C
 	//Visit each node, maintaining a pointer to
 	//the previous node we just visited.
 	for (currP = *pOptionListStart; currP != NULL;
-		 prevP = currP, currP = currP->next) {
+			prevP = currP, currP = currP->next) {
 
 		if (currP == pOptionToRemove) {  // Found it.
 			if (prevP == NULL) {
@@ -278,12 +285,12 @@ CoAP_Result_t _rom CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, C
 	return COAP_OK;
 }
 
-
 static CoAP_Result_t _rom append_OptionToListEnd(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length) {
 	if (*pOptionsListBegin == NULL) //List empty? create new first element
 	{
 		*pOptionsListBegin = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t) + length);
-		if (*pOptionsListBegin == NULL) return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
+		if (*pOptionsListBegin == NULL)
+			return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
 		(*pOptionsListBegin)->next = NULL;
 
@@ -295,10 +302,12 @@ static CoAP_Result_t _rom append_OptionToListEnd(CoAP_option_t** pOptionsListBeg
 	} else //append new element at end
 	{
 		CoAP_option_t* pOption = *pOptionsListBegin;
-		while (pOption->next != NULL) pOption = pOption->next;
+		while (pOption->next != NULL)
+			pOption = pOption->next;
 
 		pOption->next = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t) + length);
-		if (pOption->next == NULL) return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
+		if (pOption->next == NULL)
+			return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
 		pOption = pOption->next;
 		pOption->next = NULL;
@@ -312,10 +321,19 @@ static CoAP_Result_t _rom append_OptionToListEnd(CoAP_option_t** pOptionsListBeg
 	return COAP_OK;
 }
 
+CoAP_option_t* _rom CoAP_FindOptionByNumber(CoAP_Message_t* msg, uint16_t number) {
+	CoAP_option_t* pOpt;
+	for (pOpt = msg->pOptionsList; pOpt != NULL; pOpt = pOpt->next) {
+		if (pOpt->Number == number) {
+			return pOpt;
+		}
+	}
+	return NULL;
+}
+
 CoAP_Result_t _rom CoAP_AddOption(CoAP_Message_t* pMsg, uint16_t OptNumber, uint8_t* buf, uint16_t length) {
 	CoAP_AppendOptionToList(&pMsg->pOptionsList, OptNumber, buf, length);
 }
-
 
 // this function adds a new option to linked list of options starting at pOptionsListBegin
 // on demand the list gets reordered so that it's sorted ascending by option number (CoAP requirement)
@@ -327,7 +345,8 @@ CoAP_Result_t _rom CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, ui
 	} else //try to insert the new element/option
 	{
 		CoAP_option_t* pOption = *pOptionsListBegin;
-		while (pOption != NULL && pOption->Number <= OptNumber) pOption = pOption->next;
+		while (pOption != NULL && pOption->Number <= OptNumber)
+			pOption = pOption->next;
 
 		//check reason of while end:
 
@@ -336,10 +355,11 @@ CoAP_Result_t _rom CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, ui
 			return append_OptionToListEnd(pOptionsListBegin, OptNumber, buf, length);
 		}
 
-			//Case 2: new option has smallest number and is therefore the new start of list
+		//Case 2: new option has smallest number and is therefore the new start of list
 		else if (pOption == *pOptionsListBegin) {
 			*pOptionsListBegin = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t) + length);
-			if (*pOptionsListBegin == NULL) return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
+			if (*pOptionsListBegin == NULL)
+				return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
 			(*pOptionsListBegin)->next = pOption; //move former list start to 2nd pos
 
@@ -350,17 +370,19 @@ CoAP_Result_t _rom CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, ui
 			coap_memcpy((void*) ((*pOptionsListBegin)->Value), (const void*) buf, length);
 		}
 
-			//Case 3:
-			//new option has to be placed anywhere in the list middle
-			//pOption points to a option which Number is > than the OptNumber to be inserted
-			//coap wants option numbers to be ascending - so insert the new option between pOption and its predecessor
-			//The predecessor has to be found first...
+		//Case 3:
+		//new option has to be placed anywhere in the list middle
+		//pOption points to a option which Number is > than the OptNumber to be inserted
+		//coap wants option numbers to be ascending - so insert the new option between pOption and its predecessor
+		//The predecessor has to be found first...
 		else {
 			CoAP_option_t* pPrev_pOption = *pOptionsListBegin;
-			while (pPrev_pOption->next != pOption)pPrev_pOption = pPrev_pOption->next; //search predecessor of pOption
+			while (pPrev_pOption->next != pOption)
+				pPrev_pOption = pPrev_pOption->next; //search predecessor of pOption
 
 			CoAP_option_t* newOption = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t) + length);
-			if (newOption == NULL) return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
+			if (newOption == NULL)
+				return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
 			pPrev_pOption->next = newOption; //insert new option after predecessor
 			newOption->next = pOption;
@@ -379,9 +401,9 @@ CoAP_Result_t _rom CoAP_CopyOptionToList(CoAP_option_t** pOptionsListBegin, CoAP
 	return CoAP_AppendOptionToList(pOptionsListBegin, OptToCopy->Number, OptToCopy->Value, OptToCopy->Length);
 }
 
-
 CoAP_Result_t _rom CoAP_FreeOptionList(CoAP_option_t** pOptionsListBegin) {
-	if (*pOptionsListBegin == NULL) return COAP_OK; //any list to delete?
+	if (*pOptionsListBegin == NULL)
+		return COAP_OK; //any list to delete?
 
 	CoAP_option_t* pOption1;
 
@@ -412,7 +434,8 @@ uint16_t _rom CoAP_CheckForUnknownCriticalOption(CoAP_option_t* pOptionsListBegi
 	//uses:
 	//#define KNOWN_OPTIONS_COUNT (X)
 	//extern uint16_t KNOWN_OPTIONS[KNOWN_OPTIONS_COUNT];
-	if (pOptionsListBegin == NULL)return 0; //no options, nothing can be unknown
+	if (pOptionsListBegin == NULL)
+		return 0; //no options, nothing can be unknown
 
 	CoAP_option_t* pOption = pOptionsListBegin;
 	bool optKnown;
@@ -433,7 +456,8 @@ uint16_t _rom CoAP_CheckForUnknownCriticalOption(CoAP_option_t* pOptionsListBegi
 			}
 		}
 
-		if (pOption->next == NULL) return 0;
+		if (pOption->next == NULL)
+			return 0;
 		pOption = pOption->next;
 	} while (1);
 
@@ -458,18 +482,23 @@ void _rom CoAP_printOptionsList(CoAP_option_t* pOptListBegin) {
 }
 
 bool _rom CoAP_OptionsAreEqual(CoAP_option_t* OptA, CoAP_option_t* OptB) {
-	if (OptA == NULL && OptB == NULL) return true;
-	if (OptA == NULL && OptB != NULL) return false;
-	if (OptA != NULL && OptB == NULL) return false;
+	if (OptA == NULL && OptB == NULL)
+		return true;
+	if (OptA == NULL && OptB != NULL)
+		return false;
+	if (OptA != NULL && OptB == NULL)
+		return false;
 
 	//check case 4 => both != NULL:
-	if (OptA->Length != OptB->Length) return false;
-	if (OptA->Number != OptB->Number) return false;
+	if (OptA->Length != OptB->Length)
+		return false;
+	if (OptA->Number != OptB->Number)
+		return false;
 	int i;
 	for (i = 0; i < OptA->Length; i++) {
-		if (OptA->Value[i] != OptB->Value[i]) return false;
+		if (OptA->Value[i] != OptB->Value[i])
+			return false;
 	}
 	return true;
 }
-
 

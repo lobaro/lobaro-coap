@@ -60,6 +60,8 @@ typedef struct
 }CoAP_blockwise_option_t;
 
 
+CoAP_Result_t _rom CoAP_SetPayload_CheckBlockOpt(CoAP_Message_t* pMsgReq, CoAP_Message_t* pMsgResp, uint8_t* pPayload, uint16_t payloadTotalSize, bool payloadIsVolatile);
+
 CoAP_Result_t AddBlkOptionToMsg(CoAP_Message_t* msg, CoAP_blockwise_option_t* blkOption);
 CoAP_Result_t GetBlock1OptionFromMsg(CoAP_Message_t* msg, CoAP_blockwise_option_t* BlkOption);
 CoAP_Result_t GetBlock2OptionFromMsg(CoAP_Message_t* msg, CoAP_blockwise_option_t* BlkOption);
