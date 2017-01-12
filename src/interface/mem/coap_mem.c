@@ -107,7 +107,7 @@ void _rom coap_mem_stats()
 	int32_t nget,nrel;
 
 	bstats(&curalloc, &totfree, &maxfree, &nget, &nrel);
-	INFO("- CoAP mem usage: dynamic: [%ld] dynamic+static: [%ld] free: [%ld] biggest shunk: [%ld] get/releases: [%ld|%ld]\r\n",(int32_t)curalloc-StaticAllocation, (int32_t)curalloc, (int32_t)totfree, (int32_t)maxfree,nget,nrel );
+	INFO("- CoAP mem usage: dynamic: [%ld] dynamic+static: [%ld] free: [%ld] biggest shunk: [%ld] get/releases: [%ld|%ld=%ld]\r\n",(int32_t)curalloc-StaticAllocation, (int32_t)curalloc, (int32_t)totfree, (int32_t)maxfree,nget,nrel,nget-nrel );
 }
 
 

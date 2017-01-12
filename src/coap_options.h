@@ -57,6 +57,7 @@ CoAP_Result_t parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uint8_t*
 CoAP_Result_t pack_OptionsFromList(uint8_t* pDestArr, uint16_t* pBytesWritten, CoAP_option_t* pOptionsListBegin);
 uint16_t  CoAP_NeededMem4PackOptions(CoAP_option_t* pOptionsListBegin);
 
+CoAP_option_t* CoAP_FindOptionByNumber(CoAP_Message_t* msg, uint16_t number);
 CoAP_Result_t CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length);
 CoAP_Result_t CoAP_CopyOptionToList(CoAP_option_t** pOptionsListBegin, CoAP_option_t* OptToCopy);
 CoAP_Result_t CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, CoAP_option_t* pOptionToRemove);
