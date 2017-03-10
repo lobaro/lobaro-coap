@@ -369,7 +369,7 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t *Msg, SocketHandle_t socketHandle
 	int i;
 	uint16_t bytesToSend = 0;
 
-	CoAP_Socket_t *pSocket = RetrieveSocket(socketHandle);
+	CoAP_Socket_t* pSocket = RetrieveSocket(socketHandle);
 	NetTransmit_fn SendPacket = pSocket->Tx;
 	uint8_t quickBuf[16]; //speed up sending of tiny messages
 

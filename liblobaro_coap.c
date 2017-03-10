@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  *******************************************************************************/
 
-#include "liblobaro_coap.h"
+#include "github.com/Lobaro/lobaro-coap/src/liblobaro_coap.h"
 #include "coap.h"
 #include "coap_main.h"
 
