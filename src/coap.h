@@ -23,9 +23,14 @@
 #ifndef COAP_H_
 #define COAP_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //"glue" and actual system related functions
 //go there to see what to do adapting the library to your platform
 #include "interface/coap_interface.h"
+#include "liblobaro_coap.h"
 
 //Internal stack functions
 typedef enum {
@@ -82,9 +87,9 @@ typedef enum {
 #include "coap_interaction.h"
 #include "coap_main.h"
 
+
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif /* COAP_H_ */

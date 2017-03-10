@@ -211,7 +211,8 @@ uint8_t* CoAP_GetUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, uint
 uint8_t* CoAP_GetUriQueryValFromMsg(CoAP_Message_t* pMsg, const char* prefixStr, uint8_t* pValueLen){
 
 	uint8_t* retVal = NULL;
-	for(CoAP_option_t* pOpt =pMsg->pOptionsList ; pOpt != NULL; pOpt = pOpt->next) {
+	CoAP_option_t* pOpt;
+	for(pOpt =pMsg->pOptionsList ; pOpt != NULL; pOpt = pOpt->next) {
 		retVal = CoAP_GetUriQueryVal(pOpt, prefixStr, pValueLen);
 		if(retVal) break;
 	}
@@ -258,7 +259,8 @@ uint32_t CoAP_atoi(uint8_t* Str, uint8_t Len){
 	uint32_t mul=1;//multiplier
 
 	if(Len > 10) return 0; //max 32bit num 2,147,483,647
-	for(int i=Len-1; i>=0; i--) {
+	int i;
+	for(i=Len-1; i>=0; i--) {
 		if(Str[i]<'0' || Str[i]>'9') return 0; //no [0..9] charakter found -> return 0 as error indicator (as standard atoi does)
 		num+=(Str[i]-'0')*mul;
 		mul *=10;
