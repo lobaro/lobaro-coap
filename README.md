@@ -1,4 +1,7 @@
 # lobaro-coap
+
+[![Gitter](https://badges.gitter.im/iot-dashboard/Lobby.svg)]https://gitter.im/lobaro-iot/Lobby)
+
 Complete CoAP Implementation in C.
 see http://www.lobaro.com/lobaro-coap/ for further information
 
