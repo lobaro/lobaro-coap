@@ -192,7 +192,7 @@ static CoAP_Result_t _rom SendResp(CoAP_Interaction_t* pIA, CoAP_InteractionStat
 
 		pIA->State = nextIAState; //move to next state
 
-		CoAP_EnqueueLastInteraction(pIA); //(re)enqueue interaction for further processing//todo: in die äußere statemachine
+		CoAP_EnqueueLastInteraction(pIA); //(re)enqueue interaction for further processing//todo: in die ï¿½uï¿½ere statemachine
 
 	}else { //unexspected internal failure todo: try at least to send 4 byte RESP_INTERNAL_SERVER_ERROR_5_00
 		INFO("(!!!) SendResp(): Internal socket error on sending response! MiD: %d", pIA->pReqMsg->MessageID );
@@ -213,7 +213,7 @@ static CoAP_Result_t _rom SendReq(CoAP_Interaction_t* pIA, CoAP_InteractionState
 
 		pIA->State = nextIAState; //move to next state
 
-		CoAP_EnqueueLastInteraction(pIA); //(re)enqueue interaction for further processing//todo: in die äußere statemachine
+		CoAP_EnqueueLastInteraction(pIA); //(re)enqueue interaction for further processing//todo: in die ï¿½uï¿½ere statemachine
 
 	}else { //unexspected internal failure todo: try at least to send 4 byte RESP_INTERNAL_SERVER_ERROR_5_00
 		INFO("(!!!) SendReq(): Internal socket error on sending response! MiD: %d", pIA->pReqMsg->MessageID );
@@ -337,6 +337,16 @@ void _rom CoAP_doWork()
 		if(pIA->State == COAP_STATE_HANDLE_REQUEST || pIA->State == COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT)
 	  //--------------------------------------------------------------------------------------------------------
 		{
+			if(pIA->ReqMetaInfo.Type == META_INFO_MULTICAST && pIA->ReqReliabilityState != ACK_SET){
+				pIA->ReqReliabilityState = ACK_SET;
+				pIA->State = COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT;
+
+				CoAP_SetSleepInteraction(pIA, DEFAULT_LEISURE); // Don't respond right away'
+				CoAP_EnqueueLastInteraction(pIA);
+				INFO("Multicast request postponed processing until %d\r\n", pIA->SleepUntil);
+				return;
+			}
+
 			if( 	((pIA->pReqMsg->Code == REQ_GET) && !((pIA->pRes->Options).Flags & RES_OPT_GET))
 				||  ((pIA->pReqMsg->Code == REQ_POST) && !((pIA->pRes->Options).Flags & RES_OPT_POST))
 				||  ((pIA->pReqMsg->Code == REQ_PUT) && !((pIA->pRes->Options).Flags & RES_OPT_PUT))
@@ -365,17 +375,34 @@ void _rom CoAP_doWork()
 
 			//Check return value of handler:
 			//a) everything fine - we got an response to send
-			if(Res == HANDLER_OK && pIA->pRespMsg->Code == EMPTY) {
-				pIA->pRespMsg->Code = RESP_SUCCESS_CONTENT_2_05; //handler forgot to set code?
+			if(Res == HANDLER_OK) {
+				if(pIA->pRespMsg->Code == EMPTY)
+					pIA->pRespMsg->Code = RESP_SUCCESS_CONTENT_2_05; //handler forgot to set code?
 
 			//b) handler has no result and will not deliver	in the future
-			} else if(Res == HANDLER_ERROR && pIA->pRespMsg->Code == EMPTY) {
-				pIA->pRespMsg->Code = RESP_INTERNAL_SERVER_ERROR_5_00; //handler forgot to set code?
+			} else if(Res == HANDLER_ERROR) {
+				if(pIA->pRespMsg->Code == EMPTY)
+					pIA->pRespMsg->Code = RESP_INTERNAL_SERVER_ERROR_5_00; //handler forgot to set code?
+
+				// Don't respond with reset or empty messages to requests originating from multicast enpoints
+				if(pIA->ReqMetaInfo.Type == META_INFO_MULTICAST){
+					CoAP_DeleteInteraction(pIA);
+					return;
+				}
 
 			//c) handler needs some more time
 			} else if(Res == HANDLER_POSTPONE) { //Handler needs more time to fulfill request, send ACK and separate response
-
 				if(pIA->pReqMsg->Type == CON && pIA->ReqReliabilityState != ACK_SET) {
+						if(pIA->ReqMetaInfo.Type == META_INFO_MULTICAST){
+							// Don't ACK to Confirmable messages received from Mulicast endpoints. 
+							pIA->ReqReliabilityState = ACK_SET;
+							pIA->State = COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT;
+
+							CoAP_SetSleepInteraction(pIA, DEFAULT_LEISURE); // Don't respond right away'
+							CoAP_EnqueueLastInteraction(pIA);
+							INFO("Resource postponed response until %d\r\n", pIA->SleepUntil);
+							return;
+						}
 						if(CoAP_SendEmptyAck(pIA->pReqMsg->MessageID, pIA->ifID, &(pIA->RemoteEp)) == COAP_OK) {	 //send empty ACK msg
 
 							pIA->ReqReliabilityState = ACK_SET;
