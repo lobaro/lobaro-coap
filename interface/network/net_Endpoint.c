@@ -24,8 +24,13 @@
 
 const NetAddr_IPv6_t NetAddr_IPv6_unspecified = {.u8 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }};
 const NetAddr_IPv6_t NetAddr_IPv6_mulitcast = {.u8 = {0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }};
+const NetAddr_IPv4_t NetAddr_IPv4_unspecified = { .u8 = { 0, 0, 0, 0 } };
+const NetAddr_IPv4_t NetAddr_IPv4_mulitcast = { .u8 = { 224, 0, 1, 187 } };
 
- bool _rom EpAreEqual(NetEp_t* ep_A, NetEp_t* ep_B)
+const NetEp_t NetEp_IPv6_mulitcast = { .NetType = IPV6, .NetPort = 5683, .NetAddr = { .IPv6 = {.u8 = {0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 } } } };
+const NetEp_t NetEp_IPv4_mulitcast = { .NetType = IPV4, .NetPort = 5683, .NetAddr = { .IPv4 = { .u8 = { 224, 0, 1, 187 } } } };
+
+ bool _rom EpAreEqual(const NetEp_t* ep_A, const NetEp_t* ep_B)
  {
 	 if(!ep_A || !ep_B){return false;}
 	 if(ep_A->NetType != ep_B->NetType){return false;}
@@ -52,12 +57,12 @@ const NetAddr_IPv6_t NetAddr_IPv6_mulitcast = {.u8 = {0xff, 0x02, 0, 0, 0, 0, 0,
 	 return true;
  }
 
- void _rom CopyEndpoints(NetEp_t* Destination, NetEp_t* Source)
+ void _rom CopyEndpoints(NetEp_t* Destination, const NetEp_t* Source)
  {
 	 memmove((void*)Destination, (void*)Source, sizeof(NetEp_t));
  }
 
- void _rom PrintEndpoint(NetEp_t* ep)
+ void _rom PrintEndpoint(const NetEp_t* ep)
  {
 	 /*
 	if(ep->NetType == IPV6)
