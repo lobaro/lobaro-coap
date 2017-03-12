@@ -38,7 +38,7 @@ typedef enum
 	COAP_STATE_HANDLE_REQUEST, 					// Remote request received & parsed -> invoke resource handler
 	COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT,// Wait some time for resource to become ready, meanwhile empty ack has been sent
 	COAP_STATE_RESPONSE_SENT,					// NON or piggy-ACK response has been sent -> wait some time then delete
-												// CON response has been sent (+previous separate ACK of req)
+	COAP_STATE_RESPONSE_WAITING_LEISURE,		// CON response has been sent (+previous separate ACK of req)
 												// -> wait for ACK or resent after some time
 
 	//[notificator]

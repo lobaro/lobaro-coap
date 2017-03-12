@@ -334,17 +334,28 @@ void _rom CoAP_doWork()
 	if(pIA->Role == COAP_ROLE_SERVER)
 	{
 	  //--------------------------------------------------------------------------------------------------------
-		if(pIA->State == COAP_STATE_HANDLE_REQUEST || pIA->State == COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT)
+		if(pIA->State == COAP_STATE_HANDLE_REQUEST || 
+		   pIA->State == COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT || 
+		   pIA->State == COAP_STATE_RESPONSE_WAITING_LEISURE)
 	  //--------------------------------------------------------------------------------------------------------
 		{
-			if(pIA->ReqMetaInfo.Type == META_INFO_MULTICAST && pIA->ReqReliabilityState != ACK_SET){
-				pIA->ReqReliabilityState = ACK_SET;
-				pIA->State = COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT;
+			if(pIA->ReqMetaInfo.Type == META_INFO_MULTICAST){
+				// Messages sent via multicast MUST be NON-confirmable.
+				if(pIA->pReqMsg->Type == CON){
+					INFO("Request received from multicast endpoint is not allowed" );
+					CoAP_DeleteInteraction(pIA);
+					return;
+				}
+				// Multicast messages get a response after a leisure period.
+				if(pIA->State == COAP_STATE_HANDLE_REQUEST){
+					pIA->State = COAP_STATE_RESPONSE_WAITING_LEISURE;
 
-				CoAP_SetSleepInteraction(pIA, DEFAULT_LEISURE); // Don't respond right away'
-				CoAP_EnqueueLastInteraction(pIA);
-				INFO("Multicast request postponed processing until %d\r\n", pIA->SleepUntil);
-				return;
+					// Todo: Pick a random leisure period (See section 8.2 of [RFC7252])
+					CoAP_SetSleepInteraction(pIA, DEFAULT_LEISURE); // Don't respond right away'
+					CoAP_EnqueueLastInteraction(pIA);
+					INFO("Multicast request postponed processing until %d\r\n", pIA->SleepUntil);
+					return;
+				}
 			}
 
 			if( 	((pIA->pReqMsg->Code == REQ_GET) && !((pIA->pRes->Options).Flags & RES_OPT_GET))
@@ -393,16 +404,6 @@ void _rom CoAP_doWork()
 			//c) handler needs some more time
 			} else if(Res == HANDLER_POSTPONE) { //Handler needs more time to fulfill request, send ACK and separate response
 				if(pIA->pReqMsg->Type == CON && pIA->ReqReliabilityState != ACK_SET) {
-						if(pIA->ReqMetaInfo.Type == META_INFO_MULTICAST){
-							// Don't ACK to Confirmable messages received from Mulicast endpoints. 
-							pIA->ReqReliabilityState = ACK_SET;
-							pIA->State = COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT;
-
-							CoAP_SetSleepInteraction(pIA, DEFAULT_LEISURE); // Don't respond right away'
-							CoAP_EnqueueLastInteraction(pIA);
-							INFO("Resource postponed response until %d\r\n", pIA->SleepUntil);
-							return;
-						}
 						if(CoAP_SendEmptyAck(pIA->pReqMsg->MessageID, pIA->ifID, &(pIA->RemoteEp)) == COAP_OK) {	 //send empty ACK msg
 
 							pIA->ReqReliabilityState = ACK_SET;
