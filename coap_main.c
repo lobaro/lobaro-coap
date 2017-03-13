@@ -192,7 +192,7 @@ static CoAP_Result_t _rom SendResp(CoAP_Interaction_t* pIA, CoAP_InteractionStat
 
 		pIA->State = nextIAState; //move to next state
 
-		CoAP_EnqueueLastInteraction(pIA); //(re)enqueue interaction for further processing//todo: in die �u�ere statemachine
+		CoAP_EnqueueLastInteraction(pIA); //(re)enqueue interaction for further processing//todo: in die äußere statemachine
 
 	}else { //unexspected internal failure todo: try at least to send 4 byte RESP_INTERNAL_SERVER_ERROR_5_00
 		INFO("(!!!) SendResp(): Internal socket error on sending response! MiD: %d", pIA->pReqMsg->MessageID );
@@ -213,7 +213,7 @@ static CoAP_Result_t _rom SendReq(CoAP_Interaction_t* pIA, CoAP_InteractionState
 
 		pIA->State = nextIAState; //move to next state
 
-		CoAP_EnqueueLastInteraction(pIA); //(re)enqueue interaction for further processing//todo: in die �u�ere statemachine
+		CoAP_EnqueueLastInteraction(pIA); //(re)enqueue interaction for further processing//todo: in die äußere statemachine
 
 	}else { //unexspected internal failure todo: try at least to send 4 byte RESP_INTERNAL_SERVER_ERROR_5_00
 		INFO("(!!!) SendReq(): Internal socket error on sending response! MiD: %d", pIA->pReqMsg->MessageID );
@@ -342,7 +342,7 @@ void _rom CoAP_doWork()
 			if(pIA->ReqMetaInfo.Type == META_INFO_MULTICAST){
 				// Messages sent via multicast MUST be NON-confirmable.
 				if(pIA->pReqMsg->Type == CON){
-					INFO("Request received from multicast endpoint is not allowed" );
+					INFO("Request received from multicast endpoint is not allowed");
 					CoAP_DeleteInteraction(pIA);
 					return;
 				}
@@ -387,16 +387,18 @@ void _rom CoAP_doWork()
 			//Check return value of handler:
 			//a) everything fine - we got an response to send
 			if(Res == HANDLER_OK) {
-				if(pIA->pRespMsg->Code == EMPTY)
+				if(pIA->pRespMsg->Code == EMPTY) {
 					pIA->pRespMsg->Code = RESP_SUCCESS_CONTENT_2_05; //handler forgot to set code?
+				}
 
 			//b) handler has no result and will not deliver	in the future
 			} else if(Res == HANDLER_ERROR) {
-				if(pIA->pRespMsg->Code == EMPTY)
+				if(pIA->pRespMsg->Code == EMPTY) {
 					pIA->pRespMsg->Code = RESP_INTERNAL_SERVER_ERROR_5_00; //handler forgot to set code?
+				}
 
 				// Don't respond with reset or empty messages to requests originating from multicast enpoints
-				if(pIA->ReqMetaInfo.Type == META_INFO_MULTICAST){
+				if(pIA->ReqMetaInfo.Type == META_INFO_MULTICAST) {
 					CoAP_DeleteInteraction(pIA);
 					return;
 				}
