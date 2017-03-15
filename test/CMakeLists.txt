@@ -28,7 +28,7 @@ file(GLOB_RECURSE TESTS_FILES ${CMAKE_CURRENT_LIST_DIR}/*.cpp)
 ## Create executable, set c++11 standard, link to library
 add_executable(${PROJECT_NAME} ${TESTS_FILES} ${GTEST_FILES})
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_range_for)
-target_link_libraries(${PROJECT_NAME} LobaroCoapLib)
+target_link_libraries(${PROJECT_NAME} lobaro_coap)
 
 ## We actually do not use the cmake test system (we would add each test case with add_test)
 ## but the gtest framework. We therefore add only "one" test case here, which internally
