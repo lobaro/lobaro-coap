@@ -31,13 +31,23 @@ extern "C"  bool hal_nonVolatile_WriteBuf(uint8_t* data, uint32_t len) {
 void setup() {
 	Serial.begin(115200);
 	static uint8_t CoAP_WorkMemory[512]; //Working memory of CoAPs internal memory allocator
-	CoAP_Init(CoAP_WorkMemory, sizeof(CoAP_WorkMemory));
+
+	CoAP_API_t coapApi;
+	coapApi.debugPutc = hal_uart_putc;
+	coapApi.debugPuts = hal_uart_puts;
+	coapApi.rtc1HzCnt = hal_rtc_1Hz_Cnt;
+
+	CoAP_Config_t coapCfg;
+	coapCfg.Memory = CoAP_WorkMemory;
+	coapCfg.MemorySize = sizeof(CoAP_WorkMemory);
+
+	CoAP_Init(coapApi, coapCfg);
 	
-	uint8_t ifID = 1;
+	SocketHandle_t handle = (SocketHandle_t)1;
 	uint16_t LocalPort = 1234;
 	
 	NetSocket_t* pSocket;
-	pSocket=RetrieveSocket2(ifID);
+	pSocket=RetrieveSocket(handle);
 	if(pSocket != nullptr) {
 		ERROR("CoAP_ESP8266_CreateInterfaceSocket(): interface ID already in use!\r\n");
 		return;
@@ -63,7 +73,7 @@ void setup() {
 	pSocket->Tx  = nullptr;
 	pSocket->Alive = true;
 	
-	pSocket->ifID = ifID;
+	//pSocket->ifID = ifID;
 	
 	//example of large resource (blockwise transfers)
 	Create_About_Resource();		

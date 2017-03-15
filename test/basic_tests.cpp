@@ -29,7 +29,17 @@ class BasicTest : public testing::Test {
 	  // Leads to an endless loop otherwise.
 	  static bool initialized = false;
 	  if (!initialized) {
-		  CoAP_Init(CoAP_WorkMemory, sizeof(CoAP_WorkMemory));
+
+		  CoAP_API_t coapApi;
+		  coapApi.debugPutc = NULL;
+		  coapApi.debugPuts = NULL;
+		  coapApi.rtc1HzCnt = NULL;
+
+		  CoAP_Config_t coapCfg;
+		  coapCfg.Memory = CoAP_WorkMemory;
+		  coapCfg.MemorySize = sizeof(CoAP_WorkMemory);
+
+		  CoAP_Init(coapApi, coapCfg);
 		  initialized = true;
 	  }
   }
@@ -55,11 +65,11 @@ TEST_F(BasicTest, MemoryTest) {
 }
 
 TEST_F(BasicTest, AllocSocketTest) {
-	uint8_t ifID = 1;
+	SocketHandle_t socketHandle = (SocketHandle_t) 0;
 	uint16_t LocalPort = 1234;
-	
-	NetSocket_t* pSocket;
-	pSocket=RetrieveSocket2(ifID);
+
+	CoAP_Socket_t* pSocket;
+	pSocket=RetrieveSocket(socketHandle);
 	ASSERT_EQ(pSocket, nullptr) << "Interface id should not be in use";
 	
 	pSocket = AllocSocket();
@@ -78,6 +88,4 @@ TEST_F(BasicTest, AllocSocketTest) {
 	pSocket->RxCB = nullptr;
 	pSocket->Tx  = nullptr;
 	pSocket->Alive = true;
-	
-	pSocket->ifID = ifID;
 }

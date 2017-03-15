@@ -140,7 +140,7 @@ typedef struct {
  */
 typedef struct {
 	//1Hz Clock used by timeout logic
-	uint32_t (* rtc1HzCnt)(void);
+	uint32_t (*rtc1HzCnt)(void);
 	//Uart/Display function to print debug/status messages
 	void (*debugPuts)(char* s);
 	void (*debugPutc)(char c);
