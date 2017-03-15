@@ -20,13 +20,28 @@
  * THE SOFTWARE.
  *******************************************************************************/
 
-#include "github.com/Lobaro/lobaro-coap/src/liblobaro_coap.h"
+#include "liblobaro_coap.h"
 #include "coap.h"
 #include "coap_main.h"
+
+void debugPuts_Empty(char* s) {
+
+}
+void debugPutc_Empty(char c) {
+
+}
 
 void CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg) {
 	CoAP.api = api;
 	CoAP.cfg = cfg;
+
+	// To make the tests stable, we should provide proper log functions in future
+	if (CoAP.api.debugPuts == NULL) {
+		CoAP.api.debugPuts = debugPuts_Empty;
+	}
+	if (CoAP.api.debugPutc == NULL) {
+		CoAP.api.debugPutc = debugPutc_Empty;
+	}
 
 	INFO("CoAP_init!\r\n");
 	INFO("CoAP Interaction size: %d byte\r\n", sizeof(CoAP_Interaction_t));
@@ -34,8 +49,6 @@ void CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg) {
 	INFO("CoAP_Message_t size: %d byte\r\n", sizeof(CoAP_Message_t));
 	INFO("CoAP_option_t size: %d byte\r\n", sizeof(CoAP_option_t));
 	INFO("CoAP_Observer_t size: %d byte\r\n", sizeof(CoAP_Observer_t));
-
-
 
 	coap_mem_init(cfg.Memory, cfg.MemorySize);
 	CoAP_InitResources();
