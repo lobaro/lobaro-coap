@@ -27,9 +27,6 @@
 void debugPuts_Empty(char* s) {
 
 }
-void debugPutc_Empty(char c) {
-
-}
 
 void CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg) {
 	CoAP.api = api;
@@ -38,9 +35,6 @@ void CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg) {
 	// To make the tests stable, we should provide proper log functions in future
 	if (CoAP.api.debugPuts == NULL) {
 		CoAP.api.debugPuts = debugPuts_Empty;
-	}
-	if (CoAP.api.debugPutc == NULL) {
-		CoAP.api.debugPutc = debugPutc_Empty;
 	}
 
 	INFO("CoAP_init!\r\n");

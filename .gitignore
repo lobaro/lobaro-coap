@@ -37,6 +37,7 @@
 CMakeCache.txt
 /CmakeFiles
 /cmake-build-debug
+Makefile
 
 # JetBrains IDE
 *.iml
