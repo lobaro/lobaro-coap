@@ -42,7 +42,7 @@ static void _rom CoAP_InitToEmptyResetMsg(CoAP_Message_t* msg) {
 //this function checks if buf is part of pMsg (which total alloc size is known)
 //returns "false" if buf is external to pMsg else "true"
 static bool _rom bufferIsPartOfMsg(uint8_t* buf, CoAP_Message_t* pMsg) {
-	assert(buf != NULL && pMsg != NULL);
+	assert_coap(buf != NULL && pMsg != NULL);
 	//case 1: buffer before Msg Mem
 	//case 2: buffer after Msg Mem
 	if ((buf < (uint8_t*) (pMsg)) || (buf > ((uint8_t*) (pMsg)) + coap_mem_size((uint8_t*) pMsg)))
