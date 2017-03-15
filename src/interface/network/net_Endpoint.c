@@ -20,7 +20,6 @@
  * THE SOFTWARE.
  *******************************************************************************/
 
-#include "liblobaro_coap.h"
 #include "../../coap.h"
 
 const NetAddr_IPv6_t NetAddr_IPv6_unspecified = {.u8 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }};

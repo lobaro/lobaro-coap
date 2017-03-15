@@ -114,7 +114,8 @@ typedef struct {
 
 typedef enum {
 	META_INFO_NONE,
-	META_INFO_RF_PATH
+	META_INFO_RF_PATH,
+	META_INFO_MULTICAST
 } MetaInfoType_t;
 
 typedef struct {
