@@ -34,7 +34,7 @@ CoAP_Res_t* pAbout_Res = NULL;
 static CoAP_HandlerResult_t RequestHandler(CoAP_Message_t* pReq, CoAP_Message_t* pResp) {
 	static uint16_t payloadSize = sizeof(CoapInfoStringInFlash)-1;
 
-	CoAP_SetPayload(pReq, pResp, (uint8_t*)&(CoapInfoStringInFlash[0]), payloadSize, false);
+	CoAP_SetPayload(pResp, (uint8_t*)&(CoapInfoStringInFlash[0]), payloadSize, false);
 
 	return HANDLER_OK;
 }
