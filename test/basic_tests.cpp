@@ -31,7 +31,6 @@ class BasicTest : public testing::Test {
 	  if (!initialized) {
 
 		  CoAP_API_t coapApi;
-		  coapApi.debugPutc = NULL;
 		  coapApi.debugPuts = NULL;
 		  coapApi.rtc1HzCnt = NULL;
 
@@ -75,17 +74,9 @@ TEST_F(BasicTest, AllocSocketTest) {
 	pSocket = AllocSocket();
 	ASSERT_NE(pSocket, nullptr) << "Failed to allocate a socket";
 	
-	//local side of socket
-	pSocket->EpLocal.NetType = IPV4;
-	pSocket->EpLocal.NetPort = LocalPort;
-	
-	//remote side of socket
-	pSocket->EpRemote.NetType = IPV4;
-	pSocket->EpRemote.NetPort = LocalPort;
-	
-	// No real implementation
+
+	// No real implementation, just for type check during test yet
 	pSocket->Handle = nullptr;
-	pSocket->RxCB = nullptr;
 	pSocket->Tx  = nullptr;
 	pSocket->Alive = true;
 }
