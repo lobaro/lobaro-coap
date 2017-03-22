@@ -23,7 +23,7 @@
 #include "coap.h"
 
 // Used in Critical Option Check.
-uint16_t KNOWN_OPTIONS[KNOWN_OPTIONS_COUNT] = { OPT_NUM_URI_PATH, OPT_BLOCK2, OPT_BLOCK1, OPT_NUM_ETAG, OPT_NUM_CONTENT_FORMAT, OPT_NUM_URI_QUERY };
+uint16_t KNOWN_OPTIONS[KNOWN_OPTIONS_COUNT] = { OPT_NUM_URI_PATH, OPT_BLOCK2, OPT_BLOCK1, OPT_NUM_ETAG, OPT_NUM_CONTENT_FORMAT, OPT_NUM_URI_QUERY, OPT_NUM_ACCEPT };
 
 //#########################################################################################################
 //### This function packs multiple CoAP options to the format specified at
@@ -334,6 +334,42 @@ CoAP_option_t* _rom CoAP_FindOptionByNumber(CoAP_Message_t* msg, uint16_t number
 CoAP_Result_t _rom CoAP_AddOption(CoAP_Message_t* pMsg, uint16_t OptNumber, uint8_t* buf, uint16_t length) {
 	CoAP_AppendOptionToList(&pMsg->pOptionsList, OptNumber, buf, length);
 }
+
+CoAP_Result_t _rom CoAP_AppendUintOptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint32_t val) { 
+	uint8_t wBuf[4]; 
+
+	if(val==0) 
+	{ 
+		CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 0); 
+	} 
+	else if(val <= 0xff) 
+	{ 
+		wBuf[0]=(uint8_t)val; 
+		CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 1); 
+	} 
+	else if(val <= 0xffff) 
+	{ 
+		wBuf[0]=(uint8_t)(val & 0xff); 
+		wBuf[1]=(uint8_t)(val>>8); 
+		CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 2); 
+	} 
+	else if(val <= 0xffffff) 
+	{ 
+		wBuf[0]=(uint8_t)(val & 0xff); 
+		wBuf[1]=(uint8_t)((val>>8) & 0xff); 
+		wBuf[2]=(uint8_t)(val>>16); 
+		CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 3); 
+	} 
+	else { 
+		wBuf[0]=(uint8_t)(val & 0xff); 
+		wBuf[1]=(uint8_t)((val>>8) & 0xff); 
+		wBuf[2]=(uint8_t)((val>>16) & 0xff); 
+		wBuf[3]=(uint8_t)(val>>24); 
+		CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 4); 
+	} 
+
+	return COAP_OK; 
+} 
 
 // this function adds a new option to linked list of options starting at pOptionsListBegin
 // on demand the list gets reordered so that it's sorted ascending by option number (CoAP requirement)

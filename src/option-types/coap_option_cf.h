@@ -22,11 +22,18 @@
 #ifndef COAP_CF_OPTION
 #define COAP_CF_OPTION
 
+/**
+ * @deprecated Please use @sa CoAP_AddCfOptionToMsg
+ */
 CoAP_Result_t AddCfOptionToMsg(CoAP_Message_t* msg, uint16_t cf);
 
+CoAP_Result_t CoAP_AddCfOptionToMsg(CoAP_Message_t* msg, uint16_t cf);
+CoAP_Result_t CoAP_AddAcceptOptionToMsg(CoAP_Message_t* msg, uint16_t contentFormat);
+
+uint16_t CoAP_GetAcceptOptionVal(CoAP_option_t* pAcceptOpt);
+uint16_t CoAP_GetAcceptOptionValFromMsg(CoAP_Message_t* pMsg);
 typedef enum
 {
-	COAP_CF_NOT_DEFINIED = 0xffff,
 	COAP_CF_TEXT_PLAIN = 0,
 	COAP_CF_LINK_FORMAT = 40,
 	COAP_CF_APP_XML = 41,
@@ -34,7 +41,5 @@ typedef enum
 	COAP_CF_EXI = 47,
 	COAP_CF_JSON = 50
 }CoAP_ContentFormat_t;
-
-
 
 #endif

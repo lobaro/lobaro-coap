@@ -33,6 +33,7 @@ typedef enum
 	OPT_NUM_URI_PORT = 7,
 	OPT_NUM_CONTENT_FORMAT = 12,
 	OPT_NUM_URI_QUERY = 15,
+	OPT_NUM_ACCEPT = 17, 
 //Blockwise transfers
 	OPT_BLOCK2 = 23,
 	OPT_BLOCK1 = 27,
@@ -41,7 +42,7 @@ typedef enum
 
 //on addition of an option also change coap_options.C (array initializer) and count
 //Proxy-Uri
-#define KNOWN_OPTIONS_COUNT (6)
+#define KNOWN_OPTIONS_COUNT (7)
 extern uint16_t KNOWN_OPTIONS[KNOWN_OPTIONS_COUNT];
 
 #define OPT_FLAG_CRITICAL 	(1<<0)
@@ -58,6 +59,7 @@ CoAP_Result_t pack_OptionsFromList(uint8_t* pDestArr, uint16_t* pBytesWritten, C
 uint16_t  CoAP_NeededMem4PackOptions(CoAP_option_t* pOptionsListBegin);
 
 CoAP_option_t* CoAP_FindOptionByNumber(CoAP_Message_t* msg, uint16_t number);
+CoAP_Result_t CoAP_AppendUintOptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint32_t val); 
 CoAP_Result_t CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length);
 CoAP_Result_t CoAP_CopyOptionToList(CoAP_option_t** pOptionsListBegin, CoAP_option_t* OptToCopy);
 CoAP_Result_t CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, CoAP_option_t* pOptionToRemove);
