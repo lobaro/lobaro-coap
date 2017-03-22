@@ -196,16 +196,16 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 		*pStr = '<';
 		pStr++;
 		while (pUriOpt != NULL) {
+			*pStr = '/';
 			coap_memcpy(pStr, pUriOpt->Value, pUriOpt->Length);
 			pStr += pUriOpt->Length;
-			*pStr = '/';
 			pStr++;
 			pUriOpt = pUriOpt->next;
 		}
 		if (pList->Options.Cf == COAP_CF_LINK_FORMAT) {
 			pStr += coap_sprintf((char*) pStr, ">,");
 		} else {
-			pStr += coap_sprintf((char*) pStr, ">;title=\"%s\";cf=%d", pList->pDescription, pList->Options.Cf);
+			pStr += coap_sprintf((char *) pStr, ">;title=\"%s\";ct=%d", pList->pDescription, pList->Options.Cf);
 			if (pList->Notifier != NULL) {
 				pStr += coap_sprintf((char*) pStr, ";obs,");
 			} else {

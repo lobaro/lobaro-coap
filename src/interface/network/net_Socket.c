@@ -40,7 +40,7 @@ CoAP_Socket_t* _rom AllocSocket() {
 	for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {
 		CoAP_Socket_t* socket = &(SocketCtrl.SocketMemory[i]);
 		if (socket->Alive == false) {
-			memset(socket, 0, sizeof(socket));
+			memset(socket, 0, sizeof(*socket));
 			socket->Alive = true;
 			return socket;
 		}
