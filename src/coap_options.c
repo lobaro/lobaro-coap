@@ -332,7 +332,7 @@ CoAP_option_t* _rom CoAP_FindOptionByNumber(CoAP_Message_t* msg, uint16_t number
 }
 
 CoAP_Result_t _rom CoAP_AddOption(CoAP_Message_t* pMsg, uint16_t OptNumber, uint8_t* buf, uint16_t length) {
-	CoAP_AppendOptionToList(&pMsg->pOptionsList, OptNumber, buf, length);
+	return CoAP_AppendOptionToList(&pMsg->pOptionsList, OptNumber, buf, length);
 }
 
 // this function adds a new option to linked list of options starting at pOptionsListBegin
