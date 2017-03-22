@@ -24,26 +24,46 @@
 //add content-format option
 CoAP_Result_t _rom AddCfOptionToMsg(CoAP_Message_t* msg, uint16_t cf)
 {
-	uint8_t wBuf[2];
+	return CoAP_AddCfOptionToMsg(msg, cf);
+}
 
-	//msg->Options[msg->OptionCount].Number = OPT_NUM_CONTENT_FORMAT;
-	if(cf==0)
+CoAP_Result_t _rom CoAP_AddCfOptionToMsg(CoAP_Message_t* msg, uint16_t contentFormat)
+{
+	return CoAP_AppendUintOptionToList(&(msg->pOptionsList), OPT_NUM_CONTENT_FORMAT, contentFormat);
+}
+
+CoAP_Result_t _rom CoAP_AddAcceptOptionToMsg(CoAP_Message_t* msg, uint16_t contentFormat)
+{
+	return CoAP_AppendUintOptionToList(&(msg->pOptionsList), OPT_NUM_ACCEPT, contentFormat);
+}
+
+uint16_t _rom CoAP_GetAcceptOptionVal(CoAP_option_t* pAcceptOpt)
+{
+	if(pAcceptOpt == NULL) return 0;
+	if(pAcceptOpt->Number != OPT_NUM_ACCEPT) return 0;
+	if(pAcceptOpt->Length == 0 || pAcceptOpt->Length > 2) return 0;
+
+	uint16_t retVal = 0;
+	if(pAcceptOpt->Length == 1)
 	{
-		//msg->Options[msg->OptionCount].Length = 0;
-		CoAP_AppendOptionToList(&(msg->pOptionsList), OPT_NUM_CONTENT_FORMAT ,wBuf, 0);
+		retVal = pAcceptOpt->Value[0];
 	}
-	else if(cf <= 0xff)
+	else if(pAcceptOpt->Length == 2)
 	{
-		wBuf[0]=(uint8_t)cf;
-		//msg->Options[msg->OptionCount].Length = 1;
-		CoAP_AppendOptionToList(&(msg->pOptionsList), OPT_NUM_CONTENT_FORMAT ,wBuf, 1);
-	}
-	else {
-		wBuf[0]=(uint8_t)(cf & 0xff);
-		wBuf[1]=(uint8_t)(cf>>8);
-		//msg->Options[msg->OptionCount].Length = 2;
-		CoAP_AppendOptionToList(&(msg->pOptionsList), OPT_NUM_CONTENT_FORMAT ,wBuf, 2);
+		retVal = pAcceptOpt->Value[0];
+		retVal |= pAcceptOpt->Value[1] << 8;
 	}
 
-	return COAP_OK;
+	return retVal;
+}
+
+uint16_t _rom CoAP_GetAcceptOptionValFromMsg(CoAP_Message_t* pMsg)
+{
+	uint16_t retVal = 0;
+	for(CoAP_option_t* pOpt =pMsg->pOptionsList ; pOpt != NULL; pOpt = pOpt->next) {
+		if(pOpt->Number != OPT_NUM_ACCEPT)
+			continue;
+		retVal = CoAP_GetAcceptOptionVal(pOpt);
+	}
+	return retVal;
 }
