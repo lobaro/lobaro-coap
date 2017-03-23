@@ -197,9 +197,9 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 		pStr++;
 		while (pUriOpt != NULL) {
 			*pStr = '/';
+			pStr++;
 			coap_memcpy(pStr, pUriOpt->Value, pUriOpt->Length);
 			pStr += pUriOpt->Length;
-			pStr++;
 			pUriOpt = pUriOpt->next;
 		}
 		if (pList->Options.Cf == COAP_CF_LINK_FORMAT) {
