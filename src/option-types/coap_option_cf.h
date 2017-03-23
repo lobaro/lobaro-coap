@@ -39,7 +39,8 @@ typedef enum
 	COAP_CF_APP_XML = 41,
 	COAP_CF_OCTET_STREAM = 42,
 	COAP_CF_EXI = 47,
-	COAP_CF_JSON = 50
+	COAP_CF_JSON = 50,
+	COAP_CF_CBOR = 60
 }CoAP_ContentFormat_t;
 
 #endif
