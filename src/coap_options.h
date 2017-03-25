@@ -42,8 +42,8 @@ typedef enum
 
 //on addition of an option also change coap_options.C (array initializer) and count
 //Proxy-Uri
-#define KNOWN_OPTIONS_COUNT (7)
-extern uint16_t KNOWN_OPTIONS[KNOWN_OPTIONS_COUNT];
+extern size_t KNOWN_OPTIONS_COUNT;
+extern uint16_t KNOWN_OPTIONS[];
 
 #define OPT_FLAG_CRITICAL 	(1<<0)
 #define OPT_FLAG_UNSAFE	  	(1<<1)

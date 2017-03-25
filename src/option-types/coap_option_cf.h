@@ -22,11 +22,6 @@
 #ifndef COAP_CF_OPTION
 #define COAP_CF_OPTION
 
-/**
- * @deprecated Please use @sa CoAP_AddCfOptionToMsg
- */
-CoAP_Result_t AddCfOptionToMsg(CoAP_Message_t* msg, uint16_t cf);
-
 CoAP_Result_t CoAP_AddCfOptionToMsg(CoAP_Message_t* msg, uint16_t cf);
 CoAP_Result_t CoAP_AddAcceptOptionToMsg(CoAP_Message_t* msg, uint16_t contentFormat);
 
