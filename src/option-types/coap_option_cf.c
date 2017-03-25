@@ -21,12 +21,6 @@
  *******************************************************************************/
 #include "../coap.h"
 
-//add content-format option
-CoAP_Result_t _rom AddCfOptionToMsg(CoAP_Message_t* msg, uint16_t cf)
-{
-	return CoAP_AddCfOptionToMsg(msg, cf);
-}
-
 CoAP_Result_t _rom CoAP_AddCfOptionToMsg(CoAP_Message_t* msg, uint16_t contentFormat)
 {
 	return CoAP_AppendUintOptionToList(&(msg->pOptionsList), OPT_NUM_CONTENT_FORMAT, contentFormat);

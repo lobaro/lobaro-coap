@@ -221,7 +221,7 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 	CoAP_SetPayload(pResp, pStrStart, (uint16_t) coap_strlen((char*) pStrStart), true);
 	coap_mem_release(pStrStart);
 
-	AddCfOptionToMsg(pResp, COAP_CF_LINK_FORMAT);
+	CoAP_AddCfOptionToMsg(pResp, COAP_CF_LINK_FORMAT);
 
 	return HANDLER_OK;
 }
