@@ -193,25 +193,26 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 	while (pList != NULL) {
 		CoAP_option_t* pUriOpt = pList->pUri;
 
-		*pStr = '<';
-		pStr++;
+		*pStr++ = '<';
 		while (pUriOpt != NULL) {
-			*pStr = '/';
-			pStr++;
+			*pStr++ = '/';
 			coap_memcpy(pStr, pUriOpt->Value, pUriOpt->Length);
 			pStr += pUriOpt->Length;
 			pUriOpt = pUriOpt->next;
 		}
-		if (pList->Options.Cf == COAP_CF_LINK_FORMAT) {
-			pStr += coap_sprintf((char*) pStr, ">,");
-		} else {
-			pStr += coap_sprintf((char *) pStr, ">;title=\"%s\";ct=%d", pList->pDescription, pList->Options.Cf);
+		*pStr++ = '>';
+		if (pList->Options.Cf != COAP_CF_LINK_FORMAT) {
+			if( pList->pDescription != NULL ) {
+				pStr += coap_sprintf((char *) pStr, ";title=\"%s\"", pList->pDescription);
+			}
+			
+			pStr += coap_sprintf((char *) pStr, ";ct=%d", pList->Options.Cf);
+			
 			if (pList->Notifier != NULL) {
-				pStr += coap_sprintf((char*) pStr, ";obs,");
-			} else {
-				pStr += coap_sprintf((char*) pStr, ",");
+				pStr += coap_sprintf((char*) pStr, ";obs");
 			}
 		}
+		*pStr++ = ',';
 
 		pList = pList->next;
 
@@ -308,7 +309,7 @@ CoAP_Res_t* _rom CoAP_FindResourceByUri(CoAP_Res_t* pResListToSearchIn, CoAP_opt
 }
 
 CoAP_Res_t* _rom CoAP_CreateResource(char* Uri, char* Descr, CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt, CoAP_ResourceNotifier_fPtr_t pNotifierFkt) {
-	INFO("Creating resource %s (%s) AllowedMethods: %x%x%x%x\r\n", Uri, Descr,
+	INFO("Creating resource %s (%s) AllowedMethods: %x%x%x%x\r\n", Uri, Descr == NULL ? "" : Descr,
 		 !!(Options.AllowedMethods & RES_OPT_GET),
 		 !!(Options.AllowedMethods & RES_OPT_POST),
 		 !!(Options.AllowedMethods & RES_OPT_PUT),
@@ -330,7 +331,7 @@ CoAP_Res_t* _rom CoAP_CreateResource(char* Uri, char* Descr, CoAP_ResOpts_t Opti
 
 	pRes->Options = Options;
 
-	if (*Descr != '\0') {
+	if (Descr != NULL && *Descr != '\0') {
 		pRes->pDescription = (char*) (coap_mem_get(sizeof(char) * (coap_strlen(Descr) + 1)));
 		coap_strcpy(pRes->pDescription, Descr);
 	} else {
