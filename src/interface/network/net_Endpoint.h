@@ -41,7 +41,6 @@ extern const NetEp_t NetEp_IPv6_mulitcast;
 extern const NetEp_t NetEp_IPv4_mulitcast;
 
 bool EpAreEqual(const NetEp_t* ep_A, const NetEp_t* ep_B);
-void PrintEndpoint(const NetEp_t* ep);
 void CopyEndpoints(NetEp_t* Destination, const NetEp_t* Source);
 
 #endif

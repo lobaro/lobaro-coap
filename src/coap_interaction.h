@@ -53,11 +53,12 @@ typedef enum {
 			COAP_STATE_FINISHED                            // can be deleted / freed
 } CoAP_InteractionState_t;
 
+// State of confirmable (CON) messages
 typedef enum {
 	NOT_SET,
-	ACK_SET,
-	RST_SET
-} CoAP_ReliabilityState_t;
+	ACK_SEND,
+	RST_SEND
+} CoAP_ConfirmationState_t;
 
 typedef CoAP_Result_t ( * CoAP_RespHandler_fn_t )(CoAP_Message_t* pRespMsg, NetEp_t* Sender);
 
@@ -82,12 +83,12 @@ typedef struct CoAP_Interaction {
 
 	//Request
 	CoAP_Message_t* pReqMsg;
-	CoAP_ReliabilityState_t ReqReliabilityState;    //(unused on NON)
+	CoAP_ConfirmationState_t ReqConfirmState;    	// The ACK/RST answer send to CON requests
 	MetaInfo_t ReqMetaInfo;
 
 	//Response
-	CoAP_Message_t* pRespMsg;                       //corresponding Response Message
-	CoAP_ReliabilityState_t RespReliabilityState;   //(unused on NON)
+	CoAP_Message_t* pRespMsg;                       // corresponding Response Message
+	CoAP_ConfirmationState_t ResConfirmState;   	// The ACK/RST answer received for CON request
 	MetaInfo_t RespMetaInfo;
 
 	CoAP_RespHandler_fn_t RespCB;                   //response callback (if client)
@@ -112,7 +113,6 @@ CoAP_Result_t CoAP_SetSleepInteraction(CoAP_Interaction_t* pIA, uint32_t seconds
 CoAP_Result_t CoAP_EnableAckTimeout(CoAP_Interaction_t* pIA, uint8_t retryNum);
 
 //client
-CoAP_Interaction_t* CoAP_GetInteractionByMessageID(uint16_t mId);
-CoAP_Interaction_t* CoAP_ApplyReliabilityStateToInteraction(CoAP_ReliabilityState_t stateToAdd, uint16_t mID, NetEp_t* fromEp);
+CoAP_Interaction_t* CoAP_FindInteractionByMessageIdAndEp(CoAP_Interaction_t* pList, uint16_t mID, NetEp_t* fromEp);
 
 #endif

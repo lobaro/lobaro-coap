@@ -196,7 +196,7 @@ typedef enum {
 	RESP_SUCCESS_VALID_2_03 = CODE(2, 3),
 	RESP_SUCCESS_CHANGED_2_04 = CODE(2, 4),    // only used on response to "POST" and "PUT" like HTTP 204
 	RESP_SUCCESS_CONTENT_2_05 = CODE(2, 5),    // only used on response to "GET" like HTTP 200 (OK)
-	RESP_ERROR_BAD_REQUEST_4_00 = CODE(4, 0),  // like HTTP 400 (OK)
+	RESP_ERROR_BAD_REQUEST_4_00 = CODE(4, 0),  // like HTTP 400
 	RESP_ERROR_UNAUTHORIZED_4_01 = CODE(4, 1),
 	RESP_BAD_OPTION_4_02 = CODE(4, 2),
 	RESP_FORBIDDEN_4_03 = CODE(4, 3),

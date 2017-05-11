@@ -436,6 +436,7 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle
 	INFO("\r\no>>>>>>>>>>>>>>>>>>>>>>\r\nSend Message [%d Bytes], Interface #%u\r\n", bytesToSend, socketHandle);
 	INFO("Receiving Endpoint: ");
 	PrintEndpoint(&(pked.remoteEp));
+	INFO("\n");
 
 	for (i = 0; i < pked.size; i++) {
 		if (pked.pData[i] != 0) { //0 = string end

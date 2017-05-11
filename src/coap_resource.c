@@ -363,8 +363,9 @@ void _rom CoAP_PrintResource(CoAP_Res_t* pRes) {
 	INFO("Observers:\r\n");
 	CoAP_Observer_t* pOpserver = pRes->pListObservers; //point to ListStart
 	while (pOpserver != NULL) {
-		INFO("Token:%llu - ", pOpserver->Token);
+		INFO("Token:%llx - ", (uint64_t)pOpserver->Token.Token[0]);
 		PrintEndpoint(&(pOpserver->Ep));
+		INFO("\n");
 		CoAP_printUriOptionsList(pOpserver->pOptList);
 		CoAP_printOptionsList(pOpserver->pOptList);
 		INFO("---\r\n");

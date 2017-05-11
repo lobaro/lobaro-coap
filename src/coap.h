@@ -39,9 +39,9 @@ extern "C" {
  *  using signed arithmetic automatically handles wrapping.
  *  The disambiguation window is half the maximum value. */
 #if (configUSE_16_BIT_TICKS == 1)
-#define timeAfter(a,b)    (((int16_t)(a) - (int16_t)(b)) > 0)
+#define timeAfter(a,b)    (((int16_t)(a) - (int16_t)(b)) >= 0)
 #else
-#define timeAfter(a,b)    (((int32_t)(a) - (int32_t)(b)) > 0)
+#define timeAfter(a,b)    (((int32_t)(a) - (int32_t)(b)) >= 0)
 #endif
 
 #define MAX_PAYLOAD_SIZE        (256)  //should not exceed 1024 bytes (see 4.6 RFC7252) (must be power of 2 to fit with blocksize option!)
@@ -63,6 +63,7 @@ extern "C" {
 #include "coap_resource.h"
 #include "coap_interaction.h"
 #include "coap_main.h"
+#include "diagnostic.h"
 
 
 #ifdef __cplusplus

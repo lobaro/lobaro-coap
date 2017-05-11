@@ -33,21 +33,7 @@ static CoAP_Interaction_t* _rom CoAP_AllocNewInteraction() {
 		return NULL;
 	}
 
-	newInteraction->RetransCounter = 0;
-	newInteraction->AckTimeout = 0;
-	newInteraction->SleepUntil = 0;
-
-	newInteraction->UpdatePendingNotification = false;
-	newInteraction->socketHandle = (SocketHandle_t) 0;
-	newInteraction->pReqMsg = NULL;
-	newInteraction->pRespMsg = NULL;
-	newInteraction->pObserver = NULL;
-	newInteraction->next = NULL;
-	newInteraction->ReqReliabilityState = NOT_SET;
-	newInteraction->RespReliabilityState = NOT_SET;
-	newInteraction->Role = COAP_ROLE_NOT_SET;
-	newInteraction->State = COAP_STATE_NOT_SET;
-
+	memset(newInteraction, 0, sizeof(CoAP_Interaction_t));
 	return newInteraction;
 }
 
@@ -63,7 +49,6 @@ CoAP_Result_t _rom CoAP_FreeInteraction(CoAP_Interaction_t** pInteraction) {
 	return COAP_OK;
 }
 
-
 static CoAP_Result_t _rom CoAP_UnlinkInteractionFromList(CoAP_Interaction_t** pListStart, CoAP_Interaction_t* pInteractionToRemove, bool FreeUnlinked) {
 	CoAP_Interaction_t* currP;
 	CoAP_Interaction_t* prevP;
@@ -74,7 +59,7 @@ static CoAP_Result_t _rom CoAP_UnlinkInteractionFromList(CoAP_Interaction_t** pL
 	//Visit each node, maintaining a pointer to
 	//the previous node we just visited.
 	for (currP = *pListStart; currP != NULL;
-		 prevP = currP, currP = currP->next) {
+			prevP = currP, currP = currP->next) {
 
 		if (currP == pInteractionToRemove) {  // Found it.
 			if (prevP == NULL) {
@@ -87,7 +72,9 @@ static CoAP_Result_t _rom CoAP_UnlinkInteractionFromList(CoAP_Interaction_t** pL
 			}
 
 			// Deallocate the node.
-			if (FreeUnlinked) CoAP_FreeInteraction(&currP);
+			if (FreeUnlinked) {
+				CoAP_FreeInteraction(&currP);
+			}
 			//Done searching.
 			return COAP_OK;
 		}
@@ -105,11 +92,11 @@ static CoAP_Result_t _rom CoAP_UnlinkInteractionFromListByHandle(CoAP_Interactio
 	//Visit each node, maintaining a pointer to
 	//the previous node we just visited.
 	for (currP = *pListStart; currP != NULL;
-		 prevP = currP, currP = currP->next) {
+			prevP = currP, currP = currP->next) {
 
 		if (currP->socketHandle == socketHandle
-			&& ((currP->pReqMsg && currP->pReqMsg->MessageID == MsgID) || (currP->pRespMsg && currP->pRespMsg->MessageID == MsgID))
-			&& EpAreEqual(&(currP->RemoteEp), RstEp)) {  // Found it.
+				&& ((currP->pReqMsg && currP->pReqMsg->MessageID == MsgID) || (currP->pRespMsg && currP->pRespMsg->MessageID == MsgID))
+				&& EpAreEqual(&(currP->RemoteEp), RstEp)) {  // Found it.
 
 			if (prevP == NULL) {
 				//Fix beginning pointer.
@@ -121,7 +108,8 @@ static CoAP_Result_t _rom CoAP_UnlinkInteractionFromListByHandle(CoAP_Interactio
 			}
 
 			// Deallocate the node.
-			if (FreeUnlinked) CoAP_FreeInteraction(&currP);
+			if (FreeUnlinked)
+				CoAP_FreeInteraction(&currP);
 			//Done searching.
 			return COAP_OK;
 		}
@@ -129,9 +117,9 @@ static CoAP_Result_t _rom CoAP_UnlinkInteractionFromListByHandle(CoAP_Interactio
 	return COAP_NOT_FOUND;
 }
 
-
 static CoAP_Result_t _rom CoAP_AppendInteractionToList(CoAP_Interaction_t** pListStart, CoAP_Interaction_t* pInteractionToAdd) {
-	if (pInteractionToAdd == NULL) return COAP_ERR_ARGUMENT;
+	if (pInteractionToAdd == NULL)
+		return COAP_ERR_ARGUMENT;
 
 	if (*pListStart == NULL) //List empty? create new first element
 	{
@@ -140,7 +128,8 @@ static CoAP_Result_t _rom CoAP_AppendInteractionToList(CoAP_Interaction_t** pLis
 	} else //append new element at end
 	{
 		CoAP_Interaction_t* pTrans = *pListStart;
-		while (pTrans->next != NULL) pTrans = pTrans->next;
+		while (pTrans->next != NULL)
+			pTrans = pTrans->next;
 
 		pTrans->next = pInteractionToAdd;
 		pTrans = pTrans->next;
@@ -148,7 +137,6 @@ static CoAP_Result_t _rom CoAP_AppendInteractionToList(CoAP_Interaction_t** pLis
 	}
 	return COAP_OK;
 }
-
 
 static CoAP_Result_t _rom CoAP_MoveInteractionToListEnd(CoAP_Interaction_t** pListStart, CoAP_Interaction_t* pInteractionToMove) {
 	CoAP_Interaction_t* currP;
@@ -162,8 +150,8 @@ static CoAP_Result_t _rom CoAP_MoveInteractionToListEnd(CoAP_Interaction_t** pLi
 	//Visit each node, maintaining a pointer to
 	//the previous node we just visited.
 	for (currP = *pListStart;
-		 currP != NULL;
-		 prevP = currP, currP = currP->next) {
+			currP != NULL;
+			prevP = currP, currP = currP->next) {
 
 		if (currP == pInteractionToMove) {  // Found it.
 			if (prevP == NULL) {
@@ -181,7 +169,6 @@ static CoAP_Result_t _rom CoAP_MoveInteractionToListEnd(CoAP_Interaction_t** pLi
 
 	return COAP_OK;
 }
-
 
 CoAP_Result_t _rom CoAP_SetSleepInteraction(CoAP_Interaction_t* pIA, uint32_t seconds) {
 	pIA->SleepUntil = CoAP.api.rtc1HzCnt() + seconds;
@@ -203,53 +190,16 @@ CoAP_Interaction_t* _rom CoAP_GetLongestPendingInteraction() {
 	return CoAP.pInteractions;
 }
 
-CoAP_Interaction_t* _rom CoAP_GetInteractionByMessageID(uint16_t mId) {
-	CoAP_Interaction_t* pList = CoAP.pInteractions;
-
-	if (pList == NULL) return NULL;
-
-	if (pList->pReqMsg != NULL
-		&& pList->pReqMsg->MessageID == mId)
-		return pList;
-
-
-	while (pList->next != NULL) {
-		if (pList->pReqMsg != NULL
-			&& pList->pReqMsg->MessageID == mId)
-			return pList;
-
-		pList = pList->next;
-	}
-
-	return NULL;
-}
-
-
-CoAP_Result_t _rom CoAP_DeleteInteraction(CoAP_Interaction_t* pInteractionToDelete) {
-	return CoAP_UnlinkInteractionFromList(&(CoAP.pInteractions), pInteractionToDelete, true);
-}
-
-
-CoAP_Result_t _rom CoAP_ResetInteractionByHandle(uint16_t MsgID, SocketHandle_t socketHandle, NetEp_t* RstEp) {
-	return CoAP_UnlinkInteractionFromListByHandle(&(CoAP.pInteractions), MsgID, socketHandle, RstEp, true);
-}
-
-// Iterate over all interactions to find corresponding (by mID) message send by us before
-// and apply the newly received RST/ACK state
-// returns found interaction
-CoAP_Interaction_t* _rom CoAP_ApplyReliabilityStateToInteraction(CoAP_ReliabilityState_t stateToAdd, uint16_t mID, NetEp_t* fromEp) {
-	CoAP_Interaction_t* pList = CoAP.pInteractions;
+// Each incoming message belongs to an interaction
+// CON <-> ACK/RST are matched by id and endpoint
+CoAP_Interaction_t* _rom CoAP_FindInteractionByMessageIdAndEp(CoAP_Interaction_t* pList, uint16_t mID, NetEp_t* fromEp) {
 
 	// A received RST message rejects a former send CON message or (optional) NON message send by us
 	// A received ACK message acknowledges a former send CON message or (optional) NON message send by us
 	// servers and notificators use CON only in responses, clients in requests
 	while (pList != NULL) {
 		if (pList->pRespMsg != NULL && pList->pRespMsg->MessageID == mID && EpAreEqual(fromEp, &(pList->RemoteEp))) {
-			if (pList->Role == COAP_ROLE_SERVER || pList->Role == COAP_ROLE_NOTIFICATION || pList->Role == COAP_ROLE_CLIENT) {
-				// NOTE: observer disconnection is done in statemachine (see coap_main.c)
-				pList->RespReliabilityState = stateToAdd;
-				return pList;
-			}
+			return pList;
 		}
 		pList = pList->next;
 	}
@@ -257,17 +207,26 @@ CoAP_Interaction_t* _rom CoAP_ApplyReliabilityStateToInteraction(CoAP_Reliabilit
 	return NULL;
 }
 
+CoAP_Result_t _rom CoAP_DeleteInteraction(CoAP_Interaction_t* pInteractionToDelete) {
+	return CoAP_UnlinkInteractionFromList(&(CoAP.pInteractions), pInteractionToDelete, true);
+}
+
+CoAP_Result_t _rom CoAP_ResetInteractionByHandle(uint16_t MsgID, SocketHandle_t socketHandle, NetEp_t* RstEp) {
+	return CoAP_UnlinkInteractionFromListByHandle(&(CoAP.pInteractions), MsgID, socketHandle, RstEp, true);
+}
+
 CoAP_Result_t _rom CoAP_EnqueueLastInteraction(CoAP_Interaction_t* pInteractionToEnqueue) {
 	return CoAP_MoveInteractionToListEnd(&(CoAP.pInteractions), pInteractionToEnqueue);
 }
 
-
 //we act as a CoAP Client (sending requests) in this interaction
 CoAP_Result_t _rom CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, SocketHandle_t socketHandle, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb) {
-	if (pMsgReq == NULL || CoAP_MsgIsRequest(pMsgReq) == false) return COAP_ERR_ARGUMENT;
+	if (pMsgReq == NULL || CoAP_MsgIsRequest(pMsgReq) == false)
+		return COAP_ERR_ARGUMENT;
 
 	CoAP_Interaction_t* newIA = CoAP_AllocNewInteraction();
-	if (newIA == NULL) return COAP_ERR_OUT_OF_MEMORY;
+	if (newIA == NULL)
+		return COAP_ERR_OUT_OF_MEMORY;
 
 	//attach request message
 	newIA->pReqMsg = pMsgReq;
@@ -301,23 +260,29 @@ CoAP_Result_t _rom CoAP_StartNewGetRequest(char* UriString, SocketHandle_t socke
 CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 	CoAP_Observer_t* pObserver = pRes->pListObservers;
 	CoAP_Interaction_t* newIA;
-	bool SameNotificationOngoing;
+	bool sameNotificationOngoing = false;
+
+
+	while (pObserver != NULL) {
+		pObserver = pObserver->next;
+	}
 
 	//iterate over all observers of this resource and check if
 	//a) a new notification interaction has to be created
 	//or
 	//b) wait for currently pending notification to end
 	//or
-	//c) a currently pending older notification has be updated to the new resource representation - as stated in Observe RFC7641 ("4.5.2.  Advanced Transmission")
+	//c) a currently pending older notification has be updated to the new resource representation
+	//   as stated in Observe RFC7641 ("4.5.2.  Advanced Transmission")
 	while (pObserver != NULL) {
 
 		//search for pending notification of this resource to this observer and set update flag of representation
-		SameNotificationOngoing = false;
+		sameNotificationOngoing = false;
 		CoAP_Interaction_t* pIA;
 		for (pIA = CoAP.pInteractions; pIA != NULL; pIA = pIA->next) {
 			if (pIA->Role == COAP_ROLE_NOTIFICATION) {
 				if (pIA->pRes == pRes && pIA->socketHandle == pObserver->socketHandle && EpAreEqual(&(pIA->RemoteEp), &(pObserver->Ep))) {
-					SameNotificationOngoing = true;
+					sameNotificationOngoing = true;
 
 #if USE_RFC7641_ADVANCED_TRANSMISSION == 1
 					pIA->UpdatePendingNotification = true; //will try to update the ongoing resource representation on ongoing transfer
@@ -338,14 +303,15 @@ CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 
 		//Start new IA for this observer
 		newIA = CoAP_AllocNewInteraction();
-		if (newIA == NULL) return COAP_ERR_OUT_OF_MEMORY;
+		if (newIA == NULL)
+			return COAP_ERR_OUT_OF_MEMORY;
 
 		//Create fresh response message
 		newIA->pRespMsg = CoAP_CreateMessage(CON, RESP_SUCCESS_CONTENT_2_05, CoAP_GetNextMid(), NULL, 0, PREFERED_PAYLOAD_SIZE, pObserver->Token);
 
 		//Call Notify Handler of resource and add to interaction list
 		if (newIA->pRespMsg != NULL && pRes->Notifier != NULL &&
-			pRes->Notifier(pObserver, newIA->pRespMsg) == COAP_OK) { //<------ call notify handler of resource
+				pRes->Notifier(pObserver, newIA->pRespMsg) == COAP_OK) { //<------ call notify handler of resource
 
 			newIA->Role = COAP_ROLE_NOTIFICATION;
 			newIA->State = COAP_STATE_READY_TO_NOTIFY;
@@ -353,7 +319,6 @@ CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 			newIA->socketHandle = pObserver->socketHandle;
 			newIA->pRes = pRes;
 			newIA->pObserver = pObserver;
-
 
 			if (newIA->pRespMsg->Code >= RESP_ERROR_BAD_REQUEST_4_00) { //remove this observer from resource in case of non OK Code (see RFC7641, 3.2., 3rd paragraph)
 				pObserver = pObserver->next; //next statement will free current observer so save its ancestor node right now
@@ -366,7 +331,6 @@ CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 			if (newIA->pRespMsg->Type == NON && pRes->UpdateCnt % 20 == 0) { //send every 20th message as CON even if notify handler defines the send out as NON to support "lazy" cancelation
 				newIA->pRespMsg->Type = CON;
 			}
-
 
 			CoAP_AppendInteractionToList(&(CoAP.pInteractions), newIA);
 
@@ -381,8 +345,8 @@ CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 
 //we act as a CoAP Server (receiving requests) in this interaction
 CoAP_Result_t _rom CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_Res_t* pRes, SocketHandle_t socketHandle, NetPacket_t* pPacket) {
-	if (!CoAP_MsgIsRequest(pMsgReq)) return COAP_ERR_ARGUMENT;
-
+	if (!CoAP_MsgIsRequest(pMsgReq))
+		return COAP_ERR_ARGUMENT;
 
 	//NON or CON request
 	NetEp_t* pReqEp = &(pPacket->remoteEp);
@@ -413,13 +377,10 @@ CoAP_Result_t _rom CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_
 	}
 
 	newIA->socketHandle = socketHandle;
-	newIA->RespReliabilityState = NOT_SET;
-	newIA->RespCB = NULL;
 	newIA->pRes = pRes;
 	newIA->Role = COAP_ROLE_SERVER;
 	newIA->State = COAP_STATE_HANDLE_REQUEST;
 	newIA->ReqMetaInfo = pPacket->metaInfo;
-	newIA->ReqReliabilityState = NOT_SET;
 	newIA->pReqMsg = pMsgReq;
 
 	CopyEndpoints(&(newIA->RemoteEp), pReqEp);
@@ -433,22 +394,26 @@ CoAP_Result_t _rom CoAP_RemoveInteractionsObserver(CoAP_Interaction_t* pIA, CoAP
 }
 
 CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
-	if (pIA == NULL || pIA->pReqMsg == NULL) return COAP_ERR_ARGUMENT;    //safety checks
+	if (pIA == NULL || pIA->pReqMsg == NULL)
+		return COAP_ERR_ARGUMENT;    //safety checks
 
 	CoAP_Result_t res;
 	uint32_t obsVal = 0;
 	CoAP_Observer_t* pObserver = NULL;
 	CoAP_Observer_t* pExistingObserver = (pIA->pRes)->pListObservers;
 
-	if (pIA->pRes->Notifier == NULL) return COAP_ERR_NOT_FOUND;            //resource does not support observe
-	if ((res = GetObserveOptionFromMsg(pIA->pReqMsg, &obsVal)) != COAP_OK) return res; //if no observe option in req function can't do anything
+	if (pIA->pRes->Notifier == NULL)
+		return COAP_ERR_NOT_FOUND;            //resource does not support observe
+	if ((res = GetObserveOptionFromMsg(pIA->pReqMsg, &obsVal)) != COAP_OK)
+		return res; //if no observe option in req function can't do anything
 
 	//Client registers
 	if (obsVal == OBSERVE_OPT_REGISTER) { //val = 0
 
 		//Alloc memory for new Observer
 		pObserver = CoAP_AllocNewObserver();
-		if (pObserver == NULL) return COAP_ERR_OUT_OF_MEMORY;
+		if (pObserver == NULL)
+			return COAP_ERR_OUT_OF_MEMORY;
 
 		//Copy relevant information for observation from current interaction
 		pObserver->Ep = pIA->RemoteEp;
@@ -472,7 +437,8 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 
 		//delete eventually existing same observer
 		while (pExistingObserver != NULL) { //found right existing observation -> delete it
-			if (CoAP_TokenEqual(pIA->pReqMsg->Token, pExistingObserver->Token) && pIA->socketHandle == pExistingObserver->socketHandle && EpAreEqual(&(pIA->RemoteEp), &(pExistingObserver->Ep))) {
+			if (CoAP_TokenEqual(pIA->pReqMsg->Token, pExistingObserver->Token) && pIA->socketHandle == pExistingObserver->socketHandle
+					&& EpAreEqual(&(pIA->RemoteEp), &(pExistingObserver->Ep))) {
 				CoAP_UnlinkObserverFromList(&((pIA->pRes)->pListObservers), pExistingObserver, true);
 				break;
 			}
@@ -491,7 +457,8 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 		CoAP_Interaction_t* pIApending;
 		for (pIApending = CoAP.pInteractions; pIApending != NULL; pIApending = pIApending->next) {
 			if (pIApending->Role == COAP_ROLE_NOTIFICATION) {
-				if (CoAP_TokenEqual(pIApending->pRespMsg->Token, pIA->pReqMsg->Token) && pIApending->socketHandle == pIA->socketHandle && EpAreEqual(&(pIApending->RemoteEp), &(pIA->RemoteEp))) {
+				if (CoAP_TokenEqual(pIApending->pRespMsg->Token, pIA->pReqMsg->Token) && pIApending->socketHandle == pIA->socketHandle
+						&& EpAreEqual(&(pIApending->RemoteEp), &(pIA->RemoteEp))) {
 					INFO("Abort of pending notificaton interaction\r\n");
 					CoAP_DeleteInteraction(pIApending);
 					break;
@@ -499,7 +466,8 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 			}
 		}
 
-	} else return COAP_BAD_OPTION_VAL;
+	} else
+		return COAP_BAD_OPTION_VAL;
 
 	return COAP_ERR_NOT_FOUND;
 }

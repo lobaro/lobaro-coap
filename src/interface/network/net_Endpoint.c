@@ -60,17 +60,4 @@ void _rom CopyEndpoints(NetEp_t* Destination, const NetEp_t* Source) {
 	memmove((void*) Destination, (void*) Source, sizeof(NetEp_t));
 }
 
-void _rom PrintEndpoint(const NetEp_t* ep) {
 
-	if (ep->NetType == IPV6) {
-		INFO("IPv6, ");
-		PRINT_IPV6(ep->NetAddr.IPv6);
-		INFO(" at Port: %u\r\n", ep->NetPort);
-	} else if (ep->NetType == IPV4) {
-		INFO("IPv4, %d.%d.%d.%d:%d\r\n", ep->NetAddr.IPv4.u8[0], ep->NetAddr.IPv4.u8[1], ep->NetAddr.IPv4.u8[2], ep->NetAddr.IPv4.u8[3], ep->NetPort);
-	} else if (ep->NetType == UART) {
-		INFO("UART, COM%d\r\n", ep->NetAddr.Uart.ComPortID);
-	} else {
-		ERROR("- Unknown Endpoint Type (%d)\r\n", ep->NetType);
-	}
-}
