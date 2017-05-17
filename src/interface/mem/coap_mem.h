@@ -34,7 +34,6 @@
 	uint8_t* coap_mem_buf_lowEnd();			//lowEnd of total memory area under control of memory allocator
 	uint8_t* coap_mem_buf_highEnd();		//highEnd of total memory area under control of memory allocator
 	void coap_mem_stats();					//Display/Print some debug information for amount of memory usage
-	void coap_mem_determinateStaticMem(); 	//used by coap_mem_stats to calculate "dynamic"=dangerous memory size (which should go to zero in the long term, otherwise we have a memory leak!)
 
 	#endif
 

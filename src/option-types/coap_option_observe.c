@@ -94,9 +94,11 @@ CoAP_Result_t _rom GetObserveOptionFromMsg(CoAP_Message_t* msg, uint32_t* val) {
 CoAP_Observer_t* _rom CoAP_AllocNewObserver()
 {
 	CoAP_Observer_t* newObserver = (CoAP_Observer_t*) (coap_mem_get0(sizeof(CoAP_Observer_t)));
-	if (newObserver == NULL)
+	if (newObserver == NULL) {
 		return NULL;
+	}
 
+	memset(newObserver, 0, sizeof(CoAP_Observer_t));
 	return newObserver;
 }
 
@@ -126,8 +128,9 @@ CoAP_Result_t _rom CoAP_AppendObserverToList(CoAP_Observer_t** pListStart, CoAP_
 	else //append new element at end
 	{
 		CoAP_Observer_t* pObs = *pListStart;
-		while (pObs->next != NULL)
+		while (pObs->next != NULL) {
 			pObs = pObs->next;
+		}
 
 		pObs->next = pObserverToAdd;
 		pObs = pObs->next;
@@ -146,8 +149,7 @@ CoAP_Result_t _rom CoAP_UnlinkObserverFromList(CoAP_Observer_t** pListStart, CoA
 
 	//Visit each node, maintaining a pointer to
 	//the previous node we just visited.
-	for (currP = *pListStart; currP != NULL;
-			prevP = currP, currP = currP->next) {
+	for (currP = *pListStart; currP != NULL; prevP = currP, currP = currP->next) {
 
 		if (currP == pObserverToRemove) {  // Found it.
 			if (prevP == NULL) {
@@ -160,8 +162,9 @@ CoAP_Result_t _rom CoAP_UnlinkObserverFromList(CoAP_Observer_t** pListStart, CoA
 			}
 
 			// Deallocate the node.
-			if (FreeUnlinked)
+			if (FreeUnlinked) {
 				CoAP_FreeObserver(&currP);
+			}
 			//Done searching.
 			return COAP_OK;
 		}

@@ -62,12 +62,29 @@ typedef enum {
 
 typedef CoAP_Result_t ( * CoAP_RespHandler_fn_t )(CoAP_Message_t* pRespMsg, NetEp_t* Sender);
 
+
+/*
+ * There are 3 Types of interactions, defined by the Role: CLIENT, SERVER, NOTIFICATION
+ *
+ * CLIENT interactions are created by sending a request to a CoAP server when this lib is used as a client
+ * this usecase is not well tested yet and need further refactoring
+ *
+ * SERVER interactions are created by receiving a request from a CoAP client
+ * and end with the response from the server (this lib) which might be
+ * a single ACK or ACK + CON/NON for postponed responses
+ *
+ * NOTIFICATION interactions are created by receiving a request with the notify option set to 0 (= register)
+ * and can be canceled with a NAK or a new request matching the token with the notify option set to 1 (=unregister)
+ *
+ *
+ */
 typedef struct CoAP_Interaction {
 	struct CoAP_Interaction* next;                  //4 byte pointer (linked list of interactions)
 
 	CoAP_InteractionRole_t Role;                    //[client], [server] or [notification]
 	CoAP_InteractionState_t State;
 
+	// An interaction is bound to a resource based on the requested URL
 	CoAP_Res_t* pRes;                               //Resource of IA
 	CoAP_Observer_t* pObserver;                     //"NULL" or link to Observer (Role=COAP_ROLE_NOTIFICATION)
 

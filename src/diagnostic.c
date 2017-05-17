@@ -113,7 +113,6 @@ char* ResultToString(CoAP_Result_t res) {
 	}
 }
 
-
 char* ReliabilityStateToString(CoAP_ConfirmationState_t state) {
 	switch (state) {
 	case NOT_SET:
@@ -186,10 +185,10 @@ void _rom PrintInteractions(CoAP_Interaction_t *pInteractions) {
 
 		INFO("Observer: ");
 		if (pIA->pObserver != NULL) {
-		PrintEndpoint(&pIA->pObserver->Ep);
-		INFO(", Socket: %04lx, FailCnt: %d, Token: ", (uint32_t )pIA->pObserver->socketHandle, pIA->pObserver->FailCount);
-		PrintToken(&pIA->pObserver->Token);
-		INFO("\n");
+			PrintEndpoint(&pIA->pObserver->Ep);
+			INFO(", Socket: %04lx, FailCnt: %d, Token: ", (uint32_t )pIA->pObserver->socketHandle, pIA->pObserver->FailCount);
+			PrintToken(&pIA->pObserver->Token);
+			INFO("\n");
 		} else {
 			INFO("NONE\n");
 		}

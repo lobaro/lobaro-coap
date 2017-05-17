@@ -123,19 +123,19 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 	switch (pMsg->Type) {
 	case RST: {
 		if (pIA == NULL) {
-			pIA->ResConfirmState = RST_SEND;
 			INFO("- (?) Got Reset on (no more?) existing message id: %d\r\n", pMsg->MessageID);
 		}
+		pIA->ResConfirmState = RST_SEND;
 		goto END;
 	}
 	case ACK: {
-		CoAP_Interaction_t* pIA = NULL;
 		// apply "ACK received" to req (client) or resp (server)
 		if (pIA == NULL) {
 			INFO("- (?) Got ACK on (no more?) existing message id: %d\r\n", pMsg->MessageID);
-			pIA->ResConfirmState = ACK_SEND;
 			goto END;
 		}
+		pIA->ResConfirmState = ACK_SEND;
+
 		//piA is NOT NULL in every case here
 		INFO("- piggybacked response received\r\n");
 		if (pMsg->Code != EMPTY) {
@@ -273,7 +273,7 @@ static CoAP_Result_t _rom CheckRespStatus(CoAP_Interaction_t* pIA) {
 
 	} else if (pIA->pRespMsg->Type == CON) {
 		if (pIA->ResConfirmState == ACK_SEND) { //everything fine!
-			INFO("- Response ACKed by Client -> Transaction ended succesfully\r\n");
+			INFO("- Response ACKed by Client -> Transaction ended successfully\r\n");
 			//todo: call success callback to user
 			return COAP_OK;
 		} else { //check ACK/RST timeout of our CON response
@@ -509,6 +509,7 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 static void handleNotifyInteraction(CoAP_Interaction_t* pIA) {
 	if (pIA->State == COAP_STATE_READY_TO_NOTIFY) {
 		//o>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		INFO("Sending Notification\n");
 		SendResp(pIA, COAP_STATE_NOTIFICATION_SENT); //transmit response & move to next state
 		//o>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		//--------------------------------------------------
@@ -534,7 +535,7 @@ static void handleNotifyInteraction(CoAP_Interaction_t* pIA) {
 				pIA->UpdatePendingNotification = false;
 				pIA->pRespMsg->MessageID = CoAP_GetNextMid();
 				//call notifier
-				if (pIA->pRes->Notifier(pIA->pObserver, pIA->pRespMsg) >= RESP_ERROR_BAD_REQUEST_4_00) {
+				if (pIA->pRes->Notifier(pIA->pObserver, pIA->pRespMsg) == HANDLER_ERROR) {
 					RemoveObserveOptionFromMsg(pIA->pRespMsg);
 					CoAP_RemoveInteractionsObserver(pIA, pIA->pRespMsg->Token);
 				} else { //good response
@@ -570,7 +571,7 @@ static void handleNotifyInteraction(CoAP_Interaction_t* pIA) {
 				pIA->ResConfirmState = NOT_SET;
 
 				//call notifier
-				if (pIA->pRes->Notifier(pIA->pObserver, pIA->pRespMsg) >= RESP_ERROR_BAD_REQUEST_4_00) {
+				if (pIA->pRes->Notifier(pIA->pObserver, pIA->pRespMsg) == HANDLER_ERROR) {
 					RemoveObserveOptionFromMsg(pIA->pRespMsg);
 					CoAP_RemoveInteractionsObserver(pIA, pIA->pRespMsg->Token);
 				} else { //good response
@@ -672,6 +673,7 @@ void _rom CoAP_doWork() {
 	// DEBUG output all interactions
 	INFO("\n");
 	PrintInteractions(CoAP.pInteractions);
+	coap_mem_stats();
 
 	INFO("Now: %lu\n", now);
 
