@@ -400,7 +400,7 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle
 	CoAP_Socket_t* pSocket = RetrieveSocket(socketHandle);
 
 	if (pSocket == NULL) {
-		ERROR("Socket not found! handle: %d\r\n", socketHandle);
+		ERROR("Socket not found! handle: %d\r\n", (int)socketHandle);
 		return COAP_NOT_FOUND;
 	}
 
