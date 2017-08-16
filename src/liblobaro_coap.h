@@ -163,6 +163,23 @@ typedef struct {
 // Options
 //################################
 
+typedef enum
+{
+//Core Options
+	OPT_NUM_URI_PATH = 11,
+	OPT_NUM_URI_HOST= 3,
+	OPT_NUM_ETAG = 4,
+	OPT_NUM_OBSERVE = 6,
+	OPT_NUM_URI_PORT = 7,
+	OPT_NUM_CONTENT_FORMAT = 12,
+	OPT_NUM_URI_QUERY = 15,
+	OPT_NUM_ACCEPT = 17,
+//Blockwise transfers
+	OPT_BLOCK2 = 23,
+	OPT_BLOCK1 = 27,
+	OPT_NUM_LOBARO_TOKEN_SAVE = 350
+}CoAP_KnownOptionNumbers_t;
+
 typedef struct CoAP_option {
 	struct CoAP_option* next; //4 byte pointer (linked list)
 
