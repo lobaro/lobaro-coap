@@ -19,7 +19,8 @@ Follow [Lobaro on Twitter](https://twitter.com/LobaroHH) to get latest news abou
 
 # Demo/Example
 * ESP8266, cheap WIFI Soc:
-[Example Eclipse Project](https://github.com/Lobaro/lobaro-coap-on-esp8266)
+
+[Example Eclipse Project on GitHub](https://github.com/Lobaro/lobaro-coap-on-esp8266)
 
 [Step by Step Tutorial](http://www.lobaro.com/lobaro-coap-on-esp8266/)
 
