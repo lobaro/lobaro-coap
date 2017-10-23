@@ -18,7 +18,10 @@ Despite designed for embedded systems (e.g. ARM Cortex-M0/M3, AVR, ESP8266) it c
 Follow [Lobaro on Twitter](https://twitter.com/LobaroHH) to get latest news about Lobaro iot projects using this stack!
 
 # Demo/Example
-* ESP8266, cheap WIFI Soc: http://www.lobaro.com/lobaro-coap-on-esp8266/
+* ESP8266, cheap WIFI Soc:
+[Example Eclipse Project](https://github.com/Lobaro/lobaro-coap-on-esp8266)
+
+[Step by Step Tutorial](http://www.lobaro.com/lobaro-coap-on-esp8266/)
 
 ... more to come soon!
 
