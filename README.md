@@ -15,6 +15,8 @@ Despite designed for embedded systems (e.g. ARM Cortex-M0/M3, AVR, ESP8266) it c
 * detached packet receive/send logic
 * Arduino support (experimental)
 
+Follow us on [Twitter](https://twitter.com/LobaroHH) to get latest news about Lobaro iot projects using this stack!
+
 # Demo/Example
 * ESP8266, cheap WIFI Soc: http://www.lobaro.com/lobaro-coap-on-esp8266/
 
@@ -24,7 +26,7 @@ Despite designed for embedded systems (e.g. ARM Cortex-M0/M3, AVR, ESP8266) it c
 * GoLang CoAP Client implementation & CGO wrapper for this C lib: [Lobaro CoAP-go](https://github.com/Lobaro/coap-go)
 
 # Future development
-We use the stack internally at lobaro to build universal gateway / sensor systems for our customers. Additions will be constantly merged into this repository. Also we plan a big redesign until the end of 2017. With this update (which is ongoing already) we include many learnings from our other project. Star this project to get notified about the changes.
+We use the stack internally at lobaro to build universal gateway / sensor systems for our customers. Additions will be constantly merged into this repository. Also we plan a big redesign until the end of 2017. With this update (which is ongoing already) we include many learnings from our other project. 
 
 # Contribute
 We appreciate any feedback, do not hesitate to create issues or pull requests.
