@@ -15,7 +15,7 @@ Despite designed for embedded systems (e.g. ARM Cortex-M0/M3, AVR, ESP8266) it c
 * detached packet receive/send logic
 * Arduino support (experimental)
 
-Follow us on [Twitter](https://twitter.com/LobaroHH) to get latest news about Lobaro iot projects using this stack!
+Follow [Lobaro on Twitter](https://twitter.com/LobaroHH) to get latest news about Lobaro iot projects using this stack!
 
 # Demo/Example
 * ESP8266, cheap WIFI Soc: http://www.lobaro.com/lobaro-coap-on-esp8266/
