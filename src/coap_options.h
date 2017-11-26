@@ -50,6 +50,8 @@ CoAP_Result_t CoAP_CopyOptionToList(CoAP_option_t** pOptionsListBegin, CoAP_opti
 CoAP_Result_t CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, CoAP_option_t* pOptionToRemove);
 CoAP_Result_t CoAP_FreeOptionList(CoAP_option_t** pOptionsListBegin);
 
+CoAP_Result_t CoAP_GetUintFromOption(const CoAP_option_t* pOption, uint32_t* value);
+
 bool CoAP_OptionsAreEqual(CoAP_option_t* OptA, CoAP_option_t* OptB);
 uint16_t CoAP_CheckForUnknownCriticalOption(CoAP_option_t* pOptionsListBegin);
 
