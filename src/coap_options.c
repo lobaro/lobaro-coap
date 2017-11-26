@@ -372,6 +372,44 @@ CoAP_Result_t _rom CoAP_AppendUintOptionToList(CoAP_option_t** pOptionsListBegin
 	return COAP_OK; 
 } 
 
+CoAP_Result_t _rom CoAP_GetUintFromOption(const CoAP_option_t* pOption, uint32_t* value) {
+	if( value == NULL || pOption == NULL )
+		return COAP_ERR_ARGUMENT;
+
+	if( pOption->Length == 0 )
+	{
+		*value = 0;
+	}
+	else if( pOption->Length == 1 )
+	{
+		*value = pOption->Value[0];
+	}
+	else if( pOption->Length == 2 )
+	{
+		*value = pOption->Value[0];
+		*value |= (pOption->Value[1] << 8);
+	}
+	else if( pOption->Length == 3 )
+	{
+		*value = pOption->Value[0];
+		*value |= (pOption->Value[1] << 8);
+		*value |= (pOption->Value[2] << 16);
+	}
+	else if( pOption->Length == 4 )
+	{
+		*value = pOption->Value[0];
+		*value |= (pOption->Value[1] << 8);
+		*value |= (pOption->Value[2] << 16);
+		*value |= (pOption->Value[3] << 24);
+	}
+	else
+	{
+		return COAP_ERR_ARGUMENT;
+	}
+
+	return COAP_OK;
+}
+
 // this function adds a new option to linked list of options starting at pOptionsListBegin
 // on demand the list gets reordered so that it's sorted ascending by option number (CoAP requirement)
 // copies given buffer to option local buffer
