@@ -372,6 +372,9 @@ CoAP_Result_t _rom CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_
 	NetEp_t* pReqEp = &(pPacket->remoteEp);
 	CoAP_Interaction_t* pIA;
 
+	//Set the CoAP resource to the requst message
+	pMsgReq->pResource = pRes;
+
 	//duplicate detection:
 	//same request already received before?
 	//iterate over all interactions

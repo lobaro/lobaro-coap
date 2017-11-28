@@ -236,6 +236,9 @@ typedef struct {
 	uint8_t Token[8];
 } CoAP_Token_t;
 
+// Delcare CoAP_Res so it can be used in CoAP_Message_t
+struct CoAP_Res;
+
 typedef struct {
 	uint32_t Timestamp; //set by parse/send network routines
 	//VER is implicit = 1
@@ -248,6 +251,8 @@ typedef struct {
 	CoAP_Token_t Token;                         // [9] Token (1 byte Length + up to 8 Byte for the token content)
 	CoAP_option_t* pOptionsList;                // [4] linked list of Options
 	uint8_t* Payload;                           // [4] MUST be last in struct! Because of mem allocation scheme which tries to allocate message mem and payload mem in ONE big data chunk
+
+	struct CoAP_Res* pResource;                      // Pointer the the resource this message is intended for.
 } CoAP_Message_t; //total of 25 Bytes
 
 //################################
