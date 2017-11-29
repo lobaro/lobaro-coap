@@ -15,6 +15,8 @@ Despite designed for embedded systems (e.g. ARM Cortex-M0/M3, AVR, ESP8266) it c
 * detached packet receive/send logic
 * Arduino support (experimental)
 
+There is also a working OpenSource **client lib available in GoLang** @ https://github.com/Lobaro/coap-go
+
 Follow [Lobaro on Twitter](https://twitter.com/LobaroHH) to get latest news about iot projects using our CoAP implementation!
 
 # Demo/Example
