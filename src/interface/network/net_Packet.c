@@ -1,3 +1,4 @@
+#line __LINE__ "net_Packet.c"
 /*******************************************************************************
  * Copyright (c)  2015  Dipl.-Ing. Tobias Rohde, http://www.lobaro.com
  *
