@@ -36,8 +36,8 @@ CoAP_Result_t _rom dbgBlkOption(CoAP_blockwise_option_t* blkOption)
 		INFO("\r\n>>Block2 (#%d) Option found\r\n", blkOption->Type);
 	}
 
-	INFO("- BlockSize: %d\r\n", blkOption->BlockSize);
-	INFO("- BlockNum: %d\r\n", blkOption->BlockNum);
+	INFO("- BlockSize: %ud\r\n", blkOption->BlockSize);
+	INFO("- BlockNum: %ud\r\n", blkOption->BlockNum);
 	INFO("- MoreFlag: %d\r\n", blkOption->MoreFlag);
 
 	return COAP_OK;

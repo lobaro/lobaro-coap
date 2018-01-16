@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 
-project(lobaro_coap)
+project(lobaro_coap C)
 
 
 file(GLOB_RECURSE SOURCE_FILES ${CMAKE_CURRENT_LIST_DIR}/src/*.h ${CMAKE_CURRENT_LIST_DIR}/src/*.c)
