@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 //################################
 // Function Results
@@ -330,6 +331,8 @@ typedef struct {
 	uint32_t (*rtc1HzCnt)(void);
 	//Uart/Display function to print debug/status messages
 	void (*debugPuts)(char* s);
+	void* (*malloc)(size_t size);
+	void (*free)(void* ptr);
 } CoAP_API_t;
 
 //################################

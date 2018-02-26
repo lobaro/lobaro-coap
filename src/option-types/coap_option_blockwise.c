@@ -198,7 +198,7 @@ CoAP_Result_t _rom RemoveAllBlockOptionsFromMsg(CoAP_Message_t* msg, CoAP_blockw
 CoAP_Result_t _rom CoAP_SetPayload(CoAP_Message_t* pMsgResp, uint8_t* pPayload, uint16_t payloadTotalSize, bool payloadIsVolatile)
 {
 	CoAP_blockwise_option_t B2opt = { .Type = BLOCK_2 };
-	int32_t BytesToSend = 0;
+	int32_t bytesToSend = 0;
 
 	if (payloadTotalSize == 0) {
 		pMsgResp->PayloadLength = 0;
@@ -210,28 +210,28 @@ CoAP_Result_t _rom CoAP_SetPayload(CoAP_Message_t* pMsgResp, uint8_t* pPayload, 
 		B2opt.BlockNum = 0;
 		B2opt.MoreFlag = true;
 		AddBlkOptionToMsg(pMsgResp, &B2opt);
-		BytesToSend = MAX_PAYLOAD_SIZE;
+		bytesToSend = MAX_PAYLOAD_SIZE;
 	} else {
-		BytesToSend = payloadTotalSize;
+		bytesToSend = payloadTotalSize;
 	}
 
 	if (pPayload != pMsgResp->Payload) {
 		//set payload to beginning of given external payload buf
 		if (payloadIsVolatile) {
-			if (pMsgResp->PayloadBufSize < BytesToSend) {
+			if (pMsgResp->PayloadBufSize < bytesToSend) {
 				CoAP_free_MsgPayload(&pMsgResp); //this is save in any case because free routine checks location
-				pMsgResp->Payload = (uint8_t*) coap_mem_get(BytesToSend); //alloc new buffer to copy data to send to
-				pMsgResp->PayloadBufSize = BytesToSend;
+				pMsgResp->Payload = (uint8_t*) CoAP.api.malloc(bytesToSend); //alloc new buffer to copy data to send to
+				pMsgResp->PayloadBufSize = bytesToSend;
 			}
-			coap_memcpy(pMsgResp->Payload, &(pPayload[0]), BytesToSend);
-			pMsgResp->PayloadBufSize = BytesToSend;
+			coap_memcpy(pMsgResp->Payload, &(pPayload[0]), bytesToSend);
+			pMsgResp->PayloadBufSize = bytesToSend;
 		} else {
 			pMsgResp->Payload = &(pPayload[0]); //use external set buffer (will not be freed, MUST be static!!!)
 			pMsgResp->PayloadBufSize = 0; //protect external buf from unwanted overwrite
 		}
 	} // [else] => no need to alter payload buf beside change payload length before return
 
-	pMsgResp->PayloadLength = BytesToSend;
+	pMsgResp->PayloadLength = bytesToSend;
 	return COAP_OK;
 }
 
@@ -283,7 +283,7 @@ CoAP_Result_t _rom CoAP_SetPayload_CheckBlockOpt(CoAP_Message_t* pMsgReq, CoAP_M
 			if (payloadIsVolatile) {
 				if (pMsgResp->PayloadBufSize < BytesToSend) {
 					CoAP_free_MsgPayload(&pMsgResp); //this is save in any case because free routine checks location
-					pMsgResp->Payload = (uint8_t*) coap_mem_get(BytesToSend); //alloc new buffer to copy data to send to
+					pMsgResp->Payload = (uint8_t*) CoAP.api.malloc(BytesToSend); //alloc new buffer to copy data to send to
 					pMsgResp->PayloadBufSize = BytesToSend;
 				}
 				coap_memcpy(pMsgResp->Payload, &(pPayload[(B2opt.BlockSize) * (B2opt.BlockNum)]), BytesToSend);
@@ -312,7 +312,7 @@ CoAP_Result_t _rom CoAP_SetPayload_CheckBlockOpt(CoAP_Message_t* pMsgReq, CoAP_M
 			if (payloadIsVolatile) {
 				if (pMsgResp->PayloadBufSize < BytesToSend) {
 					CoAP_free_MsgPayload(&pMsgResp); //this is save in any case because free routine checks location
-					pMsgResp->Payload = (uint8_t*) coap_mem_get(BytesToSend); //alloc new buffer to copy data to send to
+					pMsgResp->Payload = (uint8_t*) CoAP.api.malloc(BytesToSend); //alloc new buffer to copy data to send to
 					pMsgResp->PayloadBufSize = BytesToSend;
 				}
 				coap_memcpy(pMsgResp->Payload, &(pPayload[0]), BytesToSend);

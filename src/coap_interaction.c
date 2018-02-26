@@ -27,9 +27,9 @@
 CoAP_Result_t CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA);
 
 static CoAP_Interaction_t* _rom CoAP_AllocNewInteraction() {
-	CoAP_Interaction_t* newInteraction = (CoAP_Interaction_t*) (coap_mem_get0(sizeof(CoAP_Interaction_t)));
+	CoAP_Interaction_t* newInteraction = (CoAP_Interaction_t*) (CoAP.api.malloc(sizeof(CoAP_Interaction_t)));
 	if (newInteraction == NULL) {
-		coap_mem_stats();
+		//coap_mem_stats();
 		INFO("- (!!!) CoAP_AllocNewInteraction() Out of Memory (Needed %d bytes) !!!\r\n", sizeof(CoAP_Interaction_t));
 		return NULL;
 	}
@@ -41,11 +41,11 @@ static CoAP_Interaction_t* _rom CoAP_AllocNewInteraction() {
 
 CoAP_Result_t _rom CoAP_FreeInteraction(CoAP_Interaction_t** pInteraction) {
 	INFO("Releasing Interaction...\r\n");
-	coap_mem_stats();
+	//coap_mem_stats();
 	CoAP_free_Message(&(*pInteraction)->pReqMsg);
 	CoAP_free_Message(&(*pInteraction)->pRespMsg);
-	coap_mem_release((void*) (*pInteraction));
-	coap_mem_stats();
+	CoAP.api.free((void*) (*pInteraction));
+	//coap_mem_stats();
 
 	*pInteraction = NULL;
 	return COAP_OK;

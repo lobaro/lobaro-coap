@@ -29,6 +29,8 @@ void debugPuts_Empty(char* s) {
 
 }
 
+// Make sure to initialize api and cfg with all 0 before setting it
+// to be prepared for new future fields
 void CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg) {
 	CoAP.api = api;
 	CoAP.cfg = cfg;
@@ -38,6 +40,16 @@ void CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg) {
 		CoAP.api.debugPuts = debugPuts_Empty;
 	}
 
+	if (CoAP.api.malloc == NULL) {
+		// int16_t and size_t are not compatible but the api struct should use size_t for malloc
+		CoAP.api.malloc = coap_mem_get;
+	}
+
+	if (CoAP.api.free == NULL) {
+		CoAP.api.free = coap_mem_release;
+	}
+
+
 	INFO("CoAP_init!\r\n");
 	INFO("CoAP Interaction size: %d byte\r\n", sizeof(CoAP_Interaction_t));
 	INFO("CoAP_Res_t size: %d byte\r\n", sizeof(CoAP_Res_t));
@@ -45,6 +57,8 @@ void CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg) {
 	INFO("CoAP_option_t size: %d byte\r\n", sizeof(CoAP_option_t));
 	INFO("CoAP_Observer_t size: %d byte\r\n", sizeof(CoAP_Observer_t));
 
-	coap_mem_init(cfg.Memory, cfg.MemorySize);
+	if (cfg.MemorySize > 0) {
+		coap_mem_init(cfg.Memory, cfg.MemorySize);
+	}
 	CoAP_InitResources();
 }

@@ -278,7 +278,7 @@ CoAP_Result_t _rom CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, C
 			}
 
 			// Deallocate the node.
-			coap_mem_release((void*) currP);
+			CoAP.api.free((void*) currP);
 
 			//Done searching.
 			return COAP_OK;
@@ -290,7 +290,7 @@ CoAP_Result_t _rom CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, C
 static CoAP_Result_t _rom append_OptionToListEnd(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length) {
 	if (*pOptionsListBegin == NULL) //List empty? create new first element
 	{
-		*pOptionsListBegin = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t) + length);
+		*pOptionsListBegin = (CoAP_option_t*) CoAP.api.malloc(sizeof(CoAP_option_t) + length);
 		if (*pOptionsListBegin == NULL)
 			return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
@@ -307,7 +307,7 @@ static CoAP_Result_t _rom append_OptionToListEnd(CoAP_option_t** pOptionsListBeg
 		while (pOption->next != NULL)
 			pOption = pOption->next;
 
-		pOption->next = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t) + length);
+		pOption->next = (CoAP_option_t*) CoAP.api.malloc(sizeof(CoAP_option_t) + length);
 		if (pOption->next == NULL)
 			return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
@@ -433,7 +433,7 @@ CoAP_Result_t _rom CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, ui
 
 		//Case 2: new option has smallest number and is therefore the new start of list
 		else if (pOption == *pOptionsListBegin) {
-			*pOptionsListBegin = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t) + length);
+			*pOptionsListBegin = (CoAP_option_t*) CoAP.api.malloc(sizeof(CoAP_option_t) + length);
 			if (*pOptionsListBegin == NULL)
 				return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
@@ -456,7 +456,7 @@ CoAP_Result_t _rom CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, ui
 			while (pPrev_pOption->next != pOption)
 				pPrev_pOption = pPrev_pOption->next; //search predecessor of pOption
 
-			CoAP_option_t* newOption = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t) + length);
+			CoAP_option_t* newOption = (CoAP_option_t*) CoAP.api.malloc(sizeof(CoAP_option_t) + length);
 			if (newOption == NULL)
 				return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
@@ -487,11 +487,11 @@ CoAP_Result_t _rom CoAP_FreeOptionList(CoAP_option_t** pOptionsListBegin) {
 	while (pOption1 != NULL) {
 		//this unlinks the 2nd element by seting 1st->next to 3rd element
 		(*pOptionsListBegin)->next = (*pOptionsListBegin)->next->next;
-		coap_mem_release((void*) pOption1); //free "old" 1st unlinked element
+		CoAP.api.free((void*) pOption1); //free "old" 1st unlinked element
 		pOption1 = (*pOptionsListBegin)->next; // (new) 1st element after start
 	}
 
-	coap_mem_release((void*) (*pOptionsListBegin));
+	CoAP.api.free((void*) (*pOptionsListBegin));
 	*pOptionsListBegin = NULL;
 
 	return COAP_OK;

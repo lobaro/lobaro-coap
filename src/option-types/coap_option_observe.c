@@ -94,7 +94,7 @@ CoAP_Result_t _rom GetObserveOptionFromMsg(CoAP_Message_t* msg, uint32_t* val) {
 
 CoAP_Observer_t* _rom CoAP_AllocNewObserver()
 {
-	CoAP_Observer_t* newObserver = (CoAP_Observer_t*) (coap_mem_get0(sizeof(CoAP_Observer_t)));
+	CoAP_Observer_t* newObserver = (CoAP_Observer_t*) (CoAP.api.malloc(sizeof(CoAP_Observer_t)));
 	if (newObserver == NULL) {
 		return NULL;
 	}
@@ -106,10 +106,10 @@ CoAP_Observer_t* _rom CoAP_AllocNewObserver()
 CoAP_Result_t _rom CoAP_FreeObserver(CoAP_Observer_t** pObserver)
 {
 	INFO("Releasing pObserver\r\n");
-	coap_mem_stats();
+	//coap_mem_stats();
 
 	CoAP_FreeOptionList(&((*pObserver)->pOptList));
-	coap_mem_release((void*) (*pObserver));
+	CoAP.api.free((void*) (*pObserver));
 	*pObserver = NULL;
 
 	return COAP_OK;
