@@ -108,7 +108,7 @@ CoAP_Result_t _rom CoAP_FreeObserver(CoAP_Observer_t** pObserver)
 	INFO("Releasing pObserver\r\n");
 	//coap_mem_stats();
 
-	CoAP_FreeOptionList(&((*pObserver)->pOptList));
+	CoAP_FreeOptionList((*pObserver)->pOptList);
 	CoAP.api.free((void*) (*pObserver));
 	*pObserver = NULL;
 

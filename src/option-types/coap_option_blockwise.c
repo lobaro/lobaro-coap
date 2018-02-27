@@ -219,7 +219,7 @@ CoAP_Result_t _rom CoAP_SetPayload(CoAP_Message_t* pMsgResp, uint8_t* pPayload, 
 		//set payload to beginning of given external payload buf
 		if (payloadIsVolatile) {
 			if (pMsgResp->PayloadBufSize < bytesToSend) {
-				CoAP_free_MsgPayload(&pMsgResp); //this is save in any case because free routine checks location
+				CoAP_FreeMsgPayload(pMsgResp); //this is save in any case because free routine checks location
 				pMsgResp->Payload = (uint8_t*) CoAP.api.malloc(bytesToSend); //alloc new buffer to copy data to send to
 				pMsgResp->PayloadBufSize = bytesToSend;
 			}
@@ -282,7 +282,7 @@ CoAP_Result_t _rom CoAP_SetPayload_CheckBlockOpt(CoAP_Message_t* pMsgReq, CoAP_M
 
 			if (payloadIsVolatile) {
 				if (pMsgResp->PayloadBufSize < BytesToSend) {
-					CoAP_free_MsgPayload(&pMsgResp); //this is save in any case because free routine checks location
+					CoAP_FreeMsgPayload(pMsgResp); //this is save in any case because free routine checks location
 					pMsgResp->Payload = (uint8_t*) CoAP.api.malloc(BytesToSend); //alloc new buffer to copy data to send to
 					pMsgResp->PayloadBufSize = BytesToSend;
 				}
@@ -311,7 +311,7 @@ CoAP_Result_t _rom CoAP_SetPayload_CheckBlockOpt(CoAP_Message_t* pMsgReq, CoAP_M
 			//set payload to beginning of given external payload buf
 			if (payloadIsVolatile) {
 				if (pMsgResp->PayloadBufSize < BytesToSend) {
-					CoAP_free_MsgPayload(&pMsgResp); //this is save in any case because free routine checks location
+					CoAP_FreeMsgPayload(pMsgResp); //this is save in any case because free routine checks location
 					pMsgResp->Payload = (uint8_t*) CoAP.api.malloc(BytesToSend); //alloc new buffer to copy data to send to
 					pMsgResp->PayloadBufSize = BytesToSend;
 				}

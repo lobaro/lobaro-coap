@@ -85,7 +85,7 @@ CoAP_Result_t _rom CoAP_NVsaveObservers(WriteBuf_fn writeBufFn) {
 				INFO("Wrote Observer Option List:\r\n");
 				CoAP_printOptionsList(pOptList);
 
-				CoAP_FreeOptionList(&pOptList); //free options
+				CoAP_FreeOptionList(pOptList); //free options
 				pObserverList = pObserverList->next;
 			}
 		}
@@ -159,7 +159,7 @@ CoAP_Result_t _rom CoAP_NVloadObservers(uint8_t* pRawPage) {
 		//attach observer to resource
 		CoAP_AppendObserverToList(&(pRes->pListObservers), pNewObserver);
 
-		CoAP_FreeOptionList(&pOptList); //free temp options
+		CoAP_FreeOptionList(pOptList); //free temp options
 	}
 
 	CoAP_PrintAllResources();
@@ -254,7 +254,8 @@ static CoAP_Result_t _rom CoAP_AppendResourceToList(CoAP_Res_t** pListStart, CoA
 }
 
 CoAP_Result_t _rom CoAP_FreeResource(CoAP_Res_t** pResource) {
-	CoAP_FreeOptionList(&(*pResource)->pUri);
+	CoAP_FreeOptionList((*pResource)->pUri);
+	(*pResource)->pUri = NULL;
 
 	CoAP.api.free((*pResource)->pDescription);
 	CoAP.api.free((void*) (*pResource));

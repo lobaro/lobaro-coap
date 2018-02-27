@@ -22,6 +22,7 @@
  *******************************************************************************/
 #include "coap.h"
 #include "liblobaro_coap.h"
+#include "coap_socket.h"
 
 CoAP_t CoAP = { .pInteractions = NULL, .api = { 0 }, .cfg = { 0 } };
 
@@ -62,7 +63,8 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 	// Filter out bad CODE/TYPE combinations (Table 1, RFC7252 4.3.) by silently ignoring them
 	if (pMsg->Type == CON && pMsg->Code == EMPTY) {
 		CoAP_SendEmptyRST(pMsg->MessageID, socketHandle, pPacket->remoteEp); //a.k.a "CoAP Ping"
-		CoAP_free_Message(&pMsg); //free if not used inside interaction
+		CoAP_FreeMessage(pMsg); //free if not used inside interaction
+		pMsg = NULL;
 		//coap_mem_stats();
 		return;
 	} else if (pMsg->Type == ACK && isRequest) {
@@ -143,7 +145,8 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 			//no "simple" ACK => must be piggybacked RESPONSE to our [client] request. corresponding Interaction has been found before
 			if (pIA->Role == COAP_ROLE_CLIENT && CoAP_TokenEqual(pIA->pReqMsg->Token, pMsg->Token) && pIA->State == COAP_STATE_WAITING_RESPONSE) {
 				if (pIA->pRespMsg != NULL) {
-					CoAP_free_Message(&(pIA->pRespMsg)); //free eventually present older response (todo: check if this is possible!?)
+					CoAP_FreeMessage(pIA->pRespMsg); //free eventually present older response (todo: check if this is possible!?)
+					pIA->pRespMsg = NULL;
 				}
 				pIA->pRespMsg = pMsg; //attach just received message for further actions in IA [client] state-machine & return
 				pIA->State = COAP_STATE_HANDLE_RESPONSE;
@@ -182,7 +185,8 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 					// 2nd case "updates" received response
 					if (pIA->State == COAP_STATE_WAITING_RESPONSE || pIA->State == COAP_STATE_HANDLE_RESPONSE) {
 						if (pIA->pRespMsg != NULL) {
-							CoAP_free_Message(&(pIA->pRespMsg)); //free eventually present older response (todo: check if this is possible!?)
+							CoAP_FreeMessage(pIA->pRespMsg); //free eventually present older response (todo: check if this is possible!?)
+							pIA->pRespMsg = NULL;
 						}
 						pIA->pRespMsg = pMsg; //attach just received message for further actions in IA [client] state-machine & return
 						pIA->State = COAP_STATE_HANDLE_RESPONSE;
@@ -210,7 +214,8 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 	}
 	}
 	END: // only reached if no interaction has been started (return statement)
-	CoAP_free_Message(&pMsg); // free if not used inside interaction
+	CoAP_FreeMessage(pMsg); // free if not used inside interaction
+	pMsg = NULL;
 }
 
 static CoAP_Result_t _rom SendResp(CoAP_Interaction_t* pIA, CoAP_InteractionState_t nextIAState) {
@@ -376,7 +381,7 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 				|| ((pIA->pReqMsg->Code == REQ_PUT) && !((pIA->pRes->Options).AllowedMethods & RES_OPT_PUT))
 				|| ((pIA->pReqMsg->Code == REQ_DELETE) && !((pIA->pRes->Options).AllowedMethods & RES_OPT_DELETE))
 				) {
-			pIA->pRespMsg = CoAP_AllocRespMsg(pIA->pReqMsg, RESP_METHOD_NOT_ALLOWED_4_05, 0); //matches also TYPE + TOKEN to request
+			pIA->pRespMsg = CoAP_CreateResponseMsg(pIA->pReqMsg, RESP_METHOD_NOT_ALLOWED_4_05); //matches also TYPE + TOKEN to request
 
 			//o>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			//transmit response & move to next state
@@ -390,7 +395,7 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 		// by resource handler with (ownstatic memory OR  "com_mem_get(...)" memory areas.
 		// Any non static memory will be freed along with message! see free_Payload(...) function, even if user overwrites payload pointer!
 		if (pIA->pRespMsg == NULL) { //if postponed before it would have been already allocated
-			pIA->pRespMsg = CoAP_AllocRespMsg(pIA->pReqMsg, EMPTY, PREFERED_PAYLOAD_SIZE); //matches also TYPE + TOKEN to request
+			pIA->pRespMsg = CoAP_CreateResponseMsg(pIA->pReqMsg, EMPTY); //matches also TYPE + TOKEN to request
 		}
 
 		// Call of external set resource handler

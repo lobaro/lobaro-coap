@@ -1,4 +1,3 @@
-#line __LINE__ "coap_interaction.c"
 /*******************************************************************************
  * Copyright (c)  2015  Dipl.-Ing. Tobias Rohde, http://www.lobaro.com
  *
@@ -23,6 +22,7 @@
 #include "coap.h"
 #include "coap_main.h"
 #include "liblobaro_coap.h"
+#include "coap_socket.h"
 
 CoAP_Result_t CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA);
 
@@ -42,8 +42,10 @@ static CoAP_Interaction_t* _rom CoAP_AllocNewInteraction() {
 CoAP_Result_t _rom CoAP_FreeInteraction(CoAP_Interaction_t** pInteraction) {
 	INFO("Releasing Interaction...\r\n");
 	//coap_mem_stats();
-	CoAP_free_Message(&(*pInteraction)->pReqMsg);
-	CoAP_free_Message(&(*pInteraction)->pRespMsg);
+	CoAP_FreeMessage((*pInteraction)->pReqMsg);
+	(*pInteraction)->pReqMsg = NULL;
+	CoAP_FreeMessage((*pInteraction)->pRespMsg);
+	(*pInteraction)->pRespMsg = NULL;
 	CoAP.api.free((void*) (*pInteraction));
 	//coap_mem_stats();
 
@@ -247,7 +249,7 @@ CoAP_Result_t _rom CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, Socke
 
 CoAP_Result_t _rom CoAP_StartNewGetRequest(char* UriString, SocketHandle_t socketHandle, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb) {
 
-	CoAP_Message_t* pReqMsg = CoAP_CreateMessage(CON, REQ_GET, CoAP_GetNextMid(), NULL, 0, 0, CoAP_GenerateToken());
+	CoAP_Message_t* pReqMsg = CoAP_CreateMessage(CON, REQ_GET, CoAP_GetNextMid(), CoAP_GenerateToken());
 
 	if (pReqMsg != NULL) {
 		CoAP_AppendUriOptionsFromString(&(pReqMsg->pOptionsList), UriString);
@@ -327,7 +329,7 @@ CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 		}
 
 		//Create fresh response message
-		newIA->pRespMsg = CoAP_CreateMessage(CON, RESP_SUCCESS_CONTENT_2_05, CoAP_GetNextMid(), NULL, 0, PREFERED_PAYLOAD_SIZE, pObserver->Token);
+		newIA->pRespMsg = CoAP_CreateMessage(CON, RESP_SUCCESS_CONTENT_2_05, CoAP_GetNextMid(), pObserver->Token);
 
 		//Call Notify Handler of resource and add to interaction list
 		if (newIA->pRespMsg != NULL && pRes->Notifier != NULL &&

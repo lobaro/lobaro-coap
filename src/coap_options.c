@@ -477,22 +477,21 @@ CoAP_Result_t _rom CoAP_CopyOptionToList(CoAP_option_t** pOptionsListBegin, CoAP
 	return CoAP_AppendOptionToList(pOptionsListBegin, OptToCopy->Number, OptToCopy->Value, OptToCopy->Length);
 }
 
-CoAP_Result_t _rom CoAP_FreeOptionList(CoAP_option_t** pOptionsListBegin) {
-	if (*pOptionsListBegin == NULL)
+CoAP_Result_t _rom CoAP_FreeOptionList(CoAP_option_t* pOptionsListBegin) {
+	if (pOptionsListBegin == NULL)
 		return COAP_OK; //any list to delete?
 
 	CoAP_option_t* pOption1;
 
-	pOption1 = (*pOptionsListBegin)->next; //1st element after start
+	pOption1 = pOptionsListBegin->next; //1st element after start
 	while (pOption1 != NULL) {
 		//this unlinks the 2nd element by seting 1st->next to 3rd element
-		(*pOptionsListBegin)->next = (*pOptionsListBegin)->next->next;
+		pOptionsListBegin->next = pOptionsListBegin->next->next;
 		CoAP.api.free((void*) pOption1); //free "old" 1st unlinked element
-		pOption1 = (*pOptionsListBegin)->next; // (new) 1st element after start
+		pOption1 = pOptionsListBegin->next; // (new) 1st element after start
 	}
 
-	CoAP.api.free((void*) (*pOptionsListBegin));
-	*pOptionsListBegin = NULL;
+	CoAP.api.free(pOptionsListBegin);
 
 	return COAP_OK;
 }

@@ -48,7 +48,7 @@ CoAP_Result_t CoAP_AppendUintOptionToList(CoAP_option_t** pOptionsListBegin, uin
 CoAP_Result_t CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length);
 CoAP_Result_t CoAP_CopyOptionToList(CoAP_option_t** pOptionsListBegin, CoAP_option_t* OptToCopy);
 CoAP_Result_t CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, CoAP_option_t* pOptionToRemove);
-CoAP_Result_t CoAP_FreeOptionList(CoAP_option_t** pOptionsListBegin);
+CoAP_Result_t CoAP_FreeOptionList(CoAP_option_t* pOptionsListBegin);
 
 CoAP_Result_t CoAP_GetUintFromOption(const CoAP_option_t* pOption, uint32_t* value);
 

@@ -252,8 +252,6 @@ typedef struct {
 	CoAP_Token_t Token;                         // [9] Token (1 byte Length + up to 8 Byte for the token content)
 	CoAP_option_t* pOptionsList;                // [4] linked list of Options
 	uint8_t* Payload;                           // [4] MUST be last in struct! Because of mem allocation scheme which tries to allocate message mem and payload mem in ONE big data chunk
-
-	struct CoAP_Res* pResource;                      // Pointer the the resource this message is intended for.
 } CoAP_Message_t; //total of 25 Bytes
 
 //################################
@@ -306,6 +304,15 @@ typedef struct CoAP_Res {
 	CoAP_ResourceHandler_fPtr_t Handler;
 	CoAP_ResourceNotifier_fPtr_t Notifier; //maybe "NULL" if resource not observable
 } CoAP_Res_t;
+
+//################################
+// Request
+//################################
+
+typedef struct  {
+	CoAP_Message_t msg;
+	CoAP_Res_t* pResource;// Point to the related resource
+} CpAP_Request_t;
 
 //################################
 // Initialization
