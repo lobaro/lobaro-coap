@@ -576,7 +576,7 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 				INFO(" %c[", pOption->Value[j]);
 				INFO("%02x]", pOption->Value[j]);
 			} else {
-				INFO("  [00]", pOption->Value[j]);
+				INFO("  [00]");
 			}
 		}
 		INFO("\r\n");
