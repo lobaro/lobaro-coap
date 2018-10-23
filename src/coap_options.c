@@ -337,41 +337,41 @@ CoAP_Result_t _rom CoAP_AddOption(CoAP_Message_t* pMsg, uint16_t OptNumber, uint
 	return CoAP_AppendOptionToList(&pMsg->pOptionsList, OptNumber, buf, length);
 }
 
-CoAP_Result_t _rom CoAP_AppendUintOptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint32_t val) { 
-	uint8_t wBuf[4]; 
+CoAP_Result_t _rom CoAP_AppendUintOptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint32_t val) {
+	uint8_t wBuf[4];
 
-	if(val==0) 
-	{ 
-		CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 0); 
-	} 
-	else if(val <= 0xff) 
-	{ 
-		wBuf[0]=(uint8_t)val; 
-		CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 1); 
-	} 
-	else if(val <= 0xffff) 
-	{ 
-		wBuf[0]=(uint8_t)(val & 0xff); 
-		wBuf[1]=(uint8_t)(val>>8); 
-		CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 2); 
-	} 
-	else if(val <= 0xffffff) 
-	{ 
-		wBuf[0]=(uint8_t)(val & 0xff); 
-		wBuf[1]=(uint8_t)((val>>8) & 0xff); 
-		wBuf[2]=(uint8_t)(val>>16); 
-		CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 3); 
-	} 
-	else { 
-		wBuf[0]=(uint8_t)(val & 0xff); 
-		wBuf[1]=(uint8_t)((val>>8) & 0xff); 
-		wBuf[2]=(uint8_t)((val>>16) & 0xff); 
-		wBuf[3]=(uint8_t)(val>>24); 
-		CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 4); 
-	} 
+	if(val==0)
+	{
+		return CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 0);
+	}
 
-	return COAP_OK; 
-} 
+	if(val <= 0xff)
+	{
+		wBuf[0]=(uint8_t)val;
+		return CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 1);
+	}
+
+	if(val <= 0xffff)
+	{
+		wBuf[0]=(uint8_t)(val & 0xff);
+		wBuf[1]=(uint8_t)(val>>8);
+		return CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 2);
+	}
+
+	if(val <= 0xffffff)
+	{
+		wBuf[0]=(uint8_t)(val & 0xff);
+		wBuf[1]=(uint8_t)((val>>8) & 0xff);
+		wBuf[2]=(uint8_t)(val>>16);
+		return CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 3);
+	}
+
+	wBuf[0]=(uint8_t)(val & 0xff);
+	wBuf[1]=(uint8_t)((val>>8) & 0xff);
+	wBuf[2]=(uint8_t)((val>>16) & 0xff);
+	wBuf[3]=(uint8_t)(val>>24);
+	return CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 4);
+}
 
 CoAP_Result_t _rom CoAP_GetUintFromOption(const CoAP_option_t* pOption, uint32_t* value) {
 	if( value == NULL || pOption == NULL )
@@ -577,4 +577,3 @@ bool _rom CoAP_OptionsAreEqual(CoAP_option_t* OptA, CoAP_option_t* OptB) {
 	}
 	return true;
 }
-
