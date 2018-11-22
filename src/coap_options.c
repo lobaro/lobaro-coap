@@ -175,11 +175,6 @@ CoAP_Result_t _rom parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uin
 		return COAP_OK;
 	}
 
-	if (srcArr[0] == OPTION_PAYLOAD_MARKER) {
-		INFO("- Options must not start with payload marker!\r\n");
-		return COAP_PARSE_MESSAGE_FORMAT_ERROR;
-	}
-
 	uint16_t lastOptionNumber = 0; // used for delta calculations of optionnumbers
 
 	while (offset < srcLength) {
