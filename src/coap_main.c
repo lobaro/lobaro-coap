@@ -227,7 +227,7 @@ static CoAP_Result_t _rom SendResp(CoAP_Interaction_t* pIA, CoAP_InteractionStat
 		CoAP_EnqueueLastInteraction(pIA); //(re)enqueue interaction for further processing//todo: in die äußere statemachine
 
 	} else { //unexspected internal failure todo: try at least to send 4 byte RESP_INTERNAL_SERVER_ERROR_5_00
-		INFO("(!!!) SendResp(): Internal socket error on sending response! MiD: %d", pIA->pReqMsg->MessageID);
+		INFO("(!!!) SendResp(): Internal socket error on sending response! MiD: %d", pIA->pRespMsg->MessageID);
 		CoAP_DeleteInteraction(pIA);
 		return COAP_ERR_SOCKET;
 	}
