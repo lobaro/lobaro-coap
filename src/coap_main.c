@@ -125,6 +125,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 	case RST: {
 		if (pIA == NULL) {
 			INFO("- (?) Got Reset on (no more?) existing message id: %d\r\n", pMsg->MessageID);
+			goto END;
 		}
 		pIA->ResConfirmState = RST_SEND;
 		goto END;
