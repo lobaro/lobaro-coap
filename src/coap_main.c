@@ -398,6 +398,14 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 		// could change type and code of message (ACK & EMPTY above only a guess!)
 		CoAP_HandlerResult_t Res = pIA->pRes->Handler(pIA->pReqMsg, pIA->pRespMsg);
 
+		// make sure the handler returned valid response (either already allocated OR allocated by handler itself)
+		if (pIA->pRespMsg == NULL)
+		{
+			INFO("Resource handler returned NULLed response message (removing interaction)\r\n");
+			CoAP_DeleteInteraction(pIA);
+			return;
+		}
+
 		// Check return value of handler:
 		// a) everything fine - we got an response to send
 		if (Res == HANDLER_OK && pIA->pRespMsg->Code == EMPTY) {
