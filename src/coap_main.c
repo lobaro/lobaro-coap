@@ -555,7 +555,7 @@ static void handleNotifyInteraction(CoAP_Interaction_t* pIA) {
 				CoAP_EnableAckTimeout(pIA, pIA->RetransCounter);
 				INFO("- Changed notification body during retry\r\n");
 			} else {
-				INFO("(!!!) Internal socket error on sending response! MiD: %d\r\n", pIA->pReqMsg->MessageID);
+				INFO("(!!!) Internal socket error on sending response! MiD: %d\r\n", pIA->pRespMsg->MessageID);
 				CoAP_DeleteInteraction(pIA);
 			}
 			break;
