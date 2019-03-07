@@ -204,8 +204,8 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 	if (Version != COAP_VERSION)
 		return COAP_PARSE_UNKOWN_COAP_VERSION;
 
-	Msg.Type = (srcArr[0] & 0b110000) >> 4;
-	TokenLength = srcArr[0] & 0b1111;
+	Msg.Type = (srcArr[0] & 0x30) >> 4;
+	TokenLength = srcArr[0] & 0xF;
 	if (TokenLength > 8) {
 		INFO("CoAP-Parse Byte1 Error\r\n");
 		return COAP_PARSE_MESSAGE_FORMAT_ERROR;
