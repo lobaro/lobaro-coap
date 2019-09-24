@@ -155,9 +155,8 @@ CoAP_Message_t* _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
 		uint16_t PayloadInitialContentLength,
 		uint16_t PayloadMaxSize,
 		CoAP_Token_t Token) {
-	CoAP_Message_t* pMsg = (CoAP_Message_t*) coap_mem_get0(sizeof(CoAP_Message_t) + PayloadMaxSize); //malloc space
-	if (pMsg == NULL)
-		return NULL;
+
+	CoAP_Message_t *pMsg;
 
 	//safety checks
 	if (PayloadInitialContentLength > PayloadMaxSize) {
@@ -165,13 +164,17 @@ CoAP_Message_t* _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
 		return NULL;
 	}
 
+	pMsg = (CoAP_Message_t*) coap_mem_get0(sizeof(CoAP_Message_t) + PayloadMaxSize); //malloc space
+
+	if (pMsg == NULL)
+		return NULL;
+
 	CoAP_InitToEmptyResetMsg(pMsg); //init
 
 	pMsg->Type = Type;
 	pMsg->Code = Code;
 	pMsg->MessageID = MessageID;
 	pMsg->Token = Token;
-	pMsg->Timestamp = 0;
 
 	pMsg->PayloadLength = PayloadInitialContentLength;
 	if (PayloadMaxSize) {
