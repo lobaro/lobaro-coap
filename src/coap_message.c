@@ -167,7 +167,10 @@ CoAP_Message_t* _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
 	pMsg = (CoAP_Message_t*) coap_mem_get0(sizeof(CoAP_Message_t) + PayloadMaxSize); //malloc space
 
 	if (pMsg == NULL)
+	{
+		ERROR("OutOfMemory: Failed to allocate CoAP_Message_t");
 		return NULL;
+	}
 
 	CoAP_InitToEmptyResetMsg(pMsg); //init
 
