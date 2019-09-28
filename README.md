@@ -32,7 +32,7 @@ Follow [Lobaro on Twitter](https://twitter.com/LobaroHH) to get latest news abou
 * GoLang CoAP Client implementation & CGO wrapper for this C lib: [Lobaro CoAP-go](https://github.com/Lobaro/coap-go)
 
 # Future development
-We use the stack internally at lobaro to build universal gateway / sensor systems for our customers. Additions will be constantly merged into this repository. Also we plan a big redesign until the end of 2017. With this update (which is ongoing already) we include many learnings from our other project. 
+We use the stack internally at lobaro to build universal gateway / sensor systems for our customers. Additions will be constantly merged into this repository. 
 
 # Contribute
 We appreciate any feedback, do not hesitate to create issues or pull requests.
