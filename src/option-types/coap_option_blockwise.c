@@ -1,4 +1,3 @@
-#line __LINE__ "coap_option_blockwise.c"
 /*******************************************************************************
  * Copyright (c)  2015  Dipl.-Ing. Tobias Rohde, http://www.lobaro.com
  *
@@ -37,7 +36,7 @@ CoAP_Result_t _rom dbgBlkOption(CoAP_blockwise_option_t* blkOption)
 	}
 
 	INFO("- BlockSize: %ud\r\n", blkOption->BlockSize);
-	INFO("- BlockNum: %ud\r\n", blkOption->BlockNum);
+	INFO("- BlockNum: %lud\r\n", blkOption->BlockNum);
 	INFO("- MoreFlag: %d\r\n", blkOption->MoreFlag);
 
 	return COAP_OK;
@@ -56,11 +55,11 @@ CoAP_Result_t _rom AddBlkOptionToMsg(CoAP_Message_t* msg, CoAP_blockwise_option_
 	uint32_t OptionValue = 0;
 
 	//Block Size
-	uint8_t szxCalc = (uint8_t) ((blkOption->BlockSize) >> 4); // divide by 16
+	uint8_t szxCalc = (uint8_t) ((blkOption->BlockSize) >> 4u); // divide by 16
 	int i;
 	for (i = 6; i >= 0; i--) //find highest bit, e.g. calc log2, i=7 forbidden
 			{
-		if (szxCalc & 1 << i)
+		if (szxCalc & 1u << i)
 				{
 			OptionValue |= i;
 			break;
@@ -69,10 +68,10 @@ CoAP_Result_t _rom AddBlkOptionToMsg(CoAP_Message_t* msg, CoAP_blockwise_option_
 
 	//More Flag
 	if (blkOption->MoreFlag)
-		OptionValue |= 1 << 3;
+		OptionValue |= 1u << 3u;
 
 	//Num Value
-	OptionValue |= (blkOption->BlockNum) << 4;
+	OptionValue |= (blkOption->BlockNum) << 4u;
 
 	uint8_t wBuf[3];
 
@@ -83,19 +82,19 @@ CoAP_Result_t _rom AddBlkOptionToMsg(CoAP_Message_t* msg, CoAP_blockwise_option_
 		wBuf[0] = (uint8_t) OptionValue;
 		return CoAP_AppendOptionToList(&(msg->pOptionsList), (uint16_t) blkOption->Type, wBuf, 1);
 	}
-	else if (blkOption->BlockNum < 4096)
+	else if (blkOption->BlockNum < 4096u)
 			{
 		//msg->Options[msg->OptionCount].Length = 2;
-		wBuf[0] = (uint8_t) (OptionValue >> 8);
-		wBuf[1] = (uint8_t) (OptionValue & 0xff);
+		wBuf[0] = (uint8_t) (OptionValue >> 8u);
+		wBuf[1] = (uint8_t) (OptionValue & 0xffu);
 		return CoAP_AppendOptionToList(&(msg->pOptionsList), (uint16_t) blkOption->Type, wBuf, 2);
 	}
 	else
 	{
 		//msg->Options[msg->OptionCount].Length = 3;
-		wBuf[0] = (uint8_t) (OptionValue >> 16);
-		wBuf[1] = (uint8_t) (OptionValue >> 8);
-		wBuf[2] = (uint8_t) (OptionValue & 0xff);
+		wBuf[0] = (uint8_t) (OptionValue >> 16u);
+		wBuf[1] = (uint8_t) (OptionValue >> 8u);
+		wBuf[2] = (uint8_t) (OptionValue & 0xffu);
 		return CoAP_AppendOptionToList(&(msg->pOptionsList), (uint16_t) blkOption->Type, wBuf, 3);
 	}
 }
@@ -133,24 +132,24 @@ CoAP_Result_t _rom GetBlockOptionFromMsg(CoAP_Message_t* msg, CoAP_blockwise_opt
 			}
 			else if (ValLength == 2)
 					{
-				OptionValue = (((uint32_t) pVals[0]) << 8) | ((uint32_t) pVals[1]);
+				OptionValue = (((uint32_t) pVals[0]) << 8u) | ((uint32_t) pVals[1]);
 			}
 			else if (ValLength == 3)
 					{
-				OptionValue = (((uint32_t) pVals[0]) << 16) | (((uint32_t) pVals[1]) << 8) | ((uint32_t) pVals[2]);
+				OptionValue = (((uint32_t) pVals[0]) << 16u) | (((uint32_t) pVals[1]) << 8u) | ((uint32_t) pVals[2]);
 			}
 
-			uint8_t SZX = OptionValue & 7;
+			uint8_t SZX = OptionValue & 7u;
 			if (SZX == 7)
 				return COAP_PARSE_MESSAGE_FORMAT_ERROR; //must lead to 4.00 Bad Request!
-			BlkOption->BlockSize = 1 << (SZX + 4);
+			BlkOption->BlockSize = 1u << (SZX + 4u);
 
-			if (OptionValue & 8)
+			if (OptionValue & 8u)
 				BlkOption->MoreFlag = true;
 			else
 				BlkOption->MoreFlag = false;
 
-			BlkOption->BlockNum = OptionValue >> 4;
+			BlkOption->BlockNum = OptionValue >> 4u;
 
 			return COAP_OK;
 		}
@@ -220,7 +219,7 @@ CoAP_Result_t _rom CoAP_SetPayload(CoAP_Message_t* pMsgResp, uint8_t* pPayload, 
 		if (payloadIsVolatile) {
 			if (pMsgResp->PayloadBufSize < BytesToSend) {
 				CoAP_free_MsgPayload(&pMsgResp); //this is save in any case because free routine checks location
-				pMsgResp->Payload = (uint8_t*) coap_mem_get(BytesToSend); //alloc new buffer to copy data to send to
+				pMsgResp->Payload = (uint8_t*) CoAP.api.malloc(BytesToSend); //alloc new buffer to copy data to send to
 				pMsgResp->PayloadBufSize = BytesToSend;
 			}
 			coap_memcpy(pMsgResp->Payload, &(pPayload[0]), BytesToSend);
@@ -283,7 +282,7 @@ CoAP_Result_t _rom CoAP_SetPayload_CheckBlockOpt(CoAP_Message_t* pMsgReq, CoAP_M
 			if (payloadIsVolatile) {
 				if (pMsgResp->PayloadBufSize < BytesToSend) {
 					CoAP_free_MsgPayload(&pMsgResp); //this is save in any case because free routine checks location
-					pMsgResp->Payload = (uint8_t*) coap_mem_get(BytesToSend); //alloc new buffer to copy data to send to
+					pMsgResp->Payload = (uint8_t*) CoAP.api.malloc(BytesToSend); //alloc new buffer to copy data to send to
 					pMsgResp->PayloadBufSize = BytesToSend;
 				}
 				coap_memcpy(pMsgResp->Payload, &(pPayload[(B2opt.BlockSize) * (B2opt.BlockNum)]), BytesToSend);
@@ -312,7 +311,7 @@ CoAP_Result_t _rom CoAP_SetPayload_CheckBlockOpt(CoAP_Message_t* pMsgReq, CoAP_M
 			if (payloadIsVolatile) {
 				if (pMsgResp->PayloadBufSize < BytesToSend) {
 					CoAP_free_MsgPayload(&pMsgResp); //this is save in any case because free routine checks location
-					pMsgResp->Payload = (uint8_t*) coap_mem_get(BytesToSend); //alloc new buffer to copy data to send to
+					pMsgResp->Payload = (uint8_t*) CoAP.api.malloc(BytesToSend); //alloc new buffer to copy data to send to
 					pMsgResp->PayloadBufSize = BytesToSend;
 				}
 				coap_memcpy(pMsgResp->Payload, &(pPayload[0]), BytesToSend);

@@ -25,6 +25,11 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <sched.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //################################
 // Function Results
@@ -136,7 +141,7 @@ typedef struct {
 // received in callbacks and send out
 // in network send routines
 typedef struct {
-	uint8_t* pData;
+	uint8_t *pData;
 	uint16_t size;
 	// The remote EndPoint is either the sender for incoming packets or the receiver for outgoing packets
 	NetEp_t remoteEp;
@@ -147,10 +152,10 @@ typedef struct {
 //################################
 // Sockets
 //################################
-typedef void* SocketHandle_t;
+typedef void *SocketHandle_t;
 
-typedef void (*NetReceiveCallback_fn)(SocketHandle_t socketHandle, NetPacket_t* pckt);
-typedef bool (*NetTransmit_fn)(SocketHandle_t socketHandle, NetPacket_t* pckt);
+typedef void (*NetReceiveCallback_fn)(SocketHandle_t socketHandle, NetPacket_t *pckt);
+typedef bool (*NetTransmit_fn)(SocketHandle_t socketHandle, NetPacket_t *pckt);
 
 typedef struct {
 	SocketHandle_t Handle; // Handle to identify the socket
@@ -163,29 +168,28 @@ typedef struct {
 // Options
 //################################
 
-typedef enum
-{
-//Core Options
+typedef enum {
+	// Core Options
 	OPT_NUM_URI_PATH = 11,
-	OPT_NUM_URI_HOST= 3,
+	OPT_NUM_URI_HOST = 3,
 	OPT_NUM_ETAG = 4,
 	OPT_NUM_OBSERVE = 6,
 	OPT_NUM_URI_PORT = 7,
 	OPT_NUM_CONTENT_FORMAT = 12,
 	OPT_NUM_URI_QUERY = 15,
 	OPT_NUM_ACCEPT = 17,
-//Blockwise transfers
+	// Blockwise transfers
 	OPT_BLOCK2 = 23,
 	OPT_BLOCK1 = 27,
 	OPT_NUM_LOBARO_TOKEN_SAVE = 350
-}CoAP_KnownOptionNumbers_t;
+} CoAP_KnownOptionNumbers_t;
 
 typedef struct CoAP_option {
-	struct CoAP_option* next; //4 byte pointer (linked list)
+	struct CoAP_option *next; //4 byte pointer (linked list)
 
 	uint16_t Number; //2 byte
 	uint16_t Length; //2 byte
-	uint8_t* Value;  //4 byte (should be last in struct!)
+	uint8_t *Value;  //4 byte (should be last in struct!)
 } CoAP_option_t;
 
 //################################
@@ -199,36 +203,36 @@ typedef enum {
 	RST = 3     // Reset Message
 } CoAP_MessageType_t;
 
-#define CODE(CLASS, CODE) ( (CLASS <<5) | CODE )
+#define CODE(CLASS, CODE) ( (CLASS <<5u) | CODE )
 typedef enum {
-	EMPTY = CODE(0, 0),
-	REQ_GET = CODE(0, 1),
-	REQ_POST = CODE(0, 2),
-	REQ_PUT = CODE(0, 3),
-	REQ_DELETE = CODE(0, 4),
-	REQ_LAST = CODE(0, 4),
-	RESP_FIRST_2_00 = CODE(2, 0),
-	RESP_SUCCESS_CREATED_2_01 = CODE(2, 1),    // only used on response to "POST" and "PUT" like HTTP 201
-	RESP_SUCCESS_DELETED_2_02 = CODE(2, 2),    // only used on response to "DELETE" and "POST" like HTTP 204
-	RESP_SUCCESS_VALID_2_03 = CODE(2, 3),
-	RESP_SUCCESS_CHANGED_2_04 = CODE(2, 4),    // only used on response to "POST" and "PUT" like HTTP 204
-	RESP_SUCCESS_CONTENT_2_05 = CODE(2, 5),    // only used on response to "GET" like HTTP 200 (OK)
-	RESP_ERROR_BAD_REQUEST_4_00 = CODE(4, 0),  // like HTTP 400
-	RESP_ERROR_UNAUTHORIZED_4_01 = CODE(4, 1),
-	RESP_BAD_OPTION_4_02 = CODE(4, 2),
-	RESP_FORBIDDEN_4_03 = CODE(4, 3),
-	RESP_NOT_FOUND_4_04 = CODE(4, 4),
-	RESP_METHOD_NOT_ALLOWED_4_05 = CODE(4, 5),
-	RESP_METHOD_NOT_ACCEPTABLE_4_06 = CODE(4, 6),
-	RESP_PRECONDITION_FAILED_4_12 = CODE(4, 12),
-	RESP_REQUEST_ENTITY_TOO_LARGE_4_13 = CODE(4, 13),
-	RESP_UNSUPPORTED_CONTENT_FORMAT_4_15 = CODE(4, 15),
-	RESP_INTERNAL_SERVER_ERROR_5_00 = CODE(5, 0),
-	RESP_NOT_IMPLEMENTED_5_01 = CODE(5, 1),
-	RESP_BAD_GATEWAY_5_02 = CODE(5, 2),
-	RESP_SERVICE_UNAVAILABLE_5_03 = CODE(5, 3),
-	RESP_GATEWAY_TIMEOUT_5_04 = CODE(5, 4),
-	RESP_PROXYING_NOT_SUPPORTED_5_05 = CODE(5, 5)
+	EMPTY = CODE(0u, 0u),
+	REQ_GET = CODE(0u, 1u),
+	REQ_POST = CODE(0u, 2u),
+	REQ_PUT = CODE(0u, 3u),
+	REQ_DELETE = CODE(0u, 4u),
+	REQ_LAST = CODE(0u, 4u),
+	RESP_FIRST_2_00 = CODE(2u, 0u),
+	RESP_SUCCESS_CREATED_2_01 = CODE(2u, 1u),    // only used on response to "POST" and "PUT" like HTTP 201
+	RESP_SUCCESS_DELETED_2_02 = CODE(2u, 2u),    // only used on response to "DELETE" and "POST" like HTTP 204
+	RESP_SUCCESS_VALID_2_03 = CODE(2u, 3u),
+	RESP_SUCCESS_CHANGED_2_04 = CODE(2u, 4u),    // only used on response to "POST" and "PUT" like HTTP 204
+	RESP_SUCCESS_CONTENT_2_05 = CODE(2u, 5u),    // only used on response to "GET" like HTTP 200 (OK)
+	RESP_ERROR_BAD_REQUEST_4_00 = CODE(4u, 0u),  // like HTTP 400
+	RESP_ERROR_UNAUTHORIZED_4_01 = CODE(4u, 1u),
+	RESP_BAD_OPTION_4_02 = CODE(4u, 2u),
+	RESP_FORBIDDEN_4_03 = CODE(4u, 3u),
+	RESP_NOT_FOUND_4_04 = CODE(4u, 4u),
+	RESP_METHOD_NOT_ALLOWED_4_05 = CODE(4u, 5u),
+	RESP_METHOD_NOT_ACCEPTABLE_4_06 = CODE(4u, 6u),
+	RESP_PRECONDITION_FAILED_4_12 = CODE(4u, 12u),
+	RESP_REQUEST_ENTITY_TOO_LARGE_4_13 = CODE(4u, 13u),
+	RESP_UNSUPPORTED_CONTENT_FORMAT_4_15 = CODE(4u, 15u),
+	RESP_INTERNAL_SERVER_ERROR_5_00 = CODE(5u, 0u),
+	RESP_NOT_IMPLEMENTED_5_01 = CODE(5u, 1u),
+	RESP_BAD_GATEWAY_5_02 = CODE(5u, 2u),
+	RESP_SERVICE_UNAVAILABLE_5_03 = CODE(5u, 3u),
+	RESP_GATEWAY_TIMEOUT_5_04 = CODE(5u, 4u),
+	RESP_PROXYING_NOT_SUPPORTED_5_05 = CODE(5u, 5u)
 } CoAP_MessageCode_t;
 
 typedef struct {
@@ -249,10 +253,10 @@ typedef struct {
 	uint16_t PayloadLength;                     // [2]
 	uint16_t PayloadBufSize;                    // [2] size of allocated msg payload buffer
 	CoAP_Token_t Token;                         // [9] Token (1 byte Length + up to 8 Byte for the token content)
-	CoAP_option_t* pOptionsList;                // [4] linked list of Options
-	uint8_t* Payload;                           // [4] MUST be last in struct! Because of mem allocation scheme which tries to allocate message mem and payload mem in ONE big data chunk
+	CoAP_option_t *pOptionsList;                // [4] linked list of Options
+	uint8_t *Payload;                           // [4] MUST be last in struct! Because of mem allocation scheme which tries to allocate message mem and payload mem in ONE big data chunk
 
-	struct CoAP_Res* pResource;                      // Pointer the the resource this message is intended for.
+	struct CoAP_Res *pResource;                      // Pointer the the resource this message is intended for.
 } CoAP_Message_t; //total of 25 Bytes
 
 //################################
@@ -285,9 +289,9 @@ typedef enum {
 	HANDLER_ERROR = 2
 } CoAP_HandlerResult_t;
 
-typedef CoAP_HandlerResult_t (*CoAP_ResourceHandler_fPtr_t)(CoAP_Message_t* pReq, CoAP_Message_t* pResp);
+typedef CoAP_HandlerResult_t (*CoAP_ResourceHandler_fPtr_t)(CoAP_Message_t *pReq, CoAP_Message_t *pResp);
 // TODO: Can we use the CoAP_ResourceHandler_fPtr_t signature also for notifiers?
-typedef CoAP_HandlerResult_t (*CoAP_ResourceNotifier_fPtr_t)(CoAP_Observer_t* pObserver, CoAP_Message_t* pResp);
+typedef CoAP_HandlerResult_t (*CoAP_ResourceNotifier_fPtr_t)(CoAP_Observer_t *pObserver, CoAP_Message_t *pResp);
 
 typedef struct {
 	uint16_t Cf;    // Content-Format
@@ -296,12 +300,12 @@ typedef struct {
 } CoAP_ResOpts_t;
 
 typedef struct CoAP_Res {
-	struct CoAP_Res* next; //4 byte pointer (linked list)
-	char* pDescription;
+	struct CoAP_Res *next; //4 byte pointer (linked list)
+	char *pDescription;
 	uint32_t UpdateCnt; // Used as value for the Observe option
 	CoAP_ResOpts_t Options;
-	CoAP_option_t* pUri; //linked list of this resource URI options
-	CoAP_Observer_t* pListObservers; //linked list of this resource observers
+	CoAP_option_t *pUri; //linked list of this resource URI options
+	CoAP_Observer_t *pListObservers; //linked list of this resource observers
 	CoAP_ResourceHandler_fPtr_t Handler;
 	CoAP_ResourceNotifier_fPtr_t Notifier; //maybe "NULL" if resource not observable
 } CoAP_Res_t;
@@ -310,15 +314,6 @@ typedef struct CoAP_Res {
 // Initialization
 //################################
 
-/*
- * Configuration for the CoAP stack. All fields need to be initialized.
- * Fields marked as optional can be initialized with 0
- */
-typedef struct {
-	// Pointer to the memory that will be used by the CoAP Stack
-	uint8_t* Memory;
-	int16_t MemorySize;
-} CoAP_Config_t;
 
 /*
  * API functions used by the CoAP stack. All fields need to be initialized.
@@ -326,10 +321,14 @@ typedef struct {
  * Fields marked as optional can be initialized with NULL
  */
 typedef struct {
-	//1Hz Clock used by timeout logic
-	uint32_t (*rtc1HzCnt)(void);
-	//Uart/Display function to print debug/status messages
-	void (*debugPuts)(char* s);
+	// 1Hz Clock used by timeout logic
+	uint32_t (*rtc1HzCnt)();
+	// Uart/Display function to print debug/status messages
+	void (*debugPuts)(const char *s);
+	// Memory management:
+	void *(*malloc)(size_t size);
+	void (*free)(void *p);
+	int (*rand)();
 } CoAP_API_t;
 
 //################################
@@ -342,14 +341,14 @@ typedef struct {
  * @param cfg Configuration values to setup the stack
  * @return A result code
  */
-void CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg);
+void CoAP_Init(CoAP_API_t api);
 
 /**
  * Each CoAP implementation
  * @param handle
  * @return
  */
-CoAP_Socket_t* CoAP_NewSocket(SocketHandle_t handle);
+CoAP_Socket_t *CoAP_NewSocket(SocketHandle_t handle);
 
 /**
  * All resources must be created explicitly.
@@ -361,7 +360,8 @@ CoAP_Socket_t* CoAP_NewSocket(SocketHandle_t handle);
  * @param pNotifierFkt
  * @return
  */
-CoAP_Res_t* CoAP_CreateResource(char* Uri, char* Descr, CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt, CoAP_ResourceNotifier_fPtr_t pNotifierFkt);
+CoAP_Res_t *CoAP_CreateResource(char *Uri, char *Descr, CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt,
+								CoAP_ResourceNotifier_fPtr_t pNotifierFkt);
 
 //#####################
 // Message API
@@ -375,10 +375,11 @@ CoAP_Res_t* CoAP_CreateResource(char* Uri, char* Descr, CoAP_ResOpts_t Options, 
 // payloadIsVolatile: Set to true for volatile memory.
 //   If false, pPayload MUST point to static memory that is not freed before the interaction ends
 //   which is hard to detect.
-CoAP_Result_t CoAP_SetPayload(CoAP_Message_t* pMsgResp, uint8_t* pPayload, uint16_t payloadTotalSize, bool payloadIsVolatile);
+CoAP_Result_t
+CoAP_SetPayload(CoAP_Message_t *pMsgResp, uint8_t *pPayload, uint16_t payloadTotalSize, bool payloadIsVolatile);
 
 // Adds an option to the CoAP message
-CoAP_Result_t CoAP_AddOption(CoAP_Message_t* pMsg, uint16_t OptNumber, uint8_t* buf, uint16_t length);
+CoAP_Result_t CoAP_AddOption(CoAP_Message_t *pMsg, uint16_t OptNumber, uint8_t *buf, uint16_t length);
 
 //########################################
 // Interaction processing API
@@ -389,9 +390,14 @@ CoAP_Result_t CoAP_AddOption(CoAP_Message_t* pMsg, uint16_t OptNumber, uint8_t* 
 // should be passed to the CoAP stack.
 // "socketHandle" can be chosen arbitrary by calling network driver,
 // but can be considered constant over runtime.
-void CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pPacket);
+void CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t *pPacket);
 
 // doWork must be called regularly to process pending interactions
 void CoAP_doWork();
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif //LIBLOBARO_COAP_H

@@ -1,4 +1,3 @@
-#line __LINE__ "coap_options.c"
 /*******************************************************************************
  * Copyright (c)  2015  Dipl.-Ing. Tobias Rohde, http://www.lobaro.com
  *
@@ -60,17 +59,17 @@ CoAP_Result_t _rom pack_OptionsFromList(uint8_t* pDestArr, uint16_t* pBytesWritt
 
 		//Delta Bytes
 		if (currDelta < 13) {
-			pDestArr[OptStartOffset] |= ((uint8_t) currDelta) << 4;
+			pDestArr[OptStartOffset] |= ((uint8_t) currDelta) << 4u;
 		} else if (currDelta < 269) {
-			pDestArr[OptStartOffset] |= ((uint8_t) 13) << 4;
-			pDestArr[offset] = ((uint8_t) currDelta) - 13;
+			pDestArr[OptStartOffset] |= ((uint8_t) 13u) << 4u;
+			pDestArr[offset] = ((uint8_t) currDelta) - 13u;
 			offset++;
 		} else {
-			pDestArr[OptStartOffset] |= ((uint8_t) 14) << 4;
+			pDestArr[OptStartOffset] |= ((uint8_t) 14u) << 4u;
 
-			pDestArr[offset] = (uint8_t) ((currDelta - 269) >> 8);
+			pDestArr[offset] = (uint8_t) ((currDelta - 269u) >> 8u);
 			offset++;
-			pDestArr[offset] = (uint8_t) ((currDelta - 269) & 0xff);
+			pDestArr[offset] = (uint8_t) ((currDelta - 269u) & 0xffu);
 			offset++;
 		}
 
@@ -84,9 +83,9 @@ CoAP_Result_t _rom pack_OptionsFromList(uint8_t* pDestArr, uint16_t* pBytesWritt
 		} else {
 			pDestArr[OptStartOffset] |= ((uint8_t) 14);
 
-			pDestArr[offset] = (uint8_t) ((optLength - 269) >> 8);
+			pDestArr[offset] = (uint8_t) ((optLength - 269u) >> 8u);
 			offset++;
-			pDestArr[offset] = (uint8_t) ((optLength - 269) & 0xff);
+			pDestArr[offset] = (uint8_t) ((optLength - 269u) & 0xffu);
 			offset++;
 		}
 
@@ -188,9 +187,9 @@ CoAP_Result_t _rom parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uin
 			*pPayloadBeginInSrc = &(srcArr[offset + 1]);
 			return COAP_OK;
 		} else {
-			uint8_t currOptDeltaField = srcArr[offset] >> 4;
+			uint8_t currOptDeltaField = srcArr[offset] >> 4u;
 			uint16_t currOptDelta = currOptDeltaField; // init with field data, but can be overwritten if field set to 13 or 14
-			uint8_t currOptLengthField = srcArr[offset] & 0x0f;
+			uint8_t currOptLengthField = srcArr[offset] & 0x0fu;
 			uint16_t currOptLength = currOptLengthField; // init with field data, but can be overwritten if field set to 13 or 14
 
 			offset++;
@@ -204,7 +203,7 @@ CoAP_Result_t _rom parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uin
 			} else if (currOptDeltaField == 14) {
 				// 14:  A 16-bit unsigned integer in network byte order follows the
 				// initial byte and indicates the Option Delta minus 269.
-				currOptDelta = ((((uint16_t) srcArr[offset]) << 8) | ((uint16_t) srcArr[offset + 1])) + 269;
+				currOptDelta = ((((uint16_t) srcArr[offset]) << 8u) | ((uint16_t) srcArr[offset + 1])) + 269u;
 				offset += 2;
 			} else if (currOptDeltaField == 15) {
 				// 15:  Reserved for the Payload Marker.  If the field is set to this
@@ -220,7 +219,7 @@ CoAP_Result_t _rom parse_OptionsFromRaw(uint8_t* srcArr, uint16_t srcLength, uin
 				currOptLength = srcArr[offset] + 13;
 				offset++;
 			} else if (currOptLengthField == 14) {
-				currOptLength = ((((uint16_t) srcArr[offset]) << 8) | ((uint16_t) srcArr[offset + 1])) + 269;
+				currOptLength = ((((uint16_t) srcArr[offset]) << 8u) | ((uint16_t) srcArr[offset + 1])) + 269u;
 				offset += 2;
 			} else if (currOptLengthField == 15) {
 				INFO("- currOptDeltaField == 15 is not allowed %x (2)\r\n", srcArr[offset - 1]);
@@ -273,7 +272,7 @@ CoAP_Result_t _rom CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, C
 			}
 
 			// Deallocate the node.
-			coap_mem_release((void*) currP);
+			CoAP.api.free((void*) currP);
 
 			//Done searching.
 			return COAP_OK;
@@ -282,10 +281,10 @@ CoAP_Result_t _rom CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, C
 	return COAP_OK;
 }
 
-static CoAP_Result_t _rom append_OptionToListEnd(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length) {
+static CoAP_Result_t _rom append_OptionToListEnd(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, const uint8_t* buf, uint16_t length) {
 	if (*pOptionsListBegin == NULL) //List empty? create new first element
 	{
-		*pOptionsListBegin = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t) + length);
+		*pOptionsListBegin = (CoAP_option_t*) CoAP.api.malloc(sizeof(CoAP_option_t) + length);
 		if (*pOptionsListBegin == NULL)
 			return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
@@ -302,7 +301,7 @@ static CoAP_Result_t _rom append_OptionToListEnd(CoAP_option_t** pOptionsListBeg
 		while (pOption->next != NULL)
 			pOption = pOption->next;
 
-		pOption->next = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t) + length);
+		pOption->next = (CoAP_option_t*) CoAP.api.malloc(sizeof(CoAP_option_t) + length);
 		if (pOption->next == NULL)
 			return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
@@ -383,20 +382,20 @@ CoAP_Result_t _rom CoAP_GetUintFromOption(const CoAP_option_t* pOption, uint32_t
 	else if( pOption->Length == 2 )
 	{
 		*value = pOption->Value[0];
-		*value |= (pOption->Value[1] << 8);
+		*value |= (pOption->Value[1] << 8u);
 	}
 	else if( pOption->Length == 3 )
 	{
 		*value = pOption->Value[0];
-		*value |= (pOption->Value[1] << 8);
-		*value |= (pOption->Value[2] << 16);
+		*value |= (pOption->Value[1] << 8u);
+		*value |= (pOption->Value[2] << 16u);
 	}
 	else if( pOption->Length == 4 )
 	{
 		*value = pOption->Value[0];
-		*value |= (pOption->Value[1] << 8);
-		*value |= (pOption->Value[2] << 16);
-		*value |= (pOption->Value[3] << 24);
+		*value |= (pOption->Value[1] << 8u);
+		*value |= (pOption->Value[2] << 16u);
+		*value |= (pOption->Value[3] << 24u);
 	}
 	else
 	{
@@ -409,7 +408,7 @@ CoAP_Result_t _rom CoAP_GetUintFromOption(const CoAP_option_t* pOption, uint32_t
 // this function adds a new option to linked list of options starting at pOptionsListBegin
 // on demand the list gets reordered so that it's sorted ascending by option number (CoAP requirement)
 // copies given buffer to option local buffer
-CoAP_Result_t _rom CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length) {
+CoAP_Result_t _rom CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, const uint8_t* buf, uint16_t length) {
 	if (*pOptionsListBegin == NULL) //List empty? create 1st option in list
 	{
 		return append_OptionToListEnd(pOptionsListBegin, OptNumber, buf, length);
@@ -428,7 +427,7 @@ CoAP_Result_t _rom CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, ui
 
 		//Case 2: new option has smallest number and is therefore the new start of list
 		else if (pOption == *pOptionsListBegin) {
-			*pOptionsListBegin = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t) + length);
+			*pOptionsListBegin = (CoAP_option_t*) CoAP.api.malloc(sizeof(CoAP_option_t) + length);
 			if (*pOptionsListBegin == NULL)
 				return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
@@ -451,7 +450,7 @@ CoAP_Result_t _rom CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, ui
 			while (pPrev_pOption->next != pOption)
 				pPrev_pOption = pPrev_pOption->next; //search predecessor of pOption
 
-			CoAP_option_t* newOption = (CoAP_option_t*) coap_mem_get(sizeof(CoAP_option_t) + length);
+			CoAP_option_t* newOption = (CoAP_option_t*) CoAP.api.malloc(sizeof(CoAP_option_t) + length);
 			if (newOption == NULL)
 				return COAP_ERR_OUT_OF_MEMORY; //could not alloc enough mem
 
@@ -482,11 +481,11 @@ CoAP_Result_t _rom CoAP_FreeOptionList(CoAP_option_t** pOptionsListBegin) {
 	while (pOption1 != NULL) {
 		//this unlinks the 2nd element by seting 1st->next to 3rd element
 		(*pOptionsListBegin)->next = (*pOptionsListBegin)->next->next;
-		coap_mem_release((void*) pOption1); //free "old" 1st unlinked element
+		CoAP.api.free((void*) pOption1); //free "old" 1st unlinked element
 		pOption1 = (*pOptionsListBegin)->next; // (new) 1st element after start
 	}
 
-	coap_mem_release((void*) (*pOptionsListBegin));
+	CoAP.api.free((void*) (*pOptionsListBegin));
 	*pOptionsListBegin = NULL;
 
 	return COAP_OK;
@@ -555,9 +554,7 @@ void _rom CoAP_printOptionsList(CoAP_option_t* pOptListBegin) {
 bool _rom CoAP_OptionsAreEqual(CoAP_option_t* OptA, CoAP_option_t* OptB) {
 	if (OptA == NULL && OptB == NULL)
 		return true;
-	if (OptA == NULL && OptB != NULL)
-		return false;
-	if (OptA != NULL && OptB == NULL)
+	if (OptA == NULL || OptB == NULL)
 		return false;
 
 	//check case 4 => both != NULL:

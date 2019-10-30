@@ -1,4 +1,3 @@
-#line __LINE__ "liblobaro_coap.c"
 /*******************************************************************************
  * Copyright (c)  2015  Dipl.-Ing. Tobias Rohde, http://www.lobaro.com
  *
@@ -25,13 +24,14 @@
 #include "coap.h"
 #include "coap_main.h"
 
-void debugPuts_Empty(char* s) {
-
+void debugPuts_Empty(const char* s) {
+	(void) s;  // unused
 }
 
-void CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg) {
+void CoAP_Init(CoAP_API_t api) {
 	CoAP.api = api;
-	CoAP.cfg = cfg;
+
+	CoAP_InitIds();
 
 	// To make the tests stable, we should provide proper log functions in future
 	if (CoAP.api.debugPuts == NULL) {
@@ -45,6 +45,5 @@ void CoAP_Init(CoAP_API_t api, CoAP_Config_t cfg) {
 	INFO("CoAP_option_t size: %d byte\r\n", sizeof(CoAP_option_t));
 	INFO("CoAP_Observer_t size: %d byte\r\n", sizeof(CoAP_Observer_t));
 
-	coap_mem_init(cfg.Memory, cfg.MemorySize);
 	CoAP_InitResources();
 }

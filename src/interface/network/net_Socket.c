@@ -1,4 +1,3 @@
-#line __LINE__ "net_Socket.c"
 /*******************************************************************************
  * Copyright (c)  2015  Dipl.-Ing. Tobias Rohde, http://www.lobaro.com
  *

@@ -1,4 +1,3 @@
-#line __LINE__ "coap_interaction.c"
 /*******************************************************************************
  * Copyright (c)  2015  Dipl.-Ing. Tobias Rohde, http://www.lobaro.com
  *
@@ -23,13 +22,14 @@
 #include "coap.h"
 #include "coap_main.h"
 #include "liblobaro_coap.h"
+#include "coap_mem.h"
 
 CoAP_Result_t CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA);
 
 static CoAP_Interaction_t* _rom CoAP_AllocNewInteraction() {
-	CoAP_Interaction_t* newInteraction = (CoAP_Interaction_t*) (coap_mem_get0(sizeof(CoAP_Interaction_t)));
+	CoAP_Interaction_t* newInteraction = (CoAP_Interaction_t*) (CoAP_malloc0(sizeof(CoAP_Interaction_t)));
 	if (newInteraction == NULL) {
-		coap_mem_stats();
+		// coap_mem_stats();
 		INFO("- (!!!) CoAP_AllocNewInteraction() Out of Memory (Needed %d bytes) !!!\r\n", sizeof(CoAP_Interaction_t));
 		return NULL;
 	}
@@ -41,11 +41,11 @@ static CoAP_Interaction_t* _rom CoAP_AllocNewInteraction() {
 
 CoAP_Result_t _rom CoAP_FreeInteraction(CoAP_Interaction_t** pInteraction) {
 	INFO("Releasing Interaction...\r\n");
-	coap_mem_stats();
+	// coap_mem_stats();
 	CoAP_free_Message(&(*pInteraction)->pReqMsg);
 	CoAP_free_Message(&(*pInteraction)->pRespMsg);
-	coap_mem_release((void*) (*pInteraction));
-	coap_mem_stats();
+	CoAP_free((void*) (*pInteraction));
+	// coap_mem_stats();
 
 	*pInteraction = NULL;
 	return COAP_OK;
@@ -248,6 +248,24 @@ CoAP_Result_t _rom CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, Socke
 CoAP_Result_t _rom CoAP_StartNewGetRequest(char* UriString, SocketHandle_t socketHandle, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb) {
 
 	CoAP_Message_t* pReqMsg = CoAP_CreateMessage(CON, REQ_GET, CoAP_GetNextMid(), NULL, 0, 0, CoAP_GenerateToken());
+
+	if (pReqMsg != NULL) {
+		CoAP_AppendUriOptionsFromString(&(pReqMsg->pOptionsList), UriString);
+		return CoAP_StartNewClientInteraction(pReqMsg, socketHandle, ServerEp, cb);
+	}
+
+	INFO("- New GetRequest failed: Out of Memory\r\n");
+
+	return COAP_ERR_OUT_OF_MEMORY;
+}
+
+CoAP_Result_t _rom CoAP_StartNewRequest(CoAP_MessageCode_t type, const char* UriString, SocketHandle_t socketHandle, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb, uint8_t *buf, size_t size) {
+	if (type != REQ_GET && type != REQ_POST && type != REQ_PUT && type != REQ_DELETE) {
+		ERROR("- Invalid request type\r\n");
+		return COAP_ERR_ARGUMENT;
+	}
+
+	CoAP_Message_t* pReqMsg = CoAP_CreateMessage(CON, type, CoAP_GetNextMid(), buf, size, size, CoAP_GenerateToken());
 
 	if (pReqMsg != NULL) {
 		CoAP_AppendUriOptionsFromString(&(pReqMsg->pOptionsList), UriString);

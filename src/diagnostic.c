@@ -1,4 +1,3 @@
-#line __LINE__ "diagnostic.c"
 #include "coap.h"
 
 char* InteractionRoleToString(CoAP_InteractionRole_t role) {

@@ -1,4 +1,3 @@
-#line __LINE__ "coap_message.c"
 /*******************************************************************************
  * Copyright (c)  2015  Dipl.-Ing. Tobias Rohde, http://www.lobaro.com
  *
@@ -23,6 +22,7 @@
 #include <stdbool.h>
 #include "coap.h"
 #include "liblobaro_coap.h"
+#include "coap_mem.h"
 
 static void _rom CoAP_InitToEmptyResetMsg(CoAP_Message_t* msg) {
 	msg->Type = RST;
@@ -37,20 +37,6 @@ static void _rom CoAP_InitToEmptyResetMsg(CoAP_Message_t* msg) {
 	msg->Timestamp = 0;
 }
 
-//Checks location of "buf" relative to via bget allocated pMsg buffer
-//"CoAP_ParseMessageFromDatagram(...)" puts payload directly within the pMsg buffer to save number of mem allocations
-//During lifetime of msg the pointer to payload buffers could move to other locations
-//this function checks if buf is part of pMsg (which total alloc size is known)
-//returns "false" if buf is external to pMsg else "true"
-static bool _rom bufferIsPartOfMsg(uint8_t* buf, CoAP_Message_t* pMsg) {
-	assert_coap(buf != NULL && pMsg != NULL);
-	//case 1: buffer before Msg Mem
-	//case 2: buffer after Msg Mem
-	if ((buf < (uint8_t*) (pMsg)) || (buf > ((uint8_t*) (pMsg)) + coap_mem_size((uint8_t*) pMsg)))
-		return false; //bsize gives total alloc size of msg (user data only)
-	else
-		return true;
-}
 
 bool CoAP_TokenEqual(CoAP_Token_t a, CoAP_Token_t b) {
 	if (a.Length != b.Length) {
@@ -68,17 +54,10 @@ void _rom CoAP_free_MsgPayload(CoAP_Message_t** Msg) {
 	if ((*Msg)->Payload == NULL)
 		return;
 
-	//Payload is not under memory allocator control! -> nothing to free here
-	if ((*Msg)->Payload > coap_mem_buf_highEnd() || (*Msg)->Payload < coap_mem_buf_lowEnd()) {
-		return;
-	}
-
-	if (bufferIsPartOfMsg(((*Msg)->Payload), *Msg) == false) {
-		coap_mem_release((void*) (*Msg)->Payload);
-		(*Msg)->Payload = NULL;
-		(*Msg)->PayloadBufSize = 0;
-	}
-	//else will be freed together with Message
+	// TODO: this will break us!!!
+	CoAP.api.free((void*) (*Msg)->Payload);
+	(*Msg)->Payload = NULL;
+	(*Msg)->PayloadBufSize = 0;
 }
 
 bool _rom CoAP_MsgIsRequest(CoAP_Message_t* pMsg) {
@@ -103,6 +82,7 @@ bool _rom CoAP_MsgIsOlderThan(CoAP_Message_t* pMsg, uint32_t timespan) {
 }
 
 CoAP_Result_t _rom CoAP_free_Message(CoAP_Message_t** Msg) {
+	INFO("Free message %p\n", *Msg);
 	if (*Msg == NULL) {
 		return COAP_OK; //nothing to free
 	}
@@ -124,7 +104,7 @@ CoAP_Result_t _rom CoAP_free_Message(CoAP_Message_t** Msg) {
 	CoAP_free_MsgPayload(Msg);
 
 	//finally delete msg body
-	coap_mem_release((void*) (*Msg));
+	CoAP_free((void*) (*Msg));
 	*Msg = NULL;
 
 	return COAP_OK;
@@ -155,9 +135,11 @@ CoAP_Message_t* _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
 		uint16_t PayloadInitialContentLength,
 		uint16_t PayloadMaxSize,
 		CoAP_Token_t Token) {
-	CoAP_Message_t* pMsg = (CoAP_Message_t*) coap_mem_get0(sizeof(CoAP_Message_t) + PayloadMaxSize); //malloc space
-	if (pMsg == NULL)
+	CoAP_Message_t* pMsg = (CoAP_Message_t*) CoAP_malloc0(sizeof(CoAP_Message_t) + PayloadMaxSize); //malloc space
+	if (pMsg == NULL) {
 		return NULL;
+	}
+	INFO("Created message %p\n", pMsg);
 
 	//safety checks
 	if (PayloadInitialContentLength > PayloadMaxSize) {
@@ -274,7 +256,7 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 //Get memory for total message data and copy parsed data
 //Payload Buffers MUST located at end of CoAP_Message_t to let this work!
 	START_MSG_COPY_LABEL:
-	*rxedMsg = (CoAP_Message_t*) coap_mem_get(sizeof(CoAP_Message_t) + Msg.PayloadLength);
+	*rxedMsg = (CoAP_Message_t*) CoAP_malloc(sizeof(CoAP_Message_t) + Msg.PayloadLength);
 
 	if (*rxedMsg == NULL)	//out of memory
 	{
@@ -422,7 +404,7 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle
 	if (pked.size <= 16) { //for small messages don't take overhead of mem allocation
 		pked.pData = quickBuf;
 	} else {
-		pked.pData = (uint8_t*) coap_mem_get(pked.size);
+		pked.pData = (uint8_t*) CoAP_malloc(pked.size);
 		if (pked.pData == NULL)
 			return COAP_ERR_OUT_OF_MEMORY;
 	}
@@ -453,30 +435,35 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle
 		CoAP_PrintMsg(Msg);
 		INFO("o>>>>>>>>>>OK>>>>>>>>>>\r\n");
 		if (pked.pData != quickBuf) {
-			coap_mem_release(pked.pData);
+			CoAP_free(pked.pData);
 		}
 		return COAP_OK;
 	} else {
 		CoAP_PrintMsg(Msg);
 		INFO("o>>>>>>>>>>FAIL>>>>>>>>>>\r\n");
 		if (pked.pData != quickBuf) {
-			coap_mem_release(pked.pData);
+			CoAP_free(pked.pData);
 		}
 		return COAP_ERR_NETWORK;
 	}
 
 }
 
-//todo use random and hash
+static uint16_t MId = 0;
+static uint8_t currToken = 0;
+
+void _rom CoAP_InitIds() {
+	MId = CoAP.api.rand() & 0xffffu;
+	currToken = CoAP.api.rand() & 0xffu;
+}
+
 uint16_t _rom CoAP_GetNextMid() {
-	static uint16_t MId = 0;
 	MId++;
 	return MId;
 }
 
 // TODO: Improove generated tokens
 CoAP_Token_t _rom CoAP_GenerateToken() {
-	static uint8_t currToken = 0x44;
 	currToken++;
 	CoAP_Token_t tok = {.Token = {currToken, 0,0,0,0,0,0,0}, .Length = 1};
 	return tok;
@@ -596,7 +583,7 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 		LOG_DEBUG("\"\r\n");
 	}
 
-	INFO("*Timestamp: %d\r\n", msg->Timestamp);
+	INFO("*Timestamp: %lu\r\n", msg->Timestamp);
 	INFO("----------------------------\r\n");
 }
 

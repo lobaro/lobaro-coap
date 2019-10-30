@@ -30,10 +30,10 @@
 extern size_t KNOWN_OPTIONS_COUNT;
 extern uint16_t KNOWN_OPTIONS[];
 
-#define OPT_FLAG_CRITICAL 	(1<<0)
-#define OPT_FLAG_UNSAFE	  	(1<<1)
-#define OPT_FLAG_NOCACHEKEY (1<<2)
-#define OPT_FLAG_REPEATABLE	(1<<3)
+#define OPT_FLAG_CRITICAL 	(1u<<0u)
+#define OPT_FLAG_UNSAFE	  	(1u<<1u)
+#define OPT_FLAG_NOCACHEKEY (1u<<2u)
+#define OPT_FLAG_REPEATABLE	(1u<<3u)
 
 #define MAX_OPTION_VALUE_SIZE (1034) //used in option "Proxy-Uri"
 
@@ -45,7 +45,7 @@ uint16_t  CoAP_NeededMem4PackOptions(CoAP_option_t* pOptionsListBegin);
 
 CoAP_option_t* CoAP_FindOptionByNumber(CoAP_Message_t* msg, uint16_t number);
 CoAP_Result_t CoAP_AppendUintOptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint32_t val); 
-CoAP_Result_t CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, uint8_t* buf, uint16_t length);
+CoAP_Result_t CoAP_AppendOptionToList(CoAP_option_t** pOptionsListBegin, uint16_t OptNumber, const uint8_t* buf, uint16_t length);
 CoAP_Result_t CoAP_CopyOptionToList(CoAP_option_t** pOptionsListBegin, CoAP_option_t* OptToCopy);
 CoAP_Result_t CoAP_RemoveOptionFromList(CoAP_option_t** pOptionListStart, CoAP_option_t* pOptionToRemove);
 CoAP_Result_t CoAP_FreeOptionList(CoAP_option_t** pOptionsListBegin);

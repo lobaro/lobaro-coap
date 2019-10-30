@@ -118,6 +118,7 @@ CoAP_Result_t CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_Res_t
 //we act as a CoAP Client (sending requests) in this interaction
 CoAP_Result_t CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, SocketHandle_t socketHandle, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb);
 CoAP_Result_t CoAP_StartNewGetRequest(char* UriString, SocketHandle_t socketHandle, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb);
+CoAP_Result_t CoAP_StartNewRequest(CoAP_MessageCode_t type, const char* UriString, SocketHandle_t socketHandle, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb, uint8_t *buf, size_t size);
 CoAP_Result_t CoAP_RemoveInteractionsObserver(CoAP_Interaction_t* pIA, CoAP_Token_t token);
 CoAP_Result_t CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA);
 CoAP_Result_t CoAP_StartNotifyInteractions(CoAP_Res_t* pRes);

@@ -23,7 +23,7 @@
 #define COAP_URIPATH_OPTION
 
 
-CoAP_Result_t CoAP_AppendUriOptionsFromString(CoAP_option_t** pUriOptionsListBegin, char* UriStr);
+CoAP_Result_t CoAP_AppendUriOptionsFromString(CoAP_option_t** pUriOptionsListBegin, const char* UriStr);
 
 CoAP_Result_t CoAP_AddUriOptionsToMsgFromString(CoAP_Message_t* msg, char* UriStr);
 
@@ -34,6 +34,6 @@ uint8_t* CoAP_GetUriQueryValFromMsg(CoAP_Message_t* pMsg, const char* prefixStr,
 int8_t CoAP_FindUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, int CmpStrCnt, ...);  //searches only option in parameter
 
 void CoAP_printUriOptionsList(CoAP_option_t* pOptListBegin);
-uint32_t CoAP_atoi(uint8_t* Str, uint8_t Len);
+uint32_t CoAP_atoi(const uint8_t* Str, uint8_t Len);
 
 #endif

@@ -1,4 +1,3 @@
-#line __LINE__ "coap_option_uri.c"
 /*******************************************************************************
  * Copyright (c)  2015  Dipl.-Ing. Tobias Rohde, http://www.lobaro.com
  *
@@ -26,8 +25,8 @@
 //internal function
 //QueryStr points to char AFTER ? in a uri query string e.g: 'O' in [...]myuri/bla?Option1=Val1&Option2=Val2
 //todo: support percent encoding
-static CoAP_Result_t _rom ParseUriQueryFromStringToOption(CoAP_option_t** pUriOptionsListBegin, char* QueryStr) {
-	char* pCurUriPartBegin = QueryStr;
+static CoAP_Result_t _rom ParseUriQueryFromStringToOption(CoAP_option_t** pUriOptionsListBegin, const char* QueryStr) {
+	const char* pCurUriPartBegin = QueryStr;
 	uint32_t cnt = 0;
 
 	while (*QueryStr != 0) { //str end
@@ -38,7 +37,7 @@ static CoAP_Result_t _rom ParseUriQueryFromStringToOption(CoAP_option_t** pUriOp
 				continue;
 			}
 
-			CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_QUERY, pCurUriPartBegin, cnt); //copy & alloc mem
+			CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_QUERY, (const uint8_t *) pCurUriPartBegin, cnt); //copy & alloc mem
 
 			pCurUriPartBegin = pCurUriPartBegin + cnt + 1;//points to char following delimiter '&'
 			cnt = 0;
@@ -49,7 +48,7 @@ static CoAP_Result_t _rom ParseUriQueryFromStringToOption(CoAP_option_t** pUriOp
 
 	//last uri part which is not a query string
 	if (cnt != 0) {
-		CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_QUERY, pCurUriPartBegin, cnt); //copy & alloc last uri part
+		CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_QUERY, (const uint8_t *) pCurUriPartBegin, cnt); //copy & alloc last uri part
 	}
 
 	return COAP_OK;
@@ -57,7 +56,7 @@ static CoAP_Result_t _rom ParseUriQueryFromStringToOption(CoAP_option_t** pUriOp
 
 
 // Appends to list of coap options uri-path and uri-query options from uri-string
-CoAP_Result_t _rom CoAP_AppendUriOptionsFromString(CoAP_option_t** pUriOptionsListBegin, char* UriStr) {
+CoAP_Result_t _rom CoAP_AppendUriOptionsFromString(CoAP_option_t** pUriOptionsListBegin, const char* UriStr) {
 	// Tested against following URI parts:
 	// "halloWelt/wiegehts/dir?var1=val1&var2=val2&"
 	// "halloWelt/wiegehts/dir"
@@ -68,7 +67,7 @@ CoAP_Result_t _rom CoAP_AppendUriOptionsFromString(CoAP_option_t** pUriOptionsLi
 		return COAP_ERR_ARGUMENT;
 	}
 
-	char* pCurUriPartBegin = UriStr;
+	const char* pCurUriPartBegin = UriStr;
 	uint32_t cnt = 0;
 
 	while (*UriStr != 0) { //str end
@@ -83,7 +82,7 @@ CoAP_Result_t _rom CoAP_AppendUriOptionsFromString(CoAP_option_t** pUriOptionsLi
 				UriStr++;
 				continue;
 			}
-			CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_PATH, pCurUriPartBegin, cnt); //copy & alloc mem
+			CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_PATH, (const uint8_t *) pCurUriPartBegin, cnt); //copy & alloc mem
 
 			pCurUriPartBegin = pCurUriPartBegin + cnt + 1;//points to char following delimiter '/', ' ' or '?'
 
@@ -99,7 +98,7 @@ CoAP_Result_t _rom CoAP_AppendUriOptionsFromString(CoAP_option_t** pUriOptionsLi
 
 	//last uri part which is not a query string
 	if (cnt != 0) {
-		CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_PATH, pCurUriPartBegin, cnt); //copy & alloc last uri part
+		CoAP_AppendOptionToList(pUriOptionsListBegin, OPT_NUM_URI_PATH, (const uint8_t *) pCurUriPartBegin, cnt); //copy & alloc last uri part
 	}
 
 	return COAP_OK;
@@ -256,7 +255,7 @@ int8_t CoAP_FindUriQueryVal(CoAP_option_t* pUriOpt, const char* prefixStr, int C
 	return 0; //not found
 }
 
-uint32_t CoAP_atoi(uint8_t* Str, uint8_t Len) {
+uint32_t CoAP_atoi(const uint8_t* Str, uint8_t Len) {
 
 	uint32_t num = 0;
 	uint32_t mul = 1;//multiplier
@@ -264,7 +263,7 @@ uint32_t CoAP_atoi(uint8_t* Str, uint8_t Len) {
 	if(Len > 10) return 0; //max 32bit num 2,147,483,647
 	int i;
 	for(i=Len-1; i>=0; i--) {
-		if(Str[i]<'0' || Str[i]>'9') return 0; //no [0..9] charakter found -> return 0 as error indicator (as standard atoi does)
+		if(Str[i]<'0' || Str[i]>'9') return 0; //no [0..9] character found -> return 0 as error indicator (as standard atoi does)
 		num+=(Str[i]-'0')*mul;
 		mul *=10;
 	}

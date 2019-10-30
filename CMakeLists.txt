@@ -1,4 +1,5 @@
 if (DEFINED __INIT_LOBARO_BUILD)
+    # cmake configuration used in lobaro's internal build configuration
     project(lobaro-coap)
 
     include(${CPATH}/src/github.com/lobaro/c-build/build.cmake)
@@ -7,6 +8,7 @@ if (DEFINED __INIT_LOBARO_BUILD)
 
     # cbuild_dependency(_ github.com/lobaro/cpp-utils)
 else()
+    # general cmake configuration used outside of lobaro
     cmake_minimum_required(VERSION 3.1)
 
     project(lobaro_coap C)

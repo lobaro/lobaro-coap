@@ -1,4 +1,3 @@
-#line __LINE__ "coap_main.c"
 /*******************************************************************************
  * Copyright (c)  2015  Dipl.-Ing. Tobias Rohde, http://www.lobaro.com
  *
@@ -23,7 +22,7 @@
 #include "coap.h"
 #include "liblobaro_coap.h"
 
-CoAP_t CoAP = { .pInteractions = NULL, .api = { 0 }, .cfg = { 0 } };
+CoAP_t CoAP = { .pInteractions = NULL, .api = { 0 } };
 
 void hal_debug_puts(char* s) {
 	if (CoAP.api.debugPuts != NULL) {
@@ -63,7 +62,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 	if (pMsg->Type == CON && pMsg->Code == EMPTY) {
 		CoAP_SendEmptyRST(pMsg->MessageID, socketHandle, pPacket->remoteEp); //a.k.a "CoAP Ping"
 		CoAP_free_Message(&pMsg); //free if not used inside interaction
-		coap_mem_stats();
+		// coap_mem_stats();
 		return;
 	} else if (pMsg->Type == ACK && isRequest) {
 		goto END;
@@ -681,11 +680,11 @@ void _rom CoAP_doWork() {
 	}
 
 	// DEBUG output all interactions
-	INFO("\n");
-	PrintInteractions(CoAP.pInteractions);
-	coap_mem_stats();
+	//INFO("\n");
+	//PrintInteractions(CoAP.pInteractions);
+	//coap_mem_stats();
 
-	INFO("Now: %lu\n", now);
+	//INFO("Now: %lu\n", now);
 
 	//	INFO("pending Transaction found! ReqTime: %u\r\n", pIA->ReqTime);
 	//	com_mem_stats();

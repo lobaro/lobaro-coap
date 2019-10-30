@@ -39,29 +39,12 @@
 #define DEFAULT_LEISURE (5) //todo implement
 #define PROBING_RATE (1)        //[client]
 
-//#####################
-// Receive of packets
-//#####################
-// This function must be called by network drivers
-// on reception of a new network packets which
-// should be passed to the CoAP stack.
-// "socketHandle" can be chosen arbitrary by calling network driver,
-// but can be considered constant over runtime.
-void CoAP_onNewPacketHandler(SocketHandle_t socketHandle, NetPacket_t* pckt);
-
-//#####################
-// Transmit of packets
-//#####################
-
 
 typedef struct {
 	CoAP_Interaction_t *pInteractions;
 	CoAP_API_t api;
-	CoAP_Config_t cfg;
 } CoAP_t;
 
 extern CoAP_t CoAP; //Stack global variables
-
-
 
 #endif

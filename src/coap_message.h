@@ -65,6 +65,7 @@ void CoAP_PrintResultValue(CoAP_Result_t res);
 CoAP_Result_t CoAP_addTextPayload(CoAP_Message_t* Msg, char* PayloadStr);
 CoAP_Result_t CoAP_addNewPayloadToMessage(CoAP_Message_t* Msg, uint8_t* pData, uint16_t size);
 
+void CoAP_InitIds();
 uint16_t CoAP_GetNextMid();
 CoAP_Token_t CoAP_GenerateToken();
 

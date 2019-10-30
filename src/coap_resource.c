@@ -1,4 +1,3 @@
-#line __LINE__ "coap_resource.c"
 /*******************************************************************************
  * Copyright (c)  2015  Dipl.-Ing. Tobias Rohde, http://www.lobaro.com
  *
@@ -180,13 +179,14 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 	}
 
 	CoAP_Res_t* pList = pResList; //List of internal resources
-	uint8_t* pStr = (uint8_t*) coap_mem_get0((ResListMembers + 1) * 64); //first estimation of needed memory
+	uint8_t* pStr = (uint8_t*) CoAP.api.malloc((ResListMembers + 1) * 64); //first estimation of needed memory
 	uint8_t* pStrStart = pStr;
 
 	if (pStr == NULL) {
 		INFO("- WellKnown_GetHandler(): Ouf memory error!\r\n");
 		return HANDLER_ERROR;
 	}
+	memset(pStr, 0, (ResListMembers + 1) * 64);
 
 	INFO("- WellKnown_GetHandler(): res cnt:%u temp alloc:%u\r\n", (unsigned int) ResListMembers, (unsigned int) (ResListMembers + 2) * 64);
 
@@ -221,7 +221,7 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 	}
 
 	CoAP_SetPayload(pResp, pStrStart, (uint16_t) coap_strlen((char*) pStrStart), true);
-	coap_mem_release(pStrStart);
+	CoAP.api.free(pStrStart);
 
 	CoAP_AddCfOptionToMsg(pResp, COAP_CF_LINK_FORMAT);
 
@@ -255,8 +255,8 @@ static CoAP_Result_t _rom CoAP_AppendResourceToList(CoAP_Res_t** pListStart, CoA
 CoAP_Result_t _rom CoAP_FreeResource(CoAP_Res_t** pResource) {
 	CoAP_FreeOptionList(&(*pResource)->pUri);
 
-	coap_mem_release((*pResource)->pDescription);
-	coap_mem_release((void*) (*pResource));
+	CoAP.api.free((*pResource)->pDescription);
+	CoAP.api.free((void*) (*pResource));
 	*pResource = NULL;
 	return COAP_OK;
 }
@@ -321,10 +321,11 @@ CoAP_Res_t* _rom CoAP_CreateResource(char* Uri, char* Descr, CoAP_ResOpts_t Opti
 		return NULL;
 	}
 
-	CoAP_Res_t* pRes = (CoAP_Res_t*) (coap_mem_get0(sizeof(CoAP_Res_t)));
+	CoAP_Res_t* pRes = (CoAP_Res_t*) (CoAP.api.malloc(sizeof(CoAP_Res_t)));
 	if (pRes == NULL) {
 		return NULL;
 	}
+	memset(pRes, 0, sizeof(CoAP_Res_t));
 
 	pRes->pListObservers = NULL;
 	pRes->pUri = NULL;
@@ -333,7 +334,7 @@ CoAP_Res_t* _rom CoAP_CreateResource(char* Uri, char* Descr, CoAP_ResOpts_t Opti
 	pRes->Options = Options;
 
 	if (Descr != NULL && *Descr != '\0') {
-		pRes->pDescription = (char*) (coap_mem_get(sizeof(char) * (coap_strlen(Descr) + 1)));
+		pRes->pDescription = (char*) (CoAP.api.malloc(sizeof(char) * (coap_strlen(Descr) + 1)));
 		coap_strcpy(pRes->pDescription, Descr);
 	} else {
 		pRes->pDescription = NULL;

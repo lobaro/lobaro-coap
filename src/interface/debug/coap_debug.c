@@ -1,4 +1,3 @@
-#line __LINE__ "coap_debug.c"
 /*******************************************************************************
  * Copyright (c)  2015  Dipl.-Ing. Tobias Rohde, http://www.lobaro.com
  *
