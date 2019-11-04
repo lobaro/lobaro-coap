@@ -26,6 +26,8 @@
 //QueryStr points to char AFTER ? in a uri query string e.g: 'O' in [...]myuri/bla?Option1=Val1&Option2=Val2
 //todo: support percent encoding
 static CoAP_Result_t _rom ParseUriQueryFromStringToOption(CoAP_option_t** pUriOptionsListBegin, const char* QueryStr) {
+	INFO("Query string coming:\n");
+	INFO("Query string: '%s'\n", QueryStr);
 	const char* pCurUriPartBegin = QueryStr;
 	uint32_t cnt = 0;
 

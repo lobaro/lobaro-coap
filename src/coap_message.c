@@ -24,6 +24,8 @@
 #include "liblobaro_coap.h"
 #include "coap_mem.h"
 
+#define TR INFO("TR@%s:%d\n", __FILE__, __LINE__)
+
 static void _rom CoAP_InitToEmptyResetMsg(CoAP_Message_t* msg) {
 	msg->Type = RST;
 	msg->Code = EMPTY;
@@ -51,6 +53,7 @@ bool CoAP_TokenEqual(CoAP_Token_t a, CoAP_Token_t b) {
 }
 
 void _rom CoAP_free_MsgPayload(CoAP_Message_t** Msg) {
+	return;
 	if ((*Msg)->Payload == NULL)
 		return;
 

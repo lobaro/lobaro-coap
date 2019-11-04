@@ -319,7 +319,7 @@ static CoAP_Result_t _rom CheckReqStatus(CoAP_Interaction_t* pIA) {
 		} else { //check ACK/RST timeout of our CON request
 			if (timeAfter(CoAP.api.rtc1HzCnt(), pIA->AckTimeout)) {
 				if (pIA->RetransCounter + 1 > MAX_RETRANSMIT) { //give up
-					INFO("- (!) ACK timeout on sending request, giving up! MiD: %d", pIA->pReqMsg->MessageID);
+					INFO("- (!) ACK timeout on sending request, giving up! MiD: %d\r\n", pIA->pReqMsg->MessageID);
 					return COAP_ERR_OUT_OF_ATTEMPTS;
 				} else {
 					INFO("- (!) Retry num %d\r\n", pIA->RetransCounter + 1);
@@ -534,7 +534,7 @@ static void handleNotifyInteraction(CoAP_Interaction_t* pIA) {
 			CoAP_EnqueueLastInteraction(pIA); //(re)enqueue interaction for further processing
 			break;
 		case COAP_RETRY:
-			#if USE_RFC7641_ADVANCED_TRANSMISSION == 1
+#if USE_RFC7641_ADVANCED_TRANSMISSION == 1
 			//Implement RFC7641 (observe) "4.5.2.  Advanced Transmission"
 			//Effectively abort previous notification and send a fresher one
 			//retain transmission parameters of "pending" interaction
@@ -619,7 +619,7 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 	} else if (pIA->State == COAP_STATE_WAITING_RESPONSE) {
 		//--------------------------------------------------
 		CoAP_Result_t reqStatus = CheckReqStatus(pIA);
-		INFO("Request Status: %s\n", ResultToString(reqStatus));
+		// INFO("Request Status: %s\n", ResultToString(reqStatus));
 		switch (reqStatus) {
 		case COAP_WAITING:
 			CoAP_EnqueueLastInteraction(pIA); //(re)enqueue interaction for further processing
@@ -632,14 +632,20 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 			} else {
 				INFO("(!!!) Internal socket error on sending request retry! MiD: %d\r\n",
 						pIA->pReqMsg->MessageID);
+				if (pIA->RespCB != NULL) {
+					pIA->RespCB(NULL, &pIA->RemoteEp);
+				}
 				CoAP_DeleteInteraction(pIA);
 			}
 			break;
 
 		case COAP_ERR_OUT_OF_ATTEMPTS: //check is resource is a lazy observe delete one
 		case COAP_ERR_REMOTE_RST:
-			case COAP_ERR_TIMEOUT:
-			default:
+		case COAP_ERR_TIMEOUT:
+		default:
+			if (pIA->RespCB != NULL) {
+				pIA->RespCB(NULL, &pIA->RemoteEp);
+			}
 			CoAP_DeleteInteraction(pIA);
 		}
 		//--------------------------------------------------
@@ -656,6 +662,9 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 				pIA); //direct delete, todo: eventually wait some time to send ACK instead of RST if out ACK to remote reponse was lost
 
 	} else {
+		if (pIA->RespCB != NULL) {
+			pIA->RespCB(NULL, &pIA->RemoteEp);
+		}
 		CoAP_DeleteInteraction(pIA); //unknown state, should not go here
 	}
 }
