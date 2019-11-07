@@ -44,7 +44,7 @@ extern "C" {
 #define timeAfter(a,b)    (((int32_t)(a) - (int32_t)(b)) >= 0)
 #endif
 
-#define MAX_PAYLOAD_SIZE        (256)  //should not exceed 1024 bytes (see 4.6 RFC7252) (must be power of 2 to fit with blocksize option!)
+#define MAX_PAYLOAD_SIZE        (1024)  //should not exceed 1024 bytes (see 4.6 RFC7252) (must be power of 2 to fit with blocksize option!)
 #define PREFERED_PAYLOAD_SIZE    (64)   //also size of inital pResp message payload buffer in user resource handler
 
 #define COAP_VERSION (1)
