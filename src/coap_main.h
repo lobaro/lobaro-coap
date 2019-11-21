@@ -32,7 +32,7 @@
 
 #define USE_RFC7641_ADVANCED_TRANSMISSION (1) //Update representation of resource during retry of observe sendout
 
-#define ACK_TIMEOUT (2)
+#define ACK_TIMEOUT (8)
 #define ACK_RANDOM_FACTOR (1.5)
 #define MAX_RETRANSMIT (4)
 #define NSTART (1) //todo implement
