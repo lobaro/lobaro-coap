@@ -43,4 +43,5 @@ extern const NetEp_t NetEp_IPv4_mulitcast;
 bool EpAreEqual(const NetEp_t* ep_A, const NetEp_t* ep_B);
 void CopyEndpoints(NetEp_t* Destination, const NetEp_t* Source);
 
+NetInterfaceType_t CoAP_ParseNetAddress(NetAddr_t *addr, const char *s);
 #endif

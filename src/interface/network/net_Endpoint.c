@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  *******************************************************************************/
 
+#include <github.com/lobaro/c-utils/logging.h>
 #include "../../coap.h"
 
 const NetAddr_IPv6_t NetAddr_IPv6_unspecified = {.u8 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }};
@@ -60,4 +61,24 @@ void _rom CopyEndpoints(NetEp_t* Destination, const NetEp_t* Source) {
 	memmove((void*) Destination, (void*) Source, sizeof(NetEp_t));
 }
 
-
+NetInterfaceType_t _rom CoAP_ParseNetAddress(NetAddr_t *addr, const char *s) {
+ 	if (addr == NULL) {
+ 		return EP_NONE;
+ 	}
+ 	// try IPv4:
+ 	int i0=-1, i1=-1, i2=-1, i3=-1;
+	int got = sscanf(s, "%d.%d.%d.%d", &i0, &i1, &i2, &i3);
+	Log("PARSE: %d\n", got);
+ 	if (got==4) {
+ 		if (0<=i0 && i0<=255 && 0<=i1 && i1<=255 && 0<=i2 && i2<=255 && 0<=i3 && i3<=255) {
+ 			addr->IPv4.u8[0] = i0;
+ 			addr->IPv4.u8[1] = i1;
+ 			addr->IPv4.u8[2] = i2;
+ 			addr->IPv4.u8[3] = i3;
+ 			return IPV4;
+ 		}
+ 	}
+ 	// try IPv6:
+ 	// TODO:
+ 	return EP_NONE;
+}

@@ -395,6 +395,8 @@ void CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t *pPacket
 // doWork must be called regularly to process pending interactions
 void CoAP_doWork();
 
+// Endpoint api
+NetInterfaceType_t CoAP_ParseNetAddress(NetAddr_t *addr, const char *s);
 #ifdef __cplusplus
 }
 #endif
