@@ -68,7 +68,7 @@ NetInterfaceType_t _rom CoAP_ParseNetAddress(NetAddr_t *addr, const char *s) {
  	// try IPv4:
  	int i0=-1, i1=-1, i2=-1, i3=-1;
 	int got = sscanf(s, "%d.%d.%d.%d", &i0, &i1, &i2, &i3);
-	Log("PARSE: %d\n", got);
+	// Log("PARSE: %d\n", got);
  	if (got==4) {
  		if (0<=i0 && i0<=255 && 0<=i1 && i1<=255 && 0<=i2 && i2<=255 && 0<=i3 && i3<=255) {
  			addr->IPv4.u8[0] = i0;
