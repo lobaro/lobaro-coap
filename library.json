@@ -4,7 +4,7 @@
   "description": "Complete CoAP Implementation in C for embedded systems. See http://www.lobaro.com/lobaro-coap/ for further information.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Lobaro/lobaro-coap.git"
+    "url": "https://github.com/lobaro/lobaro-coap.git"
   },
   "version": "1.2",
   "authors": {
