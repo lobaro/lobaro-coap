@@ -181,6 +181,8 @@ typedef enum {
 	// Blockwise transfers
 	OPT_BLOCK2 = 23,
 	OPT_BLOCK1 = 27,
+	OPT_SIZE2 = 28,
+	OPT_SIZE1 = 60,
 	OPT_NUM_LOBARO_TOKEN_SAVE = 350
 } CoAP_KnownOptionNumbers_t;
 

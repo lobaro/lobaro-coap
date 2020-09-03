@@ -39,7 +39,7 @@
 bool CoAP_TokenEqual(CoAP_Token_t a, CoAP_Token_t b);
 
 CoAP_Message_t* CoAP_CreateMessage(CoAP_MessageType_t Type, CoAP_MessageCode_t Code,
-		uint16_t MessageID, uint8_t* pPayloadInitialContent, uint16_t PayloadInitialContentLength, uint16_t PayloadMaxSize, CoAP_Token_t Token);
+		uint16_t MessageID, const uint8_t* pPayloadInitialContent, uint16_t PayloadInitialContentLength, uint16_t PayloadMaxSize, CoAP_Token_t Token);
 
 CoAP_Result_t CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcArrLength, CoAP_Message_t** rxedMsg);
 

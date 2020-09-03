@@ -134,21 +134,22 @@ CoAP_Message_t* _rom CoAP_AllocRespMsg(CoAP_Message_t* ReqMsg, CoAP_MessageCode_
 CoAP_Message_t* _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
 		CoAP_MessageCode_t Code,
 		uint16_t MessageID,
-		uint8_t* pPayloadInitialContent,
+		const uint8_t* pPayloadInitialContent,
 		uint16_t PayloadInitialContentLength,
 		uint16_t PayloadMaxSize,
 		CoAP_Token_t Token) {
-	CoAP_Message_t* pMsg = (CoAP_Message_t*) CoAP_malloc0(sizeof(CoAP_Message_t) + PayloadMaxSize); //malloc space
-	if (pMsg == NULL) {
-		return NULL;
-	}
-	INFO("Created message %p\n", pMsg);
 
 	//safety checks
 	if (PayloadInitialContentLength > PayloadMaxSize) {
 		ERROR("Initial Content bigger than field size!");
 		return NULL;
 	}
+
+	CoAP_Message_t* pMsg = (CoAP_Message_t*) CoAP_malloc0(sizeof(CoAP_Message_t) + PayloadMaxSize); //malloc space
+	if (pMsg == NULL) {
+		return NULL;
+	}
+	INFO("Created message %p\n", pMsg);
 
 	CoAP_InitToEmptyResetMsg(pMsg); //init
 
@@ -483,7 +484,7 @@ CoAP_Result_t _rom CoAP_addNewPayloadToMessage(CoAP_Message_t* Msg, uint8_t* pDa
 			coap_memcpy(Msg->Payload, pData, size); //use existing buffer
 		} else { // will move payload buf outside of msg memory frame!
 			CoAP_free_MsgPayload(&Msg); //free old buffer
-			Msg->Payload = (uint8_t*) coap_mem_get(size); //alloc a different new buffer
+			Msg->Payload = (uint8_t*) CoAP.api.malloc(size); //alloc a different new buffer
 			Msg->PayloadBufSize = size;
 
 			coap_memcpy(Msg->Payload, pData, size);
