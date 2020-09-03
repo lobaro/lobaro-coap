@@ -52,6 +52,9 @@ CoAP_Result_t CoAP_FreeOptionList(CoAP_option_t** pOptionsListBegin);
 
 CoAP_Result_t CoAP_GetUintFromOption(const CoAP_option_t* pOption, uint32_t* value);
 
+uint32_t CoAP_PackBlockParameter(uint32_t num, bool m, uint8_t szx);
+void CoAP_UnpackBlockParameter(uint32_t v, uint32_t *num, bool *m, uint8_t *szx);
+
 bool CoAP_OptionsAreEqual(CoAP_option_t* OptA, CoAP_option_t* OptB);
 uint16_t CoAP_CheckForUnknownCriticalOption(CoAP_option_t* pOptionsListBegin);
 

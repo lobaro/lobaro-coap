@@ -347,23 +347,23 @@ CoAP_Result_t _rom CoAP_AppendUintOptionToList(CoAP_option_t** pOptionsListBegin
 
 	if(val <= 0xffff)
 	{
-		wBuf[0]=(uint8_t)(val & 0xff);
-		wBuf[1]=(uint8_t)(val>>8);
+		wBuf[0]=(uint8_t)(val & 0xffu);
+		wBuf[1]=(uint8_t)(val>>8u);
 		return CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 2);
 	}
 
 	if(val <= 0xffffff)
 	{
-		wBuf[0]=(uint8_t)(val & 0xff);
-		wBuf[1]=(uint8_t)((val>>8) & 0xff);
-		wBuf[2]=(uint8_t)(val>>16);
+		wBuf[0]=(uint8_t)(val & 0xffu);
+		wBuf[1]=(uint8_t)((val>>8u) & 0xffu);
+		wBuf[2]=(uint8_t)(val>>16u);
 		return CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 3);
 	}
 
-	wBuf[0]=(uint8_t)(val & 0xff);
-	wBuf[1]=(uint8_t)((val>>8) & 0xff);
-	wBuf[2]=(uint8_t)((val>>16) & 0xff);
-	wBuf[3]=(uint8_t)(val>>24);
+	wBuf[0]=(uint8_t)(val & 0xffu);
+	wBuf[1]=(uint8_t)((val>>8u) & 0xffu);
+	wBuf[2]=(uint8_t)((val>>16u) & 0xffu);
+	wBuf[3]=(uint8_t)(val>>24u);
 	return CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 4);
 }
 
@@ -568,4 +568,19 @@ bool _rom CoAP_OptionsAreEqual(CoAP_option_t* OptA, CoAP_option_t* OptB) {
 			return false;
 	}
 	return true;
+}
+
+uint32_t _rom CoAP_PackBlockParameter(uint32_t num, bool m, uint8_t szx) {
+	uint32_t v = num << 4u;  // v is combined: NUM[28],M[1],SZX[3]
+	if (m) {
+		v |= 0b1000u;
+	}
+	v |= szx;
+	return v;
+}
+
+void CoAP_UnpackBlockParameter(uint32_t v, uint32_t *num, bool *m, uint8_t *szx) {
+	*num = v >> 4u;
+	*m = ((v & 0b1000u) == 0b1000u);
+	*szx = v & 0b111u;
 }
