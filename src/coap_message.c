@@ -555,24 +555,7 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 
 	LOG_DEBUG("*MessageId: %u\r\n", msg->MessageID);
 
-	CoAP_option_t* pOption = NULL;
-	if (msg->pOptionsList != NULL) {
-		pOption = msg->pOptionsList;
-	}
-	while (pOption != NULL) {
-		INFO("*Option #%u (Length=%u) ->", pOption->Number, pOption->Length);
-		int j;
-		for (j = 0; j < pOption->Length; j++) {
-			if (pOption->Value[j]) {
-				INFO(" %c[", pOption->Value[j]);
-				INFO("%02x]", pOption->Value[j]);
-			} else {
-				INFO("  [00]");
-			}
-		}
-		INFO("\r\n");
-		pOption = pOption->next;
-	}
+	CoAP_printOptionsList(msg->pOptionsList);
 	if (msg->PayloadLength) {
 		LOG_DEBUG("*Payload (%u Byte): \"", msg->PayloadLength);
 		if (msg->PayloadLength > MAX_PAYLOAD_SIZE) {
@@ -581,7 +564,12 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 		else {
 			int i;
 			for (i = 0; i < msg->PayloadLength && i < MAX_PAYLOAD_SIZE; i++) {
-				LOG_DEBUG("%c", msg->Payload[i]);
+				char c = msg->Payload[i];
+				if (c < 0x20 || c > 0x7e) {
+					// replace non printable bytes in log by '.'
+					c = '.';
+				}
+				LOG_DEBUG("%c", c);
 			}
 		}
 		LOG_DEBUG("\"\r\n");

@@ -179,10 +179,10 @@ typedef enum {
 	OPT_NUM_URI_QUERY = 15,
 	OPT_NUM_ACCEPT = 17,
 	// Blockwise transfers
-	OPT_BLOCK2 = 23,
-	OPT_BLOCK1 = 27,
-	OPT_SIZE2 = 28,
-	OPT_SIZE1 = 60,
+	OPT_NUM_BLOCK2 = 23,
+	OPT_NUM_BLOCK1 = 27,
+	OPT_NUM_SIZE2 = 28,
+	OPT_NUM_SIZE1 = 60,
 	OPT_NUM_LOBARO_TOKEN_SAVE = 350
 } CoAP_KnownOptionNumbers_t;
 
@@ -219,6 +219,7 @@ typedef enum {
 	RESP_SUCCESS_VALID_2_03 = CODE(2u, 3u),
 	RESP_SUCCESS_CHANGED_2_04 = CODE(2u, 4u),    // only used on response to "POST" and "PUT" like HTTP 204
 	RESP_SUCCESS_CONTENT_2_05 = CODE(2u, 5u),    // only used on response to "GET" like HTTP 200 (OK)
+	RESP_SUCCESS_CONTINUE_2_31 = CODE(2u, 31u),  // used for blockwise, see RFC 7959
 	RESP_ERROR_BAD_REQUEST_4_00 = CODE(4u, 0u),  // like HTTP 400
 	RESP_ERROR_UNAUTHORIZED_4_01 = CODE(4u, 1u),
 	RESP_BAD_OPTION_4_02 = CODE(4u, 2u),

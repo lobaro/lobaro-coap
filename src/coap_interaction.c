@@ -46,7 +46,6 @@ CoAP_Result_t _rom CoAP_FreeInteraction(CoAP_Interaction_t** pInteraction) {
 	CoAP_free_Message(&(*pInteraction)->pRespMsg);
 	CoAP_free((void*) (*pInteraction));
 	// coap_mem_stats();
-
 	*pInteraction = NULL;
 	return COAP_OK;
 }

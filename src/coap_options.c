@@ -23,7 +23,7 @@
 #include "coap.h"
 
 // Used in Critical Option Check.
-uint16_t KNOWN_OPTIONS[] = { OPT_NUM_URI_PATH, OPT_BLOCK2, OPT_BLOCK1, OPT_NUM_ETAG, OPT_NUM_CONTENT_FORMAT, OPT_NUM_URI_QUERY, OPT_NUM_ACCEPT };
+uint16_t KNOWN_OPTIONS[] = {OPT_NUM_URI_PATH, OPT_NUM_BLOCK2, OPT_NUM_BLOCK1, OPT_NUM_ETAG, OPT_NUM_CONTENT_FORMAT, OPT_NUM_URI_QUERY, OPT_NUM_ACCEPT };
 size_t KNOWN_OPTIONS_COUNT = sizeof(KNOWN_OPTIONS) / sizeof(KNOWN_OPTIONS[0]);
 
 //#########################################################################################################
@@ -347,23 +347,23 @@ CoAP_Result_t _rom CoAP_AppendUintOptionToList(CoAP_option_t** pOptionsListBegin
 
 	if(val <= 0xffff)
 	{
-		wBuf[0]=(uint8_t)(val & 0xffu);
-		wBuf[1]=(uint8_t)(val>>8u);
+		wBuf[0]=(uint8_t)(val>>8u);
+		wBuf[1]=(uint8_t)(val & 0xffu);
 		return CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 2);
 	}
 
 	if(val <= 0xffffff)
 	{
-		wBuf[0]=(uint8_t)(val & 0xffu);
+		wBuf[0]=(uint8_t)(val>>16u);
 		wBuf[1]=(uint8_t)((val>>8u) & 0xffu);
-		wBuf[2]=(uint8_t)(val>>16u);
+		wBuf[2]=(uint8_t)(val & 0xffu);
 		return CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 3);
 	}
 
-	wBuf[0]=(uint8_t)(val & 0xffu);
-	wBuf[1]=(uint8_t)((val>>8u) & 0xffu);
-	wBuf[2]=(uint8_t)((val>>16u) & 0xffu);
-	wBuf[3]=(uint8_t)(val>>24u);
+	wBuf[0]=(uint8_t)(val>>24u);
+	wBuf[1]=(uint8_t)((val>>16u) & 0xffu);
+	wBuf[2]=(uint8_t)((val>>8u) & 0xffu);
+	wBuf[3]=(uint8_t)(val & 0xffu);
 	return CoAP_AppendOptionToList(pOptionsListBegin, OptNumber ,wBuf, 4);
 }
 
@@ -381,21 +381,21 @@ CoAP_Result_t _rom CoAP_GetUintFromOption(const CoAP_option_t* pOption, uint32_t
 	}
 	else if( pOption->Length == 2 )
 	{
-		*value = pOption->Value[0];
-		*value |= (pOption->Value[1] << 8u);
+		*value = pOption->Value[1];
+		*value |= (pOption->Value[0] << 8u);
 	}
 	else if( pOption->Length == 3 )
 	{
-		*value = pOption->Value[0];
+		*value = pOption->Value[2];
 		*value |= (pOption->Value[1] << 8u);
-		*value |= (pOption->Value[2] << 16u);
+		*value |= (pOption->Value[0] << 16u);
 	}
 	else if( pOption->Length == 4 )
 	{
-		*value = pOption->Value[0];
-		*value |= (pOption->Value[1] << 8u);
-		*value |= (pOption->Value[2] << 16u);
-		*value |= (pOption->Value[3] << 24u);
+		*value = pOption->Value[3];
+		*value |= (pOption->Value[2] << 8u);
+		*value |= (pOption->Value[1] << 16u);
+		*value |= (pOption->Value[0] << 24u);
 	}
 	else
 	{
@@ -534,19 +534,120 @@ uint16_t _rom CoAP_CheckForUnknownCriticalOption(CoAP_option_t* pOptionsListBegi
 	return 0;
 }
 
+static void _rom printOptionString(const CoAP_option_t *op) {
+	for (int i = 0; i < op->Length; i++) {
+		char c = op->Value[i];
+		if (c < 0x20 || c > 0x7e) {
+			// replace non printable bytes in log by '.'
+			c = '.';
+		}
+		LOG_DEBUG("%c", c);
+	}
+}
+static void _rom printOptionHex(const CoAP_option_t *op) {
+	for (int i = 0; i < op->Length; i++) {
+		LOG_DEBUG("%02x", op->Value[i]);
+	}
+}
+static uint16_t unpackSzx(uint8_t szx) {
+	if (szx > 0b110u) {
+		return 0;
+	}
+	return 0b1u << (szx + 4u);
+}
+static const char *contentFormatMime(uint16_t c) {
+	switch (c) {
+		case 0:
+			return "text/plain";
+		case 40:
+			return "application/link-format";
+		case 41:
+			return "application/xml";
+		case 42:
+			return "application/octet-stream";
+		case 47:
+			return "application/exi";
+		case 50:
+			return "application/json";
+		case 60:
+			// see rfc8075
+			return "application/cbor";
+		default:
+			// default - used for unknown types, see RFC 2046 4.5.1
+			return "application/octet-stream";
+	}
+}
+static void _rom printOption(const CoAP_option_t *op) {
+	if (op==NULL) {
+		return;
+	}
+	uint32_t v, num;
+	bool m;
+	uint8_t szx;
+	INFO("<%02u=", op->Number);
+	CoAP_Result_t r;
+	switch (op->Number) {
+		case OPT_NUM_URI_HOST:  // 03
+			INFO("URI_HOST:");
+			printOptionString(op);
+			break;
+		case OPT_NUM_ETAG:  // 04
+			INFO("ETAG:");
+			printOptionHex(op);
+			break;
+		case OPT_NUM_URI_PATH:  // 11
+			INFO("URI_PATH:");
+			printOptionString(op);
+			break;
+		case OPT_NUM_CONTENT_FORMAT:  //12
+			CoAP_GetUintFromOption(op, &v);
+			INFO("CONTENT_FORMAT:%lu=%s", v, contentFormatMime(v));
+			break;
+		case OPT_NUM_URI_QUERY:  // 15
+			INFO("URI_QUERY:");
+			printOptionString(op);
+			break;
+		case OPT_NUM_BLOCK1:  // 27
+		case OPT_NUM_BLOCK2:  // 23
+			CoAP_GetUintFromOption(op, &v);
+			CoAP_UnpackBlockParameter(v, &num, &m, &szx);
+			INFO("BLOCK%d:%ld/%u/0b%u%u%u=%u",
+				op->Number == OPT_NUM_BLOCK1 ? 1 : 2, num, m,
+				(szx&0b100u)>2u, (szx&0b10u)>1u, (szx&0b1u), unpackSzx(szx));
+			break;
+		case OPT_NUM_SIZE1:  // 60
+		case OPT_NUM_SIZE2:  // 28
+			r = CoAP_GetUintFromOption(op, &v);
+			INFO("SIZE%d:%lu", op->Number == OPT_NUM_SIZE1 ? 1 : 2, v);
+			break;
+		default:
+			INFO("?");
+			break;
+	}
+	INFO("> [");
+	for (int i=0; i<op->Length; i++) {
+		INFO("%s%02x", i?" ":"", op->Value[i]);
+	}
+	INFO("]");
+}
+
 void _rom CoAP_printOptionsList(CoAP_option_t* pOptListBegin) {
+	uint16_t n = 0;
 	while (pOptListBegin != NULL) {
-		INFO("-Option #%u (Length=%u) ->", pOptListBegin->Number, pOptListBegin->Length);
-		int j;
+		n++;
+		INFO("-Option #%02u (%02d,l=%02u) -> ", n, pOptListBegin->Number, pOptListBegin->Length);
+		printOption(pOptListBegin);
+/*		int j;
 		for (j = 0; j < pOptListBegin->Length; j++) {
+			printOption(pOptListBegin);
 			if (pOptListBegin->Value[j]) {
 				INFO(" %c[", pOptListBegin->Value[j]);
 				INFO("%02x]", pOptListBegin->Value[j]);
 			} else {
-				INFO("  [0x00]", pOptListBegin->Value[j]);
+				INFO("  [0x00]");
 			}
-		}
-		INFO("\r\n");
+		}*/
+		INFO("\n");
 		pOptListBegin = pOptListBegin->next;
 	}
 }
