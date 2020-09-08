@@ -20,7 +20,6 @@
  * THE SOFTWARE.
  *******************************************************************************/
 
-#include <github.com/lobaro/c-utils/lobaroAssert.h>
 #include "liblobaro_coap.h"
 #include "coap.h"
 #include "coap_main.h"
