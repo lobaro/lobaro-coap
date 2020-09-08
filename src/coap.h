@@ -47,6 +47,16 @@ extern "C" {
 #define MAX_PAYLOAD_SIZE        (1024)  //should not exceed 1024 bytes (see 4.6 RFC7252) (must be power of 2 to fit with blocksize option!)
 #define PREFERED_PAYLOAD_SIZE    (64)   //also size of inital pResp message payload buffer in user resource handler
 
+// Simulate network loss, set percentage of uploads or downloads that are dropped randomly:
+#define DEBUG_RANDOM_DROP_INCOMING_PERCENTAGE 0
+#define DEBUG_RANDOM_DROP_OUTGOING_PERCENTAGE 0
+
+// check for valid `MAX_PAYLOAD_SIZE` at compile time
+// allowing other values here will not work!
+#if !((MAX_PAYLOAD_SIZE==1024) || (MAX_PAYLOAD_SIZE==512) || (MAX_PAYLOAD_SIZE==256) || (MAX_PAYLOAD_SIZE==128) || (MAX_PAYLOAD_SIZE==64) || (MAX_PAYLOAD_SIZE==32))
+#error "MAX_PAYLOAD_SIZE must be power of two and 32<=MAX_PAYLOAD_SIZE<=1024"
+#endif
+
 #define COAP_VERSION (1)
 
 //V1.2

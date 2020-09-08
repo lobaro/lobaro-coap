@@ -434,7 +434,19 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle
 	}
 	INFO("\r\n");
 
-	if (SendPacket(socketHandle, &pked) == true) { // send COAP_OK!
+	bool sendResult;
+#if DEBUG_RANDOM_DROP_OUTGOING_PERCENTAGE > 0
+	if (CoAP.api.rand() % 100 < DEBUG_RANDOM_DROP_OUTGOING_PERCENTAGE) {
+		INFO("!!!FAIL!!! on purpose, dropping outgoing message (%d%% chance)\n", DEBUG_RANDOM_DROP_OUTGOING_PERCENTAGE);
+		sendResult = true;  // make stack think it sent message, to simulate loss of UDP packet in network
+	} else {
+		sendResult = SendPacket(socketHandle, &pked);
+	}
+#else
+	sendResult = SendPacket(socketHandle, &pked);
+#endif
+
+	if (sendResult == true) { // send COAP_OK!
 		Msg->Timestamp = CoAP.api.rtc1HzCnt();
 		CoAP_PrintMsg(Msg);
 		INFO("o>>>>>>>>>>OK>>>>>>>>>>\r\n");
@@ -533,25 +545,7 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 	}
 
 	uint8_t code = msg->Code;
-	LOG_DEBUG("\r\n*Code: %d.%02d (0x%02x) ", code >> 5, code & 31, code);
-
-	if (msg->Code == EMPTY) {
-		LOG_DEBUG("[EMPTY]\r\n");
-	}
-	else if (msg->Code == REQ_GET) {
-		LOG_DEBUG("[REQ_GET]\r\n");
-	}
-	else if (msg->Code == REQ_POST) {
-		LOG_DEBUG("[REQ_POST]\r\n");
-	}
-	else if (msg->Code == REQ_PUT) {
-		LOG_DEBUG("[REQ_PUT]\r\n");
-	}
-	else if (msg->Code == REQ_DELETE) {
-		LOG_DEBUG("[REQ_DELETE]\r\n");
-	}
-	else
-		LOG_DEBUG("\r\n");
+	LOG_DEBUG("\r\n*Code: %d.%02d (0x%02x) [%s]\r\n", code >> 5, code & 31, code, CoAP_CodeName(code));
 
 	LOG_DEBUG("*MessageId: %u\r\n", msg->MessageID);
 
@@ -577,6 +571,72 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 
 	INFO("*Timestamp: %lu\r\n", msg->Timestamp);
 	INFO("----------------------------\r\n");
+}
+
+const char _rom *CoAP_CodeName(CoAP_MessageCode_t code) {
+	switch (code) {
+		case EMPTY:
+			return "EMPTY";
+		case REQ_GET:
+			return "REQ_GET";
+		case REQ_POST:
+			return "REQ_POST";
+		case REQ_PUT:
+			return "REQ_PUT";
+		case REQ_DELETE:
+			// DELETE and LAST both 0.04
+			return "REQ_DELETE/REQ_LAST";
+		case RESP_FIRST_2_00:
+			return "RESP_FIRST_2_00";
+		case RESP_SUCCESS_CREATED_2_01:
+			return "RESP_SUCCESS_CREATED_2_01";
+		case RESP_SUCCESS_DELETED_2_02:
+			return "RESP_SUCCESS_DELETED_2_02";
+		case RESP_SUCCESS_VALID_2_03:
+			return "RESP_SUCCESS_VALID_2_03";
+		case RESP_SUCCESS_CHANGED_2_04:
+			return "RESP_SUCCESS_CHANGED_2_04";
+		case RESP_SUCCESS_CONTENT_2_05:
+			return "RESP_SUCCESS_CONTENT_2_05";
+		case RESP_SUCCESS_CONTINUE_2_31:
+			return "RESP_SUCCESS_CONTINUE_2_31";
+		case RESP_ERROR_BAD_REQUEST_4_00:
+			return "RESP_ERROR_BAD_REQUEST_4_00";
+		case RESP_ERROR_UNAUTHORIZED_4_01:
+			return "RESP_ERROR_UNAUTHORIZED_4_01";
+		case RESP_BAD_OPTION_4_02:
+			return "RESP_BAD_OPTION_4_02";
+		case RESP_FORBIDDEN_4_03:
+			return "RESP_FORBIDDEN_4_03";
+		case RESP_NOT_FOUND_4_04:
+			return "RESP_NOT_FOUND_4_04";
+		case RESP_METHOD_NOT_ALLOWED_4_05:
+			return "RESP_METHOD_NOT_ALLOWED_4_05";
+		case RESP_METHOD_NOT_ACCEPTABLE_4_06:
+			return "RESP_METHOD_NOT_ACCEPTABLE_4_06";
+		case RESP_REQUEST_ENTITY_INCOMPLETE_4_08:
+			return "RESP_REQUEST_ENTITY_INCOMPLETE_4_08";
+		case RESP_PRECONDITION_FAILED_4_12:
+			return "RESP_PRECONDITION_FAILED_4_12";
+		case RESP_REQUEST_ENTITY_TOO_LARGE_4_13:
+			return "RESP_REQUEST_ENTITY_TOO_LARGE_4_13";
+		case RESP_UNSUPPORTED_CONTENT_FORMAT_4_15:
+			return "RESP_UNSUPPORTED_CONTENT_FORMAT_4_15";
+		case RESP_INTERNAL_SERVER_ERROR_5_00:
+			return "RESP_INTERNAL_SERVER_ERROR_5_00";
+		case RESP_NOT_IMPLEMENTED_5_01:
+			return "RESP_NOT_IMPLEMENTED_5_01";
+		case RESP_BAD_GATEWAY_5_02:
+			return "RESP_BAD_GATEWAY_5_02";
+		case RESP_SERVICE_UNAVAILABLE_5_03:
+			return "RESP_SERVICE_UNAVAILABLE_5_03";
+		case RESP_GATEWAY_TIMEOUT_5_04:
+			return "RESP_GATEWAY_TIMEOUT_5_04";
+		case RESP_PROXYING_NOT_SUPPORTED_5_05:
+			return "RESP_PROXYING_NOT_SUPPORTED_5_05";
+		default:
+			return "UNKNOWN";
+	}
 }
 
 void _rom CoAP_PrintResultValue(CoAP_Result_t res) {

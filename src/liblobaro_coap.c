@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  *******************************************************************************/
 
+#include <github.com/lobaro/c-utils/lobaroAssert.h>
 #include "liblobaro_coap.h"
 #include "coap.h"
 #include "coap_main.h"
@@ -37,6 +38,13 @@ void CoAP_Init(CoAP_API_t api) {
 	if (CoAP.api.debugPuts == NULL) {
 		CoAP.api.debugPuts = debugPuts_Empty;
 	}
+
+#if DEBUG_RANDOM_DROP_INCOMING_PERCENTAGE != 0
+	INFO("\n\nWARNING!!!\n\n    DEBUG FEATURE, DROPPING %d%% INCOMING MESSAGES ON PURPOSE!\n\n", DEBUG_RANDOM_DROP_INCOMING_PERCENTAGE);
+#endif
+#if DEBUG_RANDOM_DROP_OUTGOING_PERCENTAGE != 0
+	INFO("\n\nWARNING!!!\n\n    DEBUG FEATURE, DROPPING %d%% OUTGOING MESSAGES ON PURPOSE!\n\n", DEBUG_RANDOM_DROP_OUTGOING_PERCENTAGE);
+#endif
 
 	INFO("CoAP_init!\r\n");
 	INFO("CoAP Interaction size: %d byte\r\n", sizeof(CoAP_Interaction_t));

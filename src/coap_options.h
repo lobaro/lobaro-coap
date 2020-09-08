@@ -54,6 +54,8 @@ CoAP_Result_t CoAP_GetUintFromOption(const CoAP_option_t* pOption, uint32_t* val
 
 uint32_t CoAP_PackBlockParameter(uint32_t num, bool m, uint8_t szx);
 void CoAP_UnpackBlockParameter(uint32_t v, uint32_t *num, bool *m, uint8_t *szx);
+uint16_t CoAP_DecodeSzx(uint8_t szx);
+uint8_t CoAP_EncodeSzx(uint16_t blocksize);
 
 bool CoAP_OptionsAreEqual(CoAP_option_t* OptA, CoAP_option_t* OptB);
 uint16_t CoAP_CheckForUnknownCriticalOption(CoAP_option_t* pOptionsListBegin);

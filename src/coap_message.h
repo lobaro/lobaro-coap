@@ -68,5 +68,6 @@ CoAP_Result_t CoAP_addNewPayloadToMessage(CoAP_Message_t* Msg, uint8_t* pData, u
 void CoAP_InitIds();
 uint16_t CoAP_GetNextMid();
 CoAP_Token_t CoAP_GenerateToken();
+const char *CoAP_CodeName(CoAP_MessageCode_t code);
 
 #endif /* COAP_MESSAGE_H_ */

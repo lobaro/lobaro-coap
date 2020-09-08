@@ -549,11 +549,29 @@ static void _rom printOptionHex(const CoAP_option_t *op) {
 		LOG_DEBUG("%02x", op->Value[i]);
 	}
 }
-static uint16_t unpackSzx(uint8_t szx) {
+uint16_t CoAP_DecodeSzx(uint8_t szx) {
 	if (szx > 0b110u) {
 		return 0;
 	}
 	return 0b1u << (szx + 4u);
+}
+uint8_t CoAP_EncodeSzx(uint16_t blocksize) {
+	switch (blocksize) {
+		case 1024:
+			return 0b110;
+		case 512:
+			return 0b101;
+		case 256:
+			return 0b100;
+		case 128:
+			return 0b011;
+		case 64:
+			return 0b010;
+		case 32:
+			return 0b001;
+		default:
+			return 0b000;
+	}
 }
 static const char *contentFormatMime(uint16_t c) {
 	switch (c) {
@@ -613,7 +631,7 @@ static void _rom printOption(const CoAP_option_t *op) {
 			CoAP_UnpackBlockParameter(v, &num, &m, &szx);
 			INFO("BLOCK%d:%ld/%u/0b%u%u%u=%u",
 				op->Number == OPT_NUM_BLOCK1 ? 1 : 2, num, m,
-				(szx&0b100u)>2u, (szx&0b10u)>1u, (szx&0b1u), unpackSzx(szx));
+				(szx&0b100u)>2u, (szx&0b10u)>1u, (szx&0b1u), CoAP_DecodeSzx(szx));
 			break;
 		case OPT_NUM_SIZE1:  // 60
 		case OPT_NUM_SIZE2:  // 28
