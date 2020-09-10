@@ -70,4 +70,7 @@ uint16_t CoAP_GetNextMid();
 CoAP_Token_t CoAP_GenerateToken();
 const char *CoAP_CodeName(CoAP_MessageCode_t code);
 
+bool CoAP_CharIsPrintable(char c);
+char CoAP_CharPrintable(char c);
+
 #endif /* COAP_MESSAGE_H_ */

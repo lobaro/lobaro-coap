@@ -24,8 +24,6 @@
 #include "liblobaro_coap.h"
 #include "coap_mem.h"
 
-#define TR INFO("TR@%s:%d\n", __FILE__, __LINE__)
-
 static void _rom CoAP_InitToEmptyResetMsg(CoAP_Message_t* msg) {
 	msg->Type = RST;
 	msg->Code = EMPTY;
@@ -54,6 +52,7 @@ bool CoAP_TokenEqual(CoAP_Token_t a, CoAP_Token_t b) {
 
 void _rom CoAP_free_MsgPayload(CoAP_Message_t** Msg) {
 	return;
+	/*
 	if ((*Msg)->Payload == NULL)
 		return;
 
@@ -61,6 +60,7 @@ void _rom CoAP_free_MsgPayload(CoAP_Message_t** Msg) {
 	CoAP.api.free((void*) (*Msg)->Payload);
 	(*Msg)->Payload = NULL;
 	(*Msg)->PayloadBufSize = 0;
+	*/
 }
 
 bool _rom CoAP_MsgIsRequest(CoAP_Message_t* pMsg) {
@@ -186,12 +186,12 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 	CoAP_InitToEmptyResetMsg(&Msg);
 
 //1st Header Byte
-	uint8_t Version = srcArr[0] >> 6;
+	uint8_t Version = srcArr[0] >> 6u;
 	if (Version != COAP_VERSION)
 		return COAP_PARSE_UNKOWN_COAP_VERSION;
 
-	Msg.Type = (srcArr[0] & 0x30) >> 4;
-	TokenLength = srcArr[0] & 0xF;
+	Msg.Type = (srcArr[0] & 0x30u) >> 4u;
+	TokenLength = srcArr[0] & 0xFu;
 	if (TokenLength > 8) {
 		INFO("CoAP-Parse Byte1 Error\r\n");
 		return COAP_PARSE_MESSAGE_FORMAT_ERROR;
@@ -203,14 +203,14 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 	//"Hack" to support early version of "myCoAP" iOS app which sends malformed "CoAP-pings" containing a token...
 	//if(Msg.Code == EMPTY && (TokenLength != 0 || srcArrLength != 4))	{INFO("err2\r\n");return COAP_PARSE_MESSAGE_FORMAT_ERROR;}// return COAP_PARSE_MESSAGE_FORMAT_ERROR;
 
-	uint8_t codeClass = ((uint8_t) Msg.Code) >> 5;
+	uint8_t codeClass = ((uint8_t) Msg.Code) >> 5u;
 	if (codeClass == 1 || codeClass == 6 || codeClass == 7) {
 		INFO("CoAP-Parse Byte2/3 Error\r\n");
 		return COAP_PARSE_MESSAGE_FORMAT_ERROR;
 	}	//  return COAP_PARSE_MESSAGE_FORMAT_ERROR; //reserved classes
 
 //4th Header Byte
-	Msg.MessageID = (uint16_t) srcArr[2] << 8 | srcArr[3];
+	Msg.MessageID = (uint16_t) srcArr[2] << 8u | srcArr[3];
 
 //further parsing locations depend on parsed 4Byte CoAP Header -> use of offset addressing
 	uint16_t offset = 4;
@@ -312,12 +312,12 @@ static CoAP_Result_t _rom CoAP_BuildDatagram(uint8_t* destArr, uint16_t* pDestAr
 
 // 4Byte Header (see p.16 RFC7252)
 	destArr[0] = 0;
-	destArr[0] |= (COAP_VERSION & 3) << 6;
-	destArr[0] |= (Msg->Type & 3) << 4;
-	destArr[0] |= (TokenLength & 15);
+	destArr[0] |= (COAP_VERSION & 3u) << 6u;
+	destArr[0] |= (Msg->Type & 3u) << 4u;
+	destArr[0] |= (TokenLength & 15u);
 	destArr[1] = (uint8_t) Msg->Code;
-	destArr[2] = (uint8_t) (Msg->MessageID >> 8);
-	destArr[3] = (uint8_t) (Msg->MessageID & 0xff);
+	destArr[2] = (uint8_t) (Msg->MessageID >> 8u);
+	destArr[3] = (uint8_t) (Msg->MessageID & 0xffu);
 
 	offset += 4;
 
@@ -425,14 +425,15 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle
 	PrintEndpoint(&(pked.remoteEp));
 	INFO("\n");
 
+	INFO("Hex: ");
 	for (i = 0; i < pked.size; i++) {
-		if (pked.pData[i] != 0) { //0 = string end
-			INFO("0x%02x(%c) ", pked.pData[i], pked.pData[i]);
-		} else {
-			INFO("0x00() ");
-		}
+		INFO("%02x ", pked.pData[i]);
 	}
-	INFO("\r\n");
+	INFO("\r\nRaw: \"");
+	for (i = 0; i < pked.size; i++) {
+		INFO("%c", CoAP_CharPrintable(pked.pData[i]));
+	}
+	INFO("\"\r\n");
 
 	bool sendResult;
 #if DEBUG_RANDOM_DROP_OUTGOING_PERCENTAGE > 0
@@ -469,6 +470,7 @@ static uint16_t MId = 0;
 static uint8_t currToken = 0;
 
 void _rom CoAP_InitIds() {
+	// Initialise Message-ID and Token with random values:
 	MId = CoAP.api.rand() & 0xffffu;
 	currToken = CoAP.api.rand() & 0xffu;
 }
@@ -545,28 +547,27 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 	}
 
 	uint8_t code = msg->Code;
-	LOG_DEBUG("\r\n*Code: %d.%02d (0x%02x) [%s]\r\n", code >> 5, code & 31, code, CoAP_CodeName(code));
+	LOG_DEBUG("\r\n*Code: %d.%02d (0x%02x) [%s]\r\n", code >> 5u, code & 31u, code, CoAP_CodeName(code));
 
 	LOG_DEBUG("*MessageId: %u\r\n", msg->MessageID);
 
 	CoAP_printOptionsList(msg->pOptionsList);
 	if (msg->PayloadLength) {
-		LOG_DEBUG("*Payload (%u Byte): \"", msg->PayloadLength);
+		LOG_DEBUG("*Payload (%u Byte): \r\n", msg->PayloadLength);
 		if (msg->PayloadLength > MAX_PAYLOAD_SIZE) {
-			LOG_DEBUG("too much payload!");
+			LOG_DEBUG(" too much payload!\r\n");
 		}
 		else {
-			int i;
-			for (i = 0; i < msg->PayloadLength && i < MAX_PAYLOAD_SIZE; i++) {
-				char c = msg->Payload[i];
-				if (c < 0x20 || c > 0x7e) {
-					// replace non printable bytes in log by '.'
-					c = '.';
-				}
-				LOG_DEBUG("%c", c);
+			LOG_DEBUG(" Hex: ");
+			for (int i = 0; i < msg->PayloadLength && i < MAX_PAYLOAD_SIZE; i++) {
+				LOG_DEBUG("%02x ", msg->Payload[i]);
 			}
+			LOG_DEBUG("\"\r\n Raw: \"");
+			for (int i = 0; i < msg->PayloadLength && i < MAX_PAYLOAD_SIZE; i++) {
+				LOG_DEBUG("%c", CoAP_CharPrintable(msg->Payload[i]));
+			}
+			LOG_DEBUG("\"\r\n");
 		}
-		LOG_DEBUG("\"\r\n");
 	}
 
 	INFO("*Timestamp: %lu\r\n", msg->Timestamp);
@@ -666,5 +667,18 @@ void _rom CoAP_PrintResultValue(CoAP_Result_t res) {
 	}
 	else {
 		INFO("UNKNOWN RESULT\r\n");
+	}
+}
+
+bool _rom CoAP_CharIsPrintable(char c) {
+	// according to: https://en.wikipedia.org/wiki/ASCII#Printable_characters
+	return c >= 0x20 && c <= 0x7e;
+}
+
+char _rom CoAP_CharPrintable(char c) {
+	if (CoAP_CharIsPrintable(c)) {
+		return c;
+	} else {
+		return '.';
 	}
 }

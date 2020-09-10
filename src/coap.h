@@ -57,11 +57,11 @@ extern "C" {
 #error "MAX_PAYLOAD_SIZE must be power of two and 32<=MAX_PAYLOAD_SIZE<=1024"
 #endif
 
-#define COAP_VERSION (1)
+#define COAP_VERSION (1u)
 
 //V1.2
-#define LOBARO_COAP_VERSION_MAJOR (1)
-#define LOBARO_COAP_VERSION_MINOR (2)
+#define LOBARO_COAP_VERSION_MAJOR (1u)
+#define LOBARO_COAP_VERSION_MINOR (2u)
 
 #include "coap_options.h"
 #include "coap_message.h"
