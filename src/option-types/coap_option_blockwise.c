@@ -268,7 +268,10 @@ CoAP_Result_t _rom CoAP_SetPayload_CheckBlockOpt(CoAP_Message_t* pMsgReq, CoAP_M
 			B2opt.MoreFlag = true;
 		}
 		else
+		{
 			BytesToSend = TotalBytesLeft;
+			B2opt.MoreFlag = false;
+		}
 
 		//Add Block2
 		RemoveAllBlockOptionsFromMsg(pMsgResp, BLOCK_2); //if called more than one a block 2 can already be present, clean up
