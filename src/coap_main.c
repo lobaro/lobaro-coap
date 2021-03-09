@@ -222,7 +222,8 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 }
 
 static CoAP_Result_t _rom SendResp(CoAP_Interaction_t* pIA, CoAP_InteractionState_t nextIAState) {
-	if (CoAP_SendMsg(pIA->pRespMsg, pIA->socketHandle, pIA->RemoteEp) == COAP_OK) {
+	CoAP_Result_t res = CoAP_SendMsg(pIA->pRespMsg, pIA->socketHandle, pIA->RemoteEp);
+	if (res == COAP_OK) {
 
 		if (pIA->pRespMsg->Type == ACK) { //piggy back resp
 			pIA->ReqConfirmState = ACK_SEND;
@@ -235,7 +236,7 @@ static CoAP_Result_t _rom SendResp(CoAP_Interaction_t* pIA, CoAP_InteractionStat
 		CoAP_EnqueueLastInteraction(pIA); //(re)enqueue interaction for further processing//todo: in die äußere statemachine
 
 	} else { //unexspected internal failure todo: try at least to send 4 byte RESP_INTERNAL_SERVER_ERROR_5_00
-		INFO("(!!!) SendResp(): Internal socket error on sending response! MiD: %d", pIA->pRespMsg->MessageID);
+		INFO("(!!!) SendResp(): Internal socket error on sending response! MiD: %d, CoapResult: %d", pIA->pRespMsg->MessageID, res);
 		CoAP_DeleteInteraction(pIA);
 		return COAP_ERR_SOCKET;
 	}
@@ -244,7 +245,8 @@ static CoAP_Result_t _rom SendResp(CoAP_Interaction_t* pIA, CoAP_InteractionStat
 }
 
 static CoAP_Result_t _rom SendReq(CoAP_Interaction_t* pIA, CoAP_InteractionState_t nextIAState) {
-	if (CoAP_SendMsg(pIA->pReqMsg, pIA->socketHandle, pIA->RemoteEp) == COAP_OK) {
+	CoAP_Result_t res = CoAP_SendMsg(pIA->pReqMsg, pIA->socketHandle, pIA->RemoteEp);
+	if (res == COAP_OK) {
 
 		if (pIA->pReqMsg->Type == CON) {
 			CoAP_EnableAckTimeout(pIA, pIA->RetransCounter); //enable timeout on waiting for ack
@@ -255,7 +257,7 @@ static CoAP_Result_t _rom SendReq(CoAP_Interaction_t* pIA, CoAP_InteractionState
 		CoAP_EnqueueLastInteraction(pIA); //(re)enqueue interaction for further processing//todo: in die äußere statemachine
 
 	} else { //unexspected internal failure todo: try at least to send 4 byte RESP_INTERNAL_SERVER_ERROR_5_00
-		INFO("(!!!) SendReq(): Internal socket error on sending response! MiD: %d", pIA->pReqMsg->MessageID);
+		INFO("(!!!) SendReq(): Internal socket error on sending response! MiD: %d, CoapResult: %d\r\n", pIA->pReqMsg->MessageID, res);
 		CoAP_DeleteInteraction(pIA);
 		return COAP_ERR_SOCKET;
 	}
