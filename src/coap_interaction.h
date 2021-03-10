@@ -33,24 +33,24 @@ typedef enum {
 	COAP_STATE_NOT_SET,                            // set after memory allocation
 
 	//[server]
-			COAP_STATE_HANDLE_REQUEST,                    // Remote request received & parsed -> invoke resource handler
+	COAP_STATE_HANDLE_REQUEST,                    // Remote request received & parsed -> invoke resource handler
 	COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT,// Wait some time for resource to become ready, meanwhile empty ack has been sent
 	COAP_STATE_RESPONSE_SENT,					// NON or piggy-ACK response has been sent -> wait some time then delete
 	COAP_STATE_RESPONSE_WAITING_LEISURE,		// CON response has been sent (+previous separate ACK of req)
 												// -> wait for ACK or resent after some time
 
 	//[notificator]
-			COAP_STATE_READY_TO_NOTIFY,                    // Notification is ready to be send (triggered by resource event)
+	COAP_STATE_READY_TO_NOTIFY,                    // Notification is ready to be send (triggered by resource event)
 	COAP_STATE_NOTIFICATION_SENT,                // NON response has been sent -> wait some time then delete
 	// CON response has been sent -> wait for ACK or resent after some time
 
 	//[client]
-			COAP_STATE_READY_TO_REQUEST,                // request is ready to send
+	COAP_STATE_READY_TO_REQUEST,                // request is ready to send
 	COAP_STATE_WAITING_RESPONSE,                // resend request after some time if no response or ack has been received for some time
 	COAP_STATE_HANDLE_RESPONSE,                    // call client callback and delete after some time, ack maybe send too
 
 	//[server]+[notificator]+[client]
-			COAP_STATE_FINISHED                            // can be deleted / freed
+	COAP_STATE_FINISHED                            // can be deleted / freed
 } CoAP_InteractionState_t;
 
 // State of confirmable (CON) messages
