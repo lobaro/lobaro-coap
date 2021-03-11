@@ -22,40 +22,64 @@
 #ifndef COM_DEBUG_H
 #define COM_DEBUG_H
 
+#define COAP_LOG_LEVEL_DEBUG	3
+#define COAP_LOG_LEVEL_INFO		2
+#define COAP_LOG_LEVEL_ERROR	1
+#define COAP_LOG_LEVEL_NONE		0
+
+#define COAP_LOG_LEVEL	COAP_LOG_LEVEL_INFO
+
 #define DEBUG_BUF_SIZE (500)
 extern char dbgBuf[DEBUG_BUF_SIZE];
 
 #define UART_PUTS hal_debug_puts
 
+
 #define PUTS(...) \
-do { \
-	UART_PUTS(__VA_ARGS__); \
-} while(0)
+	do { \
+		UART_PUTS(__VA_ARGS__); \
+	} while(0)
 
 #define PRINTF(...) \
-do { \
-	coap_sprintf(dbgBuf,__VA_ARGS__);\
-	PUTS(dbgBuf); \
-} while(0)
+	do { \
+		coap_sprintf(dbgBuf,__VA_ARGS__);\
+		PUTS(dbgBuf); \
+	} while(0)
 
-#define ERROR(...) \
-do { \
-	PRINTF("- (!) ERROR (!) "); \
-	PRINTF(__VA_ARGS__); \
-} while(0)
 
+#if (COAP_LOG_LEVEL >= COAP_LOG_LEVEL_ERROR)
+	#define ERROR(...) \
+	do { \
+		PRINTF("[ERROR] "); \
+		PRINTF(__VA_ARGS__); \
+	} while(0)
+#else
+	#define ERROR(...) do{}while(0)
+#endif
+
+#if (COAP_LOG_LEVEL >= COAP_LOG_LEVEL_INFO)
+	#define INFO(...) \
+	do { \
+		PRINTF(__VA_ARGS__); \
+	} while(0)
+#else
+	#define INFO(...) do{}while(0)
+#endif
+
+#if (COAP_LOG_LEVEL >= COAP_LOG_LEVEL_DEBUG)
+	#define DEBUG(...) \
+	do { \
+		PRINTF(__VA_ARGS__); \
+	} while(0)
+#else
+	#define DEBUG(...) do{}while(0)
+#endif
 
 #define assert_coap(VAL) \
 do { \
 			if(!(VAL)) { PRINTF("!!! ASSERT FAILED [line: %d at %s]!!!\r\n", __LINE__, __FILE__); } \
 } while(0)
 
-#ifndef INFO
-#define INFO(...) \
-do { \
-	PRINTF(__VA_ARGS__); \
-} while(0)
-#endif
 
 #define PRINT_IPV6(IP) \
 do { \
@@ -73,7 +97,7 @@ do { \
 } while(0)
 
 #define LOG_INFO(...) 	INFO(__VA_ARGS__)
-#define LOG_ERROR(...) 	INFO(__VA_ARGS__)
-#define LOG_DEBUG(...) 	INFO(__VA_ARGS__)
+#define LOG_ERROR(...) 	ERROR(__VA_ARGS__)
+#define LOG_DEBUG(...) 	DEBUG(__VA_ARGS__)
 
 #endif
