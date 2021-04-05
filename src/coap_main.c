@@ -643,7 +643,7 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 				INFO("(!!!) Internal socket error on sending request retry! MiD: %d\r\n",
 						pIA->pReqMsg->MessageID);
 				if (pIA->RespCB != NULL) {
-					pIA->RespCB(NULL, &pIA->RemoteEp);
+					pIA->RespCB(NULL, pIA->pReqMsg, &pIA->RemoteEp);
 				}
 				CoAP_DeleteInteraction(pIA);
 			}
@@ -654,7 +654,7 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 		case COAP_ERR_TIMEOUT:
 		default:
 			if (pIA->RespCB != NULL) {
-				pIA->RespCB(NULL, &pIA->RemoteEp);
+				pIA->RespCB(NULL, pIA->pReqMsg, &pIA->RemoteEp);
 			}
 			CoAP_DeleteInteraction(pIA);
 		}
@@ -663,7 +663,7 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 		//--------------------------------------------------
 		DEBUG("- Got Response to Client request! -> calling Handler!\r\n");
 		if (pIA->RespCB != NULL) {
-			pIA->RespCB(pIA->pRespMsg, &(pIA->RemoteEp)); //call callback
+			pIA->RespCB(pIA->pRespMsg, pIA->pReqMsg, &(pIA->RemoteEp)); //call callback
 		}
 
 //			pIA->State = COAP_STATE_FINISHED;
@@ -673,7 +673,7 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 
 	} else {
 		if (pIA->RespCB != NULL) {
-			pIA->RespCB(NULL, &pIA->RemoteEp);
+			pIA->RespCB(NULL, pIA->pReqMsg, &pIA->RemoteEp);
 		}
 		CoAP_DeleteInteraction(pIA); //unknown state, should not go here
 	}
