@@ -65,7 +65,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 
 	isRequest = CoAP_MsgIsRequest(pMsg);
 
-	INFO("Filter out bad CODE/TYPE combinations\r\n");
+	DEBUG("Filter out bad CODE/TYPE combinations\r\n");
 	// Filter out bad CODE/TYPE combinations (Table 1, RFC7252 4.3.) by silently ignoring them
 	if (pMsg->Type == CON && pMsg->Code == EMPTY) {
 		CoAP_SendEmptyRST(pMsg->MessageID, socketHandle, pPacket->remoteEp); //a.k.a "CoAP Ping"
@@ -146,7 +146,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 		pIA->ResConfirmState = ACK_SEND;
 
 		//piA is NOT NULL in every case here
-		INFO("- piggybacked response received\r\n");
+		DEBUG("- piggybacked response received\r\n");
 		if (pMsg->Code != EMPTY) {
 			//no "simple" ACK => must be piggybacked RESPONSE to our [client] request. corresponding Interaction has been found before
 			if (pIA->Role == COAP_ROLE_CLIENT && CoAP_TokenEqual(pIA->pReqMsg->Token, pMsg->Token) && pIA->State == COAP_STATE_WAITING_RESPONSE) {
@@ -661,7 +661,7 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 		//--------------------------------------------------
 	} else if (pIA->State == COAP_STATE_HANDLE_RESPONSE) {
 		//--------------------------------------------------
-		INFO("- Got Response to Client request! -> calling Handler!\r\n");
+		DEBUG("- Got Response to Client request! -> calling Handler!\r\n");
 		if (pIA->RespCB != NULL) {
 			pIA->RespCB(pIA->pRespMsg, &(pIA->RemoteEp)); //call callback
 		}

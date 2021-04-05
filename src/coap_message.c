@@ -85,22 +85,22 @@ bool _rom CoAP_MsgIsOlderThan(CoAP_Message_t* pMsg, uint32_t timespan) {
 }
 
 CoAP_Result_t _rom CoAP_free_Message(CoAP_Message_t** Msg) {
-	INFO("Free message %p\n", *Msg);
+	DEBUG("Free message %p\n", *Msg);
 	if (*Msg == NULL) {
 		return COAP_OK; //nothing to free
 	}
 
 	if ((*Msg)->Type == CON) {
-		INFO("- Message memory freed! (CON, MID: %d):\r\n", (*Msg)->MessageID);
+		DEBUG("- Message memory freed! (CON, MID: %d):\r\n", (*Msg)->MessageID);
 	}
 	else if ((*Msg)->Type == NON) {
-		INFO("- Message memory freed! (NON, MID: %d):\r\n", (*Msg)->MessageID);
+		DEBUG("- Message memory freed! (NON, MID: %d):\r\n", (*Msg)->MessageID);
 	}
 	else if ((*Msg)->Type == ACK) {
-		INFO("- Message memory freed! (ACK, MID: %d):\r\n", (*Msg)->MessageID);
+		DEBUG("- Message memory freed! (ACK, MID: %d):\r\n", (*Msg)->MessageID);
 	}
 	else if ((*Msg)->Type == RST) {
-		INFO("- Message memory freed! (RST, MID: %d):\r\n", (*Msg)->MessageID);
+		DEBUG("- Message memory freed! (RST, MID: %d):\r\n", (*Msg)->MessageID);
 	}
 
 	CoAP_FreeOptionList(&((*Msg)->pOptionsList));
@@ -425,15 +425,15 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle
 	PrintEndpoint(&(pked.remoteEp));
 	INFO("\n");
 
-	INFO("Hex: ");
+	DEBUG("Hex: ");
 	for (i = 0; i < pked.size; i++) {
-		INFO("%02x ", pked.pData[i]);
+		DEBUG("%02x ", pked.pData[i]);
 	}
-	INFO("\r\nRaw: \"");
+	DEBUG("\r\nRaw: \"");
 	for (i = 0; i < pked.size; i++) {
-		INFO("%c", CoAP_CharPrintable(pked.pData[i]));
+		DEBUG("%c", CoAP_CharPrintable(pked.pData[i]));
 	}
-	INFO("\"\r\n");
+	DEBUG("\"\r\n");
 
 	bool sendResult;
 #if DEBUG_RANDOM_DROP_OUTGOING_PERCENTAGE > 0
@@ -517,6 +517,29 @@ CoAP_Result_t _rom CoAP_addTextPayload(CoAP_Message_t* Msg, char* PayloadStr) {
 }
 
 void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
+
+	if(COAP_LOG_LEVEL < COAP_LOG_LEVEL_DEBUG)
+	{
+		// Short version
+		LOG_INFO("CoAP msg: Type=");
+		
+		switch(msg->Type)
+		{
+			case CON: LOG_INFO("CON(0x%02x)", msg->Type); break;
+			case NON: LOG_INFO("NON(0x%02x)", msg->Type); break;
+			case ACK: LOG_INFO("ACK(0x%02x)", msg->Type); break;
+			case RST: LOG_INFO("RST(0x%02x)", msg->Type); break;
+			default: LOG_INFO("UNKNOWN (0x%02x)", msg->Type); break;
+		}
+
+		LOG_INFO(" Code=%x", CoAP_CodeName(msg->Code));
+		LOG_INFO(" MsgId=%d", msg->MessageID);
+		LOG_INFO(" Timestamp=%d", msg->Timestamp);
+		LOG_INFO(" PayloadLen=%d", msg->PayloadLength);
+		LOG_INFO("\n");
+		return;
+	}
+
 	INFO("---------CoAP msg--------\r\n");
 
 	if (msg->Type == CON) {

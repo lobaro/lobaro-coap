@@ -40,7 +40,7 @@ static CoAP_Interaction_t* _rom CoAP_AllocNewInteraction() {
 }
 
 CoAP_Result_t _rom CoAP_FreeInteraction(CoAP_Interaction_t** pInteraction) {
-	INFO("Releasing Interaction...\r\n");
+	DEBUG("Releasing Interaction...\r\n");
 	// coap_mem_stats();
 	CoAP_free_Message(&(*pInteraction)->pReqMsg);
 	CoAP_free_Message(&(*pInteraction)->pRespMsg);
