@@ -19,14 +19,19 @@ There is also a working OpenSource **client lib available in GoLang** @ https://
 
 Follow [Lobaro on Twitter](https://twitter.com/LobaroHH) to get latest news about iot projects using our CoAP implementation!
 
+# Getting started
+
+Read the [Porting Guide](./PortingGuide.md) for information on how to port the library to your framework.
+
 # Demo/Example
-* ESP8266, cheap WIFI Soc:
 
-[Example Eclipse Project on GitHub](https://github.com/lobaro/lobaro-coap-on-esp8266)
+ESP8266, cheap WIFI Soc:
 
-[Step by Step Tutorial](http://www.lobaro.com/lobaro-coap-on-esp8266/)
+- [Example Eclipse Project on GitHub](https://github.com/lobaro/lobaro-coap-on-esp8266)
+- [Step by Step Tutorial](http://www.lobaro.com/lobaro-coap-on-esp8266/)
 
-... more to come soon!
+
+
 
 # Related
 * GoLang CoAP Client implementation & CGO wrapper for this C lib: [Lobaro CoAP-go](https://github.com/lobaro/coap-go)
