@@ -221,10 +221,10 @@ As shown above, when using `CoAP_StartNewRequest` you may define a response hand
 
 ```cpp
 // Response handler function
-CoAP_Result_t CoAP_RespHandler_fn(CoAP_Message_t* pRespMsg, NetEp_t* sender)
+CoAP_Result_t CoAP_RespHandler_fn(CoAP_Message_t* pRespMsg, CoAP_Message_t* pReqMsg, NetEp_t* sender)
 {
 	if(pRespMsg == NULL) {
-		printf("CoAP message transmission failed after all retries (timeout)");
+		printf("CoAP message transmission failed after all retries (timeout) for MessageId %d", pReqMsg->MessageID);
 		return COAP_OK;
 	}
 
