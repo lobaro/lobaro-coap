@@ -20,7 +20,8 @@
  * THE SOFTWARE.
  *******************************************************************************/
 
-#include <github.com/lobaro/c-utils/logging.h>
+#include <stdio.h>
+#include <string.h>
 #include "../../coap.h"
 
 const NetAddr_IPv6_t NetAddr_IPv6_unspecified = {.u8 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }};
