@@ -1,5 +1,5 @@
 
-# Porting guide
+# Porting Guide
 
 This library is independent of the underlying framework it works on, so you can easily use it on whatever platform. This guide explains how to use the library on your specific platform.
 
@@ -16,7 +16,7 @@ In summary, you need to implement the following items:
 To demonstrate those items, we'll use a simple example of an embedded system running FreeRTOS, with a POSIX socket network interface and configured to run as a CoAP client.
 The FreeRTOS allows us to create a separate task to handle the periodical work (item 4 and 5). The Posix socket API is how we access the network interface, we will have lobaro-coap indirectly talk to this API.
 
-Lets start by the `main` in which we configure the standard functions to use (*item 1*). For memory allocation, we use the FreeRTO version of `malloc` (`pvPortMalloc`) and `free` (`vPortFree`). For the rest we wrote small custom functions.
+Lets start by the `main` in which we configure the standard functions to use (*item 1*). For memory allocation, we use the FreeRTOS version of `malloc` (`pvPortMalloc`) and `free` (`vPortFree`). For the rest we wrote small custom functions.
 
 ```cpp
 #include <FreeRTOS.h>
