@@ -21,6 +21,9 @@ else()
 
     project(lobaro_coap C)
 
+    SET(GCC_WNO_POINTER_TO_INT_CAST  "-Wno-pointer-to-int-cast")
+    add_definitions(${GCC_WNO_POINTER_TO_INT_CAST})
+
     file(GLOB_RECURSE SOURCE_FILES ${CMAKE_CURRENT_LIST_DIR}/src/*.h ${CMAKE_CURRENT_LIST_DIR}/src/*.c)
     add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES} src/liblobaro_coap.c)
     target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src)
