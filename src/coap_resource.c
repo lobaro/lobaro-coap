@@ -310,7 +310,7 @@ CoAP_Res_t* _rom CoAP_FindResourceByUri(CoAP_Res_t* pResListToSearchIn, CoAP_opt
 	return NULL;
 }
 
-CoAP_Res_t* _rom CoAP_CreateResource(char* Uri, char* Descr, CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt, CoAP_ResourceNotifier_fPtr_t pNotifierFkt) {
+CoAP_Res_t* _rom CoAP_CreateResource(const char* Uri, const char* Descr, CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt, CoAP_ResourceNotifier_fPtr_t pNotifierFkt) {
 	INFO("Creating resource %s (%s) AllowedMethods: %x%x%x%x\r\n", Uri, Descr == NULL ? "" : Descr,
 		 !!(Options.AllowedMethods & RES_OPT_GET),
 		 !!(Options.AllowedMethods & RES_OPT_POST),

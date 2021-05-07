@@ -318,6 +318,7 @@ typedef struct CoAP_Res {
 	CoAP_Observer_t *pListObservers; //linked list of this resource observers
 	CoAP_ResourceHandler_fPtr_t Handler;
 	CoAP_ResourceNotifier_fPtr_t Notifier; //maybe "NULL" if resource not observable
+	void *context;
 } CoAP_Res_t;
 
 //################################
@@ -370,7 +371,7 @@ CoAP_Socket_t *CoAP_NewSocket(SocketHandle_t handle);
  * @param pNotifierFkt
  * @return
  */
-CoAP_Res_t *CoAP_CreateResource(char *Uri, char *Descr, CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt,
+CoAP_Res_t *CoAP_CreateResource(const char *Uri, const char *Descr, CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt,
 								CoAP_ResourceNotifier_fPtr_t pNotifierFkt);
 
 //#####################
@@ -386,7 +387,7 @@ CoAP_Res_t *CoAP_CreateResource(char *Uri, char *Descr, CoAP_ResOpts_t Options, 
 //   If false, pPayload MUST point to static memory that is not freed before the interaction ends
 //   which is hard to detect.
 CoAP_Result_t
-CoAP_SetPayload(CoAP_Message_t *pMsgResp, uint8_t *pPayload, size_t payloadTotalSize, bool payloadIsVolatile);
+CoAP_SetPayload(CoAP_Message_t *pMsgResp, const uint8_t *pPayload, uint16_t payloadTotalSize, bool payloadIsVolatile);
 
 // Adds an option to the CoAP message
 CoAP_Result_t CoAP_AddOption(CoAP_Message_t *pMsg, uint16_t OptNumber, uint8_t *buf, uint16_t length);
