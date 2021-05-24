@@ -52,16 +52,12 @@ bool CoAP_TokenEqual(CoAP_Token_t a, CoAP_Token_t b) {
 }
 
 void _rom CoAP_free_MsgPayload(CoAP_Message_t** Msg) {
-	return;
-	/*
-	if ((*Msg)->Payload == NULL)
+	if ((NULL == (*Msg)->Payload) || (0 == (*Msg)->PayloadBufSize))
 		return;
 
-	// TODO: this will break us!!!
 	CoAP.api.free((void*) (*Msg)->Payload);
 	(*Msg)->Payload = NULL;
 	(*Msg)->PayloadBufSize = 0;
-	*/
 }
 
 bool _rom CoAP_MsgIsRequest(CoAP_Message_t* pMsg) {
