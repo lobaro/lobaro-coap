@@ -296,12 +296,15 @@ typedef struct CoAP_Observer {
 typedef enum {
 	HANDLER_OK = 0,
 	HANDLER_POSTPONE = 1,
-	HANDLER_ERROR = 2
+	HANDLER_ERROR = 2,
+	HANDLER_SKIPPED = 3
 } CoAP_HandlerResult_t;
 
 typedef CoAP_HandlerResult_t (*CoAP_ResourceHandler_fPtr_t)(CoAP_Message_t *pReq, CoAP_Message_t *pResp);
 // TODO: Can we use the CoAP_ResourceHandler_fPtr_t signature also for notifiers?
 typedef CoAP_HandlerResult_t (*CoAP_ResourceNotifier_fPtr_t)(CoAP_Observer_t *pObserver, CoAP_Message_t *pResp);
+
+typedef void (*CoAP_ResourceObserverInfo_t)(CoAP_Observer_t *pObserver, bool active, struct CoAP_Res *pResource);
 
 typedef struct {
 	uint16_t Cf;    // Content-Format
@@ -318,6 +321,7 @@ typedef struct CoAP_Res {
 	CoAP_Observer_t *pListObservers; //linked list of this resource observers
 	CoAP_ResourceHandler_fPtr_t Handler;
 	CoAP_ResourceNotifier_fPtr_t Notifier; //maybe "NULL" if resource not observable
+	CoAP_ResourceObserverInfo_t ObserverInfo;
 	void *context;
 } CoAP_Res_t;
 
@@ -372,7 +376,7 @@ CoAP_Socket_t *CoAP_NewSocket(SocketHandle_t handle);
  * @return
  */
 CoAP_Res_t *CoAP_CreateResource(const char *Uri, const char *Descr, CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt,
-								CoAP_ResourceNotifier_fPtr_t pNotifierFkt);
+								CoAP_ResourceNotifier_fPtr_t pNotifierFkt, CoAP_ResourceObserverInfo_t pObserverInfo);
 
 //#####################
 // Message API

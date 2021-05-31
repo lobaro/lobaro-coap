@@ -363,35 +363,41 @@ CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 		newIA->pRespMsg = CoAP_CreateMessage(CON, RESP_SUCCESS_CONTENT_2_05, CoAP_GetNextMid(), NULL, 0, PREFERED_PAYLOAD_SIZE, pObserver->Token);
 
 		//Call Notify Handler of resource and add to interaction list
-		if (newIA->pRespMsg != NULL && pRes->Notifier != NULL &&
-				pRes->Notifier(pObserver, newIA->pRespMsg) == HANDLER_OK) { //<------ call notify handler of resource
-
-			newIA->Role = COAP_ROLE_NOTIFICATION;
-			newIA->State = COAP_STATE_READY_TO_NOTIFY;
-			newIA->RemoteEp = pObserver->Ep;
-			newIA->socketHandle = pObserver->socketHandle;
-			newIA->pRes = pRes;
-			newIA->pObserver = pObserver;
-
-			if (newIA->pRespMsg->Code >= RESP_ERROR_BAD_REQUEST_4_00) { //remove this observer from resource in case of non OK Code (see RFC7641, 3.2., 3rd paragraph)
-				pObserver = pObserver->next; //next statement will free current observer so save its ancestor node right now
-				newIA->pObserver = NULL;
-				CoAP_RemoveObserverFromResource(&(newIA->pRes->pListObservers), newIA->socketHandle, &(pIA->RemoteEp), newIA->pRespMsg->Token);
-				continue;
-			} else {
-				AddObserveOptionToMsg(newIA->pRespMsg, pRes->UpdateCnt); // Only 2.xx responses do include an Observe Option.
-			}
-
-			if (newIA->pRespMsg->Type == NON && pRes->UpdateCnt % 20 == 0) { //send every 20th message as CON even if notify handler defines the send out as NON to support "lazy" cancelation
-				newIA->pRespMsg->Type = CON;
-			}
-
-			CoAP_AppendInteractionToList(&(CoAP.pInteractions), newIA);
-
-		} else {
-			CoAP_FreeInteraction(&newIA); //revert IA creation above
+		if (NULL == newIA->pRespMsg || NULL == pRes->Notifier)
+		{
+		    CoAP_FreeInteraction(&newIA); //revert IA creation above
+		    continue;
 		}
 
+		newIA->pRespMsg->pResource = pRes;
+
+		if(HANDLER_OK != pRes->Notifier(pObserver, newIA->pRespMsg))  //<------ call notify handler of resource
+        {
+            CoAP_FreeInteraction(&newIA); //revert IA creation above
+            continue;
+        }
+
+        newIA->Role = COAP_ROLE_NOTIFICATION;
+        newIA->State = COAP_STATE_READY_TO_NOTIFY;
+        newIA->RemoteEp = pObserver->Ep;
+        newIA->socketHandle = pObserver->socketHandle;
+        newIA->pRes = pRes;
+        newIA->pObserver = pObserver;
+
+        if (newIA->pRespMsg->Code >= RESP_ERROR_BAD_REQUEST_4_00) { //remove this observer from resource in case of non OK Code (see RFC7641, 3.2., 3rd paragraph)
+            pObserver = pObserver->next; //next statement will free current observer so save its ancestor node right now
+            newIA->pObserver = NULL;
+            CoAP_RemoveObserverFromResource(&(newIA->pRes->pListObservers), newIA->socketHandle, &(pIA->RemoteEp), newIA->pRespMsg->Token);
+            continue;
+        } else {
+            AddObserveOptionToMsg(newIA->pRespMsg, pRes->UpdateCnt); // Only 2.xx responses do include an Observe Option.
+        }
+
+        if (newIA->pRespMsg->Type == NON && pRes->UpdateCnt % 20 == 0) { //send every 20th message as CON even if notify handler defines the send out as NON to support "lazy" cancelation
+            newIA->pRespMsg->Type = CON;
+        }
+
+        CoAP_AppendInteractionToList(&(CoAP.pInteractions), newIA);
 		pObserver = pObserver->next;
 	}
 	return COAP_OK;
@@ -508,7 +514,11 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 		}
 
 		//attach/update observer to resource
-		return CoAP_AppendObserverToList(&((pIA->pRes)->pListObservers), pObserver);
+		res = CoAP_AppendObserverToList(&((pIA->pRes)->pListObservers), pObserver);
+		if((COAP_OK == res) && (NULL != pIA->pRes->ObserverInfo)){
+		    pIA->pRes->ObserverInfo(pObserver, true, pIA->pRes);
+		}
+		return res;
 
 		//Client cancels observation actively (this is an alternative to simply forget the req token and send rst on next notification)
 	} else if (obsVal == OBSERVE_OPT_DEREGISTER) { // val == 1
@@ -522,8 +532,11 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 				if (CoAP_TokenEqual(pIApending->pRespMsg->Token, pIA->pReqMsg->Token)
 						&& pIApending->socketHandle == pIA->socketHandle
 						&& EpAreEqual(&(pIApending->RemoteEp), &(pIA->RemoteEp))) {
-					INFO("Abort of pending notification interaction\r\n");
-					CoAP_DeleteInteraction(pIApending);
+					INFO("Abort of pending notificaton interaction\r\n");
+					res = CoAP_DeleteInteraction(pIApending);
+			        if((COAP_OK == res) && (NULL != pIA->pRes->ObserverInfo)) {
+			            pIA->pRes->ObserverInfo(pObserver, false, pIA->pRes);
+			        }
 					break;
 				}
 			}

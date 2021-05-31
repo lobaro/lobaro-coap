@@ -142,28 +142,31 @@ CoAP_Message_t* _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
 		return NULL;
 	}
 
-	CoAP_Message_t* pMsg = (CoAP_Message_t*) CoAP_malloc0(sizeof(CoAP_Message_t) + PayloadMaxSize); //malloc space
+	CoAP_Message_t* pMsg = (CoAP_Message_t*) CoAP_malloc0(sizeof(CoAP_Message_t));
 	if (pMsg == NULL) {
 		return NULL;
 	}
-	INFO("Created message %p\n", pMsg);
 
 	CoAP_InitToEmptyResetMsg(pMsg); //init
+
+	if (PayloadMaxSize) {
+		pMsg->Payload = CoAP_malloc0(PayloadMaxSize);
+		if (NULL == pMsg->Payload) {
+			return NULL;
+		}
+		pMsg->PayloadBufSize = PayloadMaxSize;
+		pMsg->PayloadLength = PayloadInitialContentLength;
+		if (pPayloadInitialContent != NULL) {
+			coap_memcpy((void*) ((pMsg)->Payload), (void*) pPayloadInitialContent, PayloadInitialContentLength);
+		}
+	}
+	INFO("Created message %p\n", pMsg);
 
 	pMsg->Type = Type;
 	pMsg->Code = Code;
 	pMsg->MessageID = MessageID;
 	pMsg->Token = Token;
 	pMsg->Timestamp = 0;
-
-	pMsg->PayloadLength = PayloadInitialContentLength;
-	if (PayloadMaxSize) {
-		pMsg->PayloadBufSize = PayloadMaxSize;
-		pMsg->Payload = ((uint8_t*) (pMsg)) + sizeof(CoAP_Message_t); //set pointer
-		if (pPayloadInitialContent != NULL) {
-			coap_memcpy((void*) ((pMsg)->Payload), (void*) pPayloadInitialContent, PayloadInitialContentLength);
-		}
-	}
 
 	return pMsg;
 }
