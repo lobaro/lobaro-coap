@@ -23,6 +23,7 @@
 #ifndef LIBLOBARO_COAP_H
 #define LIBLOBARO_COAP_H
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <sched.h>
