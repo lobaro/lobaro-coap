@@ -23,10 +23,20 @@
 #include "coap.h"
 #include <inttypes.h>
 
-#define KNOWN_OPTIONS_COUNT     (sizeof(KNOWN_OPTIONS) / sizeof(KNOWN_OPTIONS[0]))
-
 // Used in Critical Option Check.
-uint16_t KNOWN_OPTIONS[] = {OPT_NUM_URI_PATH, OPT_NUM_BLOCK2, OPT_NUM_BLOCK1, OPT_NUM_ETAG, OPT_NUM_CONTENT_FORMAT, OPT_NUM_URI_QUERY, OPT_NUM_ACCEPT };
+uint16_t KNOWN_OPTIONS[ ] =
+{
+    OPT_NUM_URI_PATH,
+    OPT_NUM_BLOCK2,
+    OPT_NUM_BLOCK1,
+    OPT_NUM_ETAG,
+    OPT_NUM_CONTENT_FORMAT,
+    OPT_NUM_URI_QUERY,
+    OPT_NUM_ACCEPT,
+    OPT_NUM_URI_PORT,
+    OPT_NUM_URI_HOST
+};
+size_t KNOWN_OPTIONS_COUNT = sizeof(KNOWN_OPTIONS) / sizeof(KNOWN_OPTIONS[0]);
 
 //#########################################################################################################
 //### This function packs multiple CoAP options to the format specified at
