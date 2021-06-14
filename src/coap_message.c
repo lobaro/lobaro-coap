@@ -258,23 +258,22 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 	Msg.PayloadBufSize = Msg.PayloadLength;
 
 //Get memory for total message data and copy parsed data
-//Payload Buffers MUST located at end of CoAP_Message_t to let this work!
 	START_MSG_COPY_LABEL:
-	*rxedMsg = (CoAP_Message_t*) CoAP_malloc(sizeof(CoAP_Message_t) + Msg.PayloadLength);
+	*rxedMsg = CoAP_CreateMessage( Msg.Type,
+                                       Msg.Code,
+                                       Msg.MessageID,
+                                       Msg.Payload,
+                                       Msg.PayloadLength,
+                                       Msg.PayloadBufSize,
+                                       Msg.Token );
 
-	if (*rxedMsg == NULL)	//out of memory
-	{
-		CoAP_FreeOptionList(&(Msg.pOptionsList));
-		return COAP_ERR_OUT_OF_MEMORY;
-	}
+        if (*rxedMsg == NULL ) //out of memory
+        {
+            CoAP_FreeOptionList( &( Msg.pOptionsList ) );
+            return COAP_ERR_OUT_OF_MEMORY;
+        }
 
-	coap_memcpy((void*) (*rxedMsg), (void*) &Msg, sizeof(CoAP_Message_t));
-
-	if (Msg.PayloadLength) {
-		(*rxedMsg)->Payload = ((uint8_t*) (*rxedMsg)) + sizeof(CoAP_Message_t);
-		coap_memcpy((void*) ((*rxedMsg)->Payload), (void*) pPayloadBegin, Msg.PayloadLength);
-	}
-
+        (*rxedMsg )->pOptionsList = Msg.pOptionsList;
 	(*rxedMsg)->Timestamp = CoAP.api.rtc1HzCnt();
 
 	return COAP_OK;
