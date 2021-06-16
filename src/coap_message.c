@@ -252,6 +252,7 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 			CoAP_FreeOptionList(&(Msg.pOptionsList));
 			return COAP_PARSE_TOO_MUCH_PAYLOAD;
 		}
+		Msg.Payload = pPayloadBegin;
 	} else
 		Msg.PayloadLength = 0;
 
