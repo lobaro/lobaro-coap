@@ -392,7 +392,7 @@ CoAP_Res_t *CoAP_CreateResource(const char *Uri, const char *Descr, CoAP_ResOpts
 //   If false, pPayload MUST point to static memory that is not freed before the interaction ends
 //   which is hard to detect.
 CoAP_Result_t
-CoAP_SetPayload(CoAP_Message_t *pMsgResp, const uint8_t *pPayload, uint16_t payloadTotalSize, bool payloadIsVolatile);
+CoAP_SetPayload(CoAP_Message_t *pMsgResp, const uint8_t *pPayload, size_t payloadTotalSize, bool payloadIsVolatile);
 
 // Adds an option to the CoAP message
 CoAP_Result_t CoAP_AddOption(CoAP_Message_t *pMsg, uint16_t OptNumber, uint8_t *buf, uint16_t length);
