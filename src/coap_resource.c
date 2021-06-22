@@ -173,7 +173,7 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 //	uint8_t* pWr = wellknownStr;
 
 	if (pReq->Code != REQ_GET) {
-		const uint8_t errMsg[] = {"CoAP GET only!"};
+		uint8_t errMsg[] = {"CoAP GET only!"};
 		pResp->Code = RESP_ERROR_BAD_REQUEST_4_00;
 		CoAP_SetPayload(pResp, errMsg, (uint16_t) (sizeof(errMsg)-1), true);
 		return HANDLER_ERROR;

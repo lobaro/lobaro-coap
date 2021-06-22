@@ -157,7 +157,7 @@ CoAP_Message_t* _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
 		pMsg->PayloadBufSize = PayloadMaxSize;
 		pMsg->PayloadLength = PayloadInitialContentLength;
 		if (pPayloadInitialContent != NULL) {
-			coap_memcpy((void*) ((pMsg)->Payload), (void*) pPayloadInitialContent, PayloadInitialContentLength);
+			coap_memcpy((void*) ((pMsg)->Payload), (const void*) pPayloadInitialContent, PayloadInitialContentLength);
 		}
 	}
 	INFO("Created message %p\n", pMsg);

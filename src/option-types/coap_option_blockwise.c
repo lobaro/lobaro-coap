@@ -195,7 +195,7 @@ CoAP_Result_t _rom RemoveAllBlockOptionsFromMsg(CoAP_Message_t* msg, CoAP_blockw
 
 // Copies the given payload to the message. Respects the MAX_PAYLOAD_SIZE
 // If the content does not fit into the response a Block options is added
-CoAP_Result_t _rom CoAP_SetPayload(CoAP_Message_t* pMsgResp, const uint8_t* pPayload, size_t payloadTotalSize, bool payloadIsVolatile)
+CoAP_Result_t _rom CoAP_SetPayload(CoAP_Message_t* pMsgResp, uint8_t* pPayload, size_t payloadTotalSize, bool payloadIsVolatile)
 {
 	CoAP_blockwise_option_t B2opt = { .Type = BLOCK_2 };
 	int32_t BytesToSend = 0;
@@ -227,7 +227,7 @@ CoAP_Result_t _rom CoAP_SetPayload(CoAP_Message_t* pMsgResp, const uint8_t* pPay
 			pMsgResp->PayloadBufSize = BytesToSend;
 		} else {
 			CoAP_free_MsgPayload(&pMsgResp);
-			pMsgResp->Payload = &(pPayload[0]); //use external set buffer (will not be freed, MUST be static!!!)
+			pMsgResp->Payload = pPayload; //use external set buffer (will not be freed, MUST be static!!!)
 			pMsgResp->PayloadBufSize = 0; //protect external buf from unwanted overwrite
 		}
 	} // [else] => no need to alter payload buf beside change payload length before return
