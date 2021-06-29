@@ -153,10 +153,9 @@ void _rom CoAP_printUriOptionsList(CoAP_option_t* pOptListBegin) {
 	int j;
 	while (pOptListBegin != NULL) {
 		if (pOptListBegin->Number == OPT_NUM_URI_PATH) {
-			for (j = 0; j < pOptListBegin->Length; j++) {
-				INFO("%c", pOptListBegin->Value[j]);
-			}
-			INFO("\\");
+		        LOG_DEBUG_ARRAY("", pOptListBegin->Value, pOptListBegin->Length);
+		        INFO("\\");
+
 		} else if (pOptListBegin->Number == OPT_NUM_URI_QUERY) {
 			if (!queryPos) {
 				INFO("?");
@@ -164,9 +163,7 @@ void _rom CoAP_printUriOptionsList(CoAP_option_t* pOptListBegin) {
 			} else
 				INFO("&");
 
-			for (j = 0; j < pOptListBegin->Length; j++) {
-				INFO("%c", pOptListBegin->Value[j]);
-			}
+                LOG_DEBUG_ARRAY("", pOptListBegin->Value, pOptListBegin->Length);
 		}
 
 		pOptListBegin = pOptListBegin->next;

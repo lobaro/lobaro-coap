@@ -22,17 +22,11 @@
 #ifndef COM_DEBUG_H
 #define COM_DEBUG_H
 
-#define COAP_LOG_LEVEL_DEBUG	3
-#define COAP_LOG_LEVEL_INFO		2
-#define COAP_LOG_LEVEL_ERROR	1
-#define COAP_LOG_LEVEL_NONE		0
-
-#define COAP_LOG_LEVEL	COAP_LOG_LEVEL_INFO
-
 #define DEBUG_BUF_SIZE (500)
 extern char dbgBuf[DEBUG_BUF_SIZE];
 
 #define UART_PUTS hal_debug_puts
+#define UART_PUT_ARRAY hal_debug_array
 
 
 #define PUTS(...) \
@@ -47,32 +41,39 @@ extern char dbgBuf[DEBUG_BUF_SIZE];
 	} while(0)
 
 
-#if (COAP_LOG_LEVEL >= COAP_LOG_LEVEL_ERROR)
+#if defined(COAP_LL_ERROR) || defined(COAP_LL_INFO) || defined(COAP_LL_DEBUG)
 	#define ERROR(...) \
 	do { \
-		PRINTF("[ERROR] "); \
-		PRINTF(__VA_ARGS__); \
+                PRINTF("[ERROR] "); \
+                PRINTF(__VA_ARGS__); \
 	} while(0)
 #else
 	#define ERROR(...) do{}while(0)
 #endif
 
-#if (COAP_LOG_LEVEL >= COAP_LOG_LEVEL_INFO)
+#if defined(COAP_LL_INFO) || defined(COAP_LL_DEBUG)
 	#define INFO(...) \
 	do { \
-		PRINTF(__VA_ARGS__); \
+	        PRINTF(__VA_ARGS__); \
 	} while(0)
 #else
 	#define INFO(...) do{}while(0)
 #endif
 
-#if (COAP_LOG_LEVEL >= COAP_LOG_LEVEL_DEBUG)
+#if defined(COAP_LL_DEBUG)
 	#define DEBUG(...) \
 	do { \
-		PRINTF(__VA_ARGS__); \
+                PRINTF(__VA_ARGS__); \
 	} while(0)
+
+        #define DEBUG_ARRAY(msg, array, size) \
+        do { \
+                    UART_PUT_ARRAY(msg, array, size); \
+        } while(0)
+
 #else
 	#define DEBUG(...) do{}while(0)
+        #define DEBUG_ARRAY(msg, array, size) do{}while(0)
 #endif
 
 #define assert_coap(VAL) \
@@ -99,5 +100,6 @@ do { \
 #define LOG_INFO(...) 	INFO(__VA_ARGS__)
 #define LOG_ERROR(...) 	ERROR(__VA_ARGS__)
 #define LOG_DEBUG(...) 	DEBUG(__VA_ARGS__)
+#define LOG_DEBUG_ARRAY(msg, array, size) DEBUG_ARRAY(msg, array, size)
 
 #endif

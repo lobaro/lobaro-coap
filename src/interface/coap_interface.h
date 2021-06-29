@@ -90,5 +90,8 @@
 //-------------------------------------------------------------------------
 //Uart/Display function to print debug/status messages to
 void hal_debug_puts(char *s);
+void hal_debug_array(const char *s,
+                     const uint8_t *array,
+                     size_t size);
 
 #endif

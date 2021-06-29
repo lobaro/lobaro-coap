@@ -28,6 +28,12 @@ void debugPuts_Empty(const char* s) {
 	(void) s;  // unused
 }
 
+void debugArray_Empty(const char *s, const uint8_t *array, size_t size) {
+    (void) s;  // unused
+    (void) array;
+    (void) size;;
+}
+
 void CoAP_Init(CoAP_API_t api) {
 	CoAP.api = api;
 
@@ -37,6 +43,10 @@ void CoAP_Init(CoAP_API_t api) {
 	if (CoAP.api.debugPuts == NULL) {
 		CoAP.api.debugPuts = debugPuts_Empty;
 	}
+
+    if (CoAP.api.debugArray == NULL) {
+        CoAP.api.debugArray = debugArray_Empty;
+    }
 
 #if DEBUG_RANDOM_DROP_INCOMING_PERCENTAGE != 0
 	INFO("\n\nWARNING!!!\n\n    DEBUG FEATURE, DROPPING %d%% INCOMING MESSAGES ON PURPOSE!\n\n", DEBUG_RANDOM_DROP_INCOMING_PERCENTAGE);

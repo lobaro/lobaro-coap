@@ -341,6 +341,7 @@ typedef struct {
 	uint32_t (*rtc1HzCnt)();
 	// Uart/Display function to print debug/status messages
 	void (*debugPuts)(const char *s);
+	void (*debugArray)(const char *s, const uint8_t *array, size_t size);
 	// Memory management:
 	void *(*malloc)(size_t size);
 	void (*free)(void *p);

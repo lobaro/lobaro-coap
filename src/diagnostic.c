@@ -156,11 +156,9 @@ void _rom PrintEndpoint(const NetEp_t* ep) {
 void PrintToken(CoAP_Token_t* token) {
 	uint8_t tokenBytes = token->Length;
 	if (tokenBytes > 0) {
-		INFO("%u Byte -> 0x", tokenBytes);
-		int i;
-		for (i = 0; i < tokenBytes; i++) {
-			INFO("%02x", token->Token[i]);
-		}
+
+		INFO("%u Byte -> ", tokenBytes);
+		LOG_DEBUG_ARRAY("", token->Token, tokenBytes);
 	} else {
 		INFO("%u Byte -> 0x0", tokenBytes);
 	}

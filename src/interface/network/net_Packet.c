@@ -26,14 +26,5 @@ void _rom PrintRawPacket(NetPacket_t* pckt)
 {
 
 	INFO("Packet size:%d rssi:%" PRIi32 " hops: %d \r\nRawData (hex) :", pckt->size, pckt->metaInfo.Dat.RfPath.RSSI, pckt->metaInfo.Dat.RfPath.HopCount);
-	int i;
-	for(i=0; i<pckt->size; i++)
-	{
-		INFO("0x%02x, ", pckt->pData[i]);
-	}
-	INFO("\r\nRawData (char):");
-	for(i=0; i<pckt->size; i++)
-	{
-		INFO("%c", pckt->pData[i]);
-	}
+	LOG_DEBUG_ARRAY("\r\nHex :", pckt->pData, pckt->size);
 }

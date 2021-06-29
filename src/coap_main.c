@@ -31,6 +31,12 @@ void hal_debug_puts(char* s) {
 	}
 }
 
+void hal_debug_array(const char *s, const uint8_t *array, size_t size) {
+    if (CoAP.api.debugArray != NULL) {
+        CoAP.api.debugArray(s, array, size);
+    }
+}
+
 // Called by network interfaces to pass rawData which is parsed to CoAP messages.
 // lifetime of pckt only during function invoke
 // can be called from irq since more expensive work is done in CoAP_doWork loop

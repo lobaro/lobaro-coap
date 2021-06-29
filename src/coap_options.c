@@ -559,9 +559,7 @@ static void _rom printOptionString(const CoAP_option_t *op) {
 	}
 }
 static void _rom printOptionHex(const CoAP_option_t *op) {
-	for (int i = 0; i < op->Length; i++) {
-		LOG_DEBUG("%02x", op->Value[i]);
-	}
+        LOG_DEBUG_ARRAY("Hex: ", op->Value, op->Length);
 }
 uint16_t CoAP_DecodeSzx(uint8_t szx) {
 	if (szx > 0b110u) {
@@ -657,9 +655,7 @@ static void _rom printOption(const CoAP_option_t *op) {
 			break;
 	}
 	INFO("> [");
-	for (int i=0; i<op->Length; i++) {
-		INFO("%s%02x", i?" ":"", op->Value[i]);
-	}
+	LOG_DEBUG_ARRAY("Hex: ", op->Value, op->Length);
 	INFO("]");
 }
 

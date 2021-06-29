@@ -425,15 +425,8 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle
 	PrintEndpoint(&(pked.remoteEp));
 	INFO("\n");
 
-	DEBUG("Hex: ");
-	for (i = 0; i < pked.size; i++) {
-		DEBUG("%02x ", pked.pData[i]);
-	}
-	DEBUG("\r\nRaw: \"");
-	for (i = 0; i < pked.size; i++) {
-		DEBUG("%c", CoAP_CharPrintable(pked.pData[i]));
-	}
-	DEBUG("\"\r\n");
+        LOG_DEBUG_ARRAY("HEX: ", pked.pData, pked.size);
+        DEBUG("\"\r\n");
 
 	bool sendResult;
 #if DEBUG_RANDOM_DROP_OUTGOING_PERCENTAGE > 0
@@ -518,8 +511,7 @@ CoAP_Result_t _rom CoAP_addTextPayload(CoAP_Message_t* Msg, char* PayloadStr) {
 
 void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 
-	if(COAP_LOG_LEVEL < COAP_LOG_LEVEL_DEBUG)
-	{
+#if defined(COAP_LL_INFO) || defined(COAP_LL_DEBUG)
 		// Short version
 		LOG_INFO("CoAP msg: Type=");
 		
@@ -538,7 +530,7 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 		LOG_INFO(" PayloadLen=%"PRIu16, msg->PayloadLength);
 		LOG_INFO("\n");
 		return;
-	}
+#endif
 
 	INFO("---------CoAP msg--------\r\n");
 
@@ -560,11 +552,8 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 
 	uint8_t tokenBytes = msg->Token.Length;
 	if (tokenBytes > 0) {
-		LOG_DEBUG("*Token: %u Byte -> 0x", tokenBytes);
-		int i;
-		for (i = 0; i < tokenBytes; i++) {
-			LOG_DEBUG("%02x", msg->Token.Token[i]);
-		}
+		LOG_DEBUG("*Token: %u Byte -> ", tokenBytes);
+		LOG_DEBUG_ARRAY("", msg->Token.Token, tokenBytes);
 	} else {
 		LOG_DEBUG("*Token: %u Byte -> 0", tokenBytes);
 	}
@@ -581,14 +570,8 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 			LOG_DEBUG(" too much payload!\r\n");
 		}
 		else {
-			LOG_DEBUG(" Hex: ");
-			for (int i = 0; i < msg->PayloadLength && i < MAX_PAYLOAD_SIZE; i++) {
-				LOG_DEBUG("%02x ", msg->Payload[i]);
-			}
-			LOG_DEBUG("\"\r\n Raw: \"");
-			for (int i = 0; i < msg->PayloadLength && i < MAX_PAYLOAD_SIZE; i++) {
-				LOG_DEBUG("%c", CoAP_CharPrintable(msg->Payload[i]));
-			}
+
+			LOG_DEBUG_ARRAY("Hex: ", msg->Payload, msg->PayloadLength);
 			LOG_DEBUG("\"\r\n");
 		}
 	}
