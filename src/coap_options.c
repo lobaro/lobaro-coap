@@ -21,10 +21,23 @@
  *******************************************************************************/
 
 #include "coap.h"
+#include <inttypes.h>
+
+#define KNOWN_OPTIONS_COUNT     (sizeof(KNOWN_OPTIONS) / sizeof(KNOWN_OPTIONS[0]))
 
 // Used in Critical Option Check.
-uint16_t KNOWN_OPTIONS[] = {OPT_NUM_URI_PATH, OPT_NUM_BLOCK2, OPT_NUM_BLOCK1, OPT_NUM_ETAG, OPT_NUM_CONTENT_FORMAT, OPT_NUM_URI_QUERY, OPT_NUM_ACCEPT };
-size_t KNOWN_OPTIONS_COUNT = sizeof(KNOWN_OPTIONS) / sizeof(KNOWN_OPTIONS[0]);
+uint16_t KNOWN_OPTIONS[ ] =
+{
+    OPT_NUM_URI_PATH,
+    OPT_NUM_BLOCK2,
+    OPT_NUM_BLOCK1,
+    OPT_NUM_ETAG,
+    OPT_NUM_CONTENT_FORMAT,
+    OPT_NUM_URI_QUERY,
+    OPT_NUM_ACCEPT,
+    OPT_NUM_URI_PORT,
+    OPT_NUM_URI_HOST
+};
 
 //#########################################################################################################
 //### This function packs multiple CoAP options to the format specified at
@@ -107,7 +120,6 @@ CoAP_Result_t _rom pack_OptionsFromList(uint8_t* pDestArr, uint16_t* pBytesWritt
 
 uint16_t _rom CoAP_NeededMem4PackOptions(CoAP_option_t* pOptionsListBegin) {
 	uint16_t offset = 0;         //Current "Write" Position while packing the options array to the byte array
-	uint16_t OptStartOffset = 0; //Position of 1st Byte of current packed option
 	uint16_t lastOptNumber = 0;
 	uint16_t currDelta = 0;         //current Delta to privious option
 	uint16_t optLength = 0;         //Length of current Option
@@ -125,7 +137,6 @@ uint16_t _rom CoAP_NeededMem4PackOptions(CoAP_option_t* pOptionsListBegin) {
 		lastOptNumber = pOption->Number;
 
 		optLength = pOption->Length;
-		OptStartOffset = offset;
 		offset++;
 
 		//Delta Bytes
@@ -294,7 +305,10 @@ static CoAP_Result_t _rom append_OptionToListEnd(CoAP_option_t** pOptionsListBeg
 		(*pOptionsListBegin)->Length = length;
 		(*pOptionsListBegin)->Number = OptNumber;
 		(*pOptionsListBegin)->Value = ((uint8_t*) (*pOptionsListBegin)) + sizeof(CoAP_option_t);
-		coap_memcpy((void*) ((*pOptionsListBegin)->Value), (const void*) buf, length);
+		if(NULL != ((*pOptionsListBegin)->Value))
+		{
+		    coap_memcpy((void*) ((*pOptionsListBegin)->Value), (const void*) buf, length);
+		}
 	} else //append new element at end
 	{
 		CoAP_option_t* pOption = *pOptionsListBegin;
@@ -511,7 +525,7 @@ uint16_t _rom CoAP_CheckForUnknownCriticalOption(CoAP_option_t* pOptionsListBegi
 	bool optKnown;
 	do {
 		optKnown = false;
-		int j;
+		uint32_t j;
 		for (j = 0; j < KNOWN_OPTIONS_COUNT; j++) {
 			if (pOption->Number == KNOWN_OPTIONS[j]) {
 				optKnown = true;
@@ -603,7 +617,7 @@ static void _rom printOption(const CoAP_option_t *op) {
 	bool m;
 	uint8_t szx;
 	INFO("<%02u=", op->Number);
-	CoAP_Result_t r;
+
 	switch (op->Number) {
 		case OPT_NUM_URI_HOST:  // 03
 			INFO("URI_HOST:");
@@ -619,7 +633,7 @@ static void _rom printOption(const CoAP_option_t *op) {
 			break;
 		case OPT_NUM_CONTENT_FORMAT:  //12
 			CoAP_GetUintFromOption(op, &v);
-			INFO("CONTENT_FORMAT:%lu=%s", v, contentFormatMime(v));
+			INFO("CONTENT_FORMAT:%"PRIu32"=%s", v, contentFormatMime(v));
 			break;
 		case OPT_NUM_URI_QUERY:  // 15
 			INFO("URI_QUERY:");
@@ -629,14 +643,14 @@ static void _rom printOption(const CoAP_option_t *op) {
 		case OPT_NUM_BLOCK2:  // 23
 			CoAP_GetUintFromOption(op, &v);
 			CoAP_UnpackBlockParameter(v, &num, &m, &szx);
-			INFO("BLOCK%d:%ld/%u/0b%u%u%u=%u",
+			INFO("BLOCK%d:%"PRIu32"""/%u/0b%u%u%u=%u",
 				op->Number == OPT_NUM_BLOCK1 ? 1 : 2, num, m,
 				(szx&0b100u)>2u, (szx&0b10u)>1u, (szx&0b1u), CoAP_DecodeSzx(szx));
 			break;
 		case OPT_NUM_SIZE1:  // 60
 		case OPT_NUM_SIZE2:  // 28
-			r = CoAP_GetUintFromOption(op, &v);
-			INFO("SIZE%d:%lu", op->Number == OPT_NUM_SIZE1 ? 1 : 2, v);
+			CoAP_GetUintFromOption(op, &v);
+			INFO("SIZE%d:%"PRIu32, op->Number == OPT_NUM_SIZE1 ? 1 : 2, v);
 			break;
 		default:
 			INFO("?");

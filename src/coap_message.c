@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  *******************************************************************************/
 #include <stdbool.h>
+#include <inttypes.h>
 #include "coap.h"
 #include "liblobaro_coap.h"
 #include "coap_mem.h"
@@ -387,7 +388,7 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle
 	CoAP_Socket_t* pSocket = RetrieveSocket(socketHandle);
 
 	if (pSocket == NULL) {
-		ERROR("Socket not found! handle: %d\r\n", (int)socketHandle);
+		ERROR("Socket not found! handle: %p\r\n", socketHandle);
 		return COAP_NOT_FOUND;
 	}
 
@@ -395,7 +396,7 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle
 	uint8_t quickBuf[16]; //speed up sending of tiny messages
 
 	if (SendPacket == NULL) {
-		ERROR("SendPacket function not found! handle: %d\r\n", socketHandle);
+		ERROR("SendPacket function not found! handle: %p\r\n", socketHandle);
 		return COAP_NOT_FOUND;
 	}
 
@@ -420,7 +421,7 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle
 		INFO("(!!!) Bytes to Send = %d estimated = %d\r\n", bytesToSend, CoAP_GetRawSizeOfMessage(Msg));
 	}
 
-	INFO("\r\no>>>>>>>>>>>>>>>>>>>>>>\r\nSend Message [%d Bytes], Interface #%u\r\n", bytesToSend, socketHandle);
+	INFO("\r\no>>>>>>>>>>>>>>>>>>>>>>\r\nSend Message [%d Bytes], Interface #%p\r\n", bytesToSend, socketHandle);
 	INFO("Receiving Endpoint: ");
 	PrintEndpoint(&(pked.remoteEp));
 	INFO("\n");
@@ -532,10 +533,10 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 			default: LOG_INFO("UNKNOWN (0x%02x)", msg->Type); break;
 		}
 
-		LOG_INFO(" Code=%x", CoAP_CodeName(msg->Code));
-		LOG_INFO(" MsgId=%d", msg->MessageID);
-		LOG_INFO(" Timestamp=%d", msg->Timestamp);
-		LOG_INFO(" PayloadLen=%d", msg->PayloadLength);
+		LOG_INFO(" Code=%s", CoAP_CodeName(msg->Code));
+		LOG_INFO(" MsgId=%"PRIu16, msg->MessageID);
+		LOG_INFO(" Timestamp=%"PRIu32, msg->Timestamp);
+		LOG_INFO(" PayloadLen=%"PRIu16, msg->PayloadLength);
 		LOG_INFO("\n");
 		return;
 	}
@@ -593,7 +594,7 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 		}
 	}
 
-	INFO("*Timestamp: %lu\r\n", msg->Timestamp);
+	INFO("*Timestamp: %"PRIu32"\r\n", msg->Timestamp);
 	INFO("----------------------------\r\n");
 }
 

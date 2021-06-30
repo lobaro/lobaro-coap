@@ -46,11 +46,11 @@ void CoAP_Init(CoAP_API_t api) {
 #endif
 
 	INFO("CoAP_init!\r\n");
-	INFO("CoAP Interaction size: %d byte\r\n", sizeof(CoAP_Interaction_t));
-	INFO("CoAP_Res_t size: %d byte\r\n", sizeof(CoAP_Res_t));
-	INFO("CoAP_Message_t size: %d byte\r\n", sizeof(CoAP_Message_t));
-	INFO("CoAP_option_t size: %d byte\r\n", sizeof(CoAP_option_t));
-	INFO("CoAP_Observer_t size: %d byte\r\n", sizeof(CoAP_Observer_t));
+	INFO("CoAP Interaction size: %zu byte\r\n", sizeof(CoAP_Interaction_t));
+	INFO("CoAP_Res_t size: %zu byte\r\n", sizeof(CoAP_Res_t));
+	INFO("CoAP_Message_t size: %zu byte\r\n", sizeof(CoAP_Message_t));
+	INFO("CoAP_option_t size: %zu byte\r\n", sizeof(CoAP_option_t));
+	INFO("CoAP_Observer_t size: %zu byte\r\n", sizeof(CoAP_Observer_t));
 
 	CoAP_InitResources();
 }

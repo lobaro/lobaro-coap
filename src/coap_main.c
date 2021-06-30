@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
+#include <inttypes.h>
 #include "coap.h"
 #include "liblobaro_coap.h"
 
@@ -40,7 +41,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 	CoAP_Result_t res = COAP_OK;
 
 	// Try to parse packet of bytes into CoAP message
-	INFO("\r\no<<<<<<<<<<<<<<<<<<<<<<\r\nNew Datagram received [%d Bytes], Interface #%x\r\n", pPacket->size, socketHandle); //PrintRawPacket(pckt);
+	INFO("\r\no<<<<<<<<<<<<<<<<<<<<<<\r\nNew Datagram received [%d Bytes], Interface #%p\r\n", pPacket->size, socketHandle); //PrintRawPacket(pckt);
 	INFO("Sending Endpoint: ");
 	PrintEndpoint(&(pPacket->remoteEp));
 	INFO("\n");
@@ -184,7 +185,6 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 
 		} else { // pMsg carries a separate response (=no piggyback!) to our client request...
 			// find in interaction list request with same token & endpoint
-			CoAP_Interaction_t* pIA;
 			for (pIA = CoAP.pInteractions; pIA != NULL; pIA = pIA->next) {
 				if (pIA->Role == COAP_ROLE_CLIENT && CoAP_TokenEqual(pIA->pReqMsg->Token, pMsg->Token) && EpAreEqual(&(pPacket->remoteEp), &(pIA->RemoteEp))) {
 					// 2nd case "updates" received response
@@ -376,7 +376,7 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 				// Todo: Pick a random leisure period (See section 8.2 of [RFC7252])
 				CoAP_SetSleepInteraction(pIA, DEFAULT_LEISURE); // Don't respond right away'
 				CoAP_EnqueueLastInteraction(pIA);
-				INFO("Multicast request postponed processing until %d\r\n", pIA->SleepUntil);
+				INFO("Multicast request postponed processing until %" PRIu32 "\r\n", pIA->SleepUntil);
 				return;
 			}
 		}
@@ -441,7 +441,7 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 					CoAP_SetSleepInteraction(pIA, POSTPONE_WAIT_TIME_SEK);
 
 					CoAP_EnqueueLastInteraction(pIA);
-					INFO("Resource not ready, postponed response until %d\r\n", pIA->SleepUntil);
+					INFO("Resource not ready, postponed response until %" PRIu32 "\r\n", pIA->SleepUntil);
 					return;
 				} else { // unexspected internal failure todo: try at least to send 4 byte RESP_INTERNAL_SERVER_ERROR_5_00
 					INFO("(!!!) Send Error on empty ack, MiD: %d", pIA->pReqMsg->MessageID);

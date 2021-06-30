@@ -30,7 +30,7 @@ static CoAP_Interaction_t* _rom CoAP_AllocNewInteraction() {
 	CoAP_Interaction_t* newInteraction = (CoAP_Interaction_t*) (CoAP_malloc0(sizeof(CoAP_Interaction_t)));
 	if (newInteraction == NULL) {
 		// coap_mem_stats();
-		INFO("- (!!!) CoAP_AllocNewInteraction() Out of Memory (Needed %d bytes) !!!\r\n", sizeof(CoAP_Interaction_t));
+		INFO("- (!!!) CoAP_AllocNewInteraction() Out of Memory (Needed %zu bytes) !!!\r\n", sizeof(CoAP_Interaction_t));
 		return NULL;
 	}
 
