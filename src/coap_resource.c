@@ -231,7 +231,7 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 
 void _rom CoAP_InitResources() {
 	CoAP_ResOpts_t Options = {.Cf = COAP_CF_LINK_FORMAT, .AllowedMethods = RES_OPT_GET};
-	CoAP_CreateResource("/.well-known/core", "\0", Options, WellKnown_GetHandler, NULL, NULL);
+	CoAP_CreateResource("/.well-known/core", "\0", Options, WellKnown_GetHandler, NULL);
 }
 
 static CoAP_Result_t _rom CoAP_AppendResourceToList(CoAP_Res_t** pListStart, CoAP_Res_t* pResToAdd) {
@@ -310,8 +310,7 @@ CoAP_Res_t* _rom CoAP_FindResourceByUri(CoAP_Res_t* pResListToSearchIn, CoAP_opt
 	return NULL;
 }
 
-CoAP_Res_t* _rom CoAP_CreateResource(const char* Uri, const char* Descr, CoAP_ResOpts_t Options,
-        CoAP_ResourceHandler_fPtr_t pHandlerFkt, CoAP_ResourceNotifier_fPtr_t pNotifierFkt, CoAP_ResourceObserverInfo_t pObserverInfo) {
+CoAP_Res_t* _rom CoAP_CreateResource(char* Uri, char* Descr, CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt, CoAP_ResourceNotifier_fPtr_t pNotifierFkt) {
 	INFO("Creating resource %s (%s) AllowedMethods: %x%x%x%x\r\n", Uri, Descr == NULL ? "" : Descr,
 		 !!(Options.AllowedMethods & RES_OPT_GET),
 		 !!(Options.AllowedMethods & RES_OPT_POST),
@@ -346,7 +345,6 @@ CoAP_Res_t* _rom CoAP_CreateResource(const char* Uri, const char* Descr, CoAP_Re
 
 	pRes->Handler = pHandlerFkt;
 	pRes->Notifier = pNotifierFkt;
-	pRes->ObserverInfo = pObserverInfo;
 
 	CoAP_AppendResourceToList(&pResList, pRes);
 
