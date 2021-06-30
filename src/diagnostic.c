@@ -1,4 +1,5 @@
 #include "coap.h"
+#include <inttypes.h>
 
 char* InteractionRoleToString(CoAP_InteractionRole_t role) {
 	switch (role) {
@@ -166,6 +167,7 @@ void PrintToken(CoAP_Token_t* token) {
 }
 
 void _rom PrintInteractions(CoAP_Interaction_t *pInteractions) {
+	(void)pInteractions;
 	int cnt = 0;
 	for (CoAP_Interaction_t* pIA = CoAP.pInteractions; pIA != NULL; pIA = pIA->next) {
 		cnt++;
@@ -176,8 +178,8 @@ void _rom PrintInteractions(CoAP_Interaction_t *pInteractions) {
 	for (CoAP_Interaction_t* pIA = CoAP.pInteractions; pIA != NULL; pIA = pIA->next) {
 		INFO("- Role: %s, State: %s\n",
 				InteractionRoleToString(pIA->Role), InteractionStateToString(pIA->State));
-		INFO("RetransCnt: %u, SleepUntil %lu, AckTimeout: %lu\n", pIA->RetransCounter, pIA->SleepUntil, pIA->AckTimeout);
-		INFO("Socket: %04lx, RemoteEp: ", (uint32_t )pIA->socketHandle);
+		INFO("RetransCnt: %u, SleepUntil %"PRIu32", AckTimeout: %"PRIu32"\n", pIA->RetransCounter, pIA->SleepUntil, pIA->AckTimeout);
+		INFO("Socket: %p, RemoteEp: ", pIA->socketHandle);
 		PrintEndpoint(&pIA->RemoteEp);
 		INFO("\n");
 		INFO("ReqReliabilityState: %s\n", ReliabilityStateToString(pIA->ReqConfirmState));
@@ -186,7 +188,7 @@ void _rom PrintInteractions(CoAP_Interaction_t *pInteractions) {
 		INFO("Observer: ");
 		if (pIA->pObserver != NULL) {
 			PrintEndpoint(&pIA->pObserver->Ep);
-			INFO(", Socket: %04lx, FailCnt: %d, Token: ", (uint32_t )pIA->pObserver->socketHandle, pIA->pObserver->FailCount);
+			INFO(", Socket: %p, FailCnt: %d, Token: ", pIA->pObserver->socketHandle, pIA->pObserver->FailCount);
 			PrintToken(&pIA->pObserver->Token);
 			INFO("\n");
 		} else {

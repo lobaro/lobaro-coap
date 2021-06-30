@@ -59,7 +59,7 @@ const NetEp_t NetEp_IPv4_mulitcast = { .NetType = IPV4, .NetPort = 5683, .NetAdd
 }
 
 void _rom CopyEndpoints(NetEp_t* Destination, const NetEp_t* Source) {
-	memmove((void*) Destination, (void*) Source, sizeof(NetEp_t));
+	memmove((void*) Destination, (const void*) Source, sizeof(NetEp_t));
 }
 
 NetInterfaceType_t _rom CoAP_ParseNetAddress(NetAddr_t *addr, const char *s) {

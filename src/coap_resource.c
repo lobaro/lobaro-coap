@@ -21,6 +21,7 @@
  *******************************************************************************/
 #include "coap.h"
 #include "liblobaro_coap.h"
+#include <inttypes.h>
 
 static CoAP_Res_t* pResList = NULL;
 static uint32_t ResListMembers = 0;
@@ -93,7 +94,7 @@ CoAP_Result_t _rom CoAP_NVsaveObservers(WriteBuf_fn writeBufFn) {
 	}
 
 	pTempPage = TempPage;
-	INFO("writing: %d bytes to flash\r\n", TotalPageBytes);
+	INFO("writing: %ld bytes to flash\r\n", TotalPageBytes);
 	writeBufFn(pTempPage, TotalPageBytes);
 	return COAP_OK;
 }
@@ -172,9 +173,9 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 //	uint8_t* pWr = wellknownStr;
 
 	if (pReq->Code != REQ_GET) {
-		char errMsg[] = {"CoAP GET only!"};
+		uint8_t errMsg[] = {"CoAP GET only!"};
 		pResp->Code = RESP_ERROR_BAD_REQUEST_4_00;
-		CoAP_SetPayload(pResp, errMsg, (uint16_t) coap_strlen(errMsg), true);
+		CoAP_SetPayload(pResp, errMsg, (uint16_t) (sizeof(errMsg)-1), true);
 		return HANDLER_ERROR;
 	}
 
@@ -230,7 +231,7 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 
 void _rom CoAP_InitResources() {
 	CoAP_ResOpts_t Options = {.Cf = COAP_CF_LINK_FORMAT, .AllowedMethods = RES_OPT_GET};
-	CoAP_CreateResource("/.well-known/core", "\0", Options, WellKnown_GetHandler, NULL);
+	CoAP_CreateResource("/.well-known/core", "\0", Options, WellKnown_GetHandler, NULL, NULL);
 }
 
 static CoAP_Result_t _rom CoAP_AppendResourceToList(CoAP_Res_t** pListStart, CoAP_Res_t* pResToAdd) {
@@ -309,7 +310,8 @@ CoAP_Res_t* _rom CoAP_FindResourceByUri(CoAP_Res_t* pResListToSearchIn, CoAP_opt
 	return NULL;
 }
 
-CoAP_Res_t* _rom CoAP_CreateResource(char* Uri, char* Descr, CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt, CoAP_ResourceNotifier_fPtr_t pNotifierFkt) {
+CoAP_Res_t* _rom CoAP_CreateResource(const char* Uri, const char* Descr, CoAP_ResOpts_t Options,
+        CoAP_ResourceHandler_fPtr_t pHandlerFkt, CoAP_ResourceNotifier_fPtr_t pNotifierFkt, CoAP_ResourceObserverInfo_t pObserverInfo) {
 	INFO("Creating resource %s (%s) AllowedMethods: %x%x%x%x\r\n", Uri, Descr == NULL ? "" : Descr,
 		 !!(Options.AllowedMethods & RES_OPT_GET),
 		 !!(Options.AllowedMethods & RES_OPT_POST),
@@ -344,6 +346,7 @@ CoAP_Res_t* _rom CoAP_CreateResource(char* Uri, char* Descr, CoAP_ResOpts_t Opti
 
 	pRes->Handler = pHandlerFkt;
 	pRes->Notifier = pNotifierFkt;
+	pRes->ObserverInfo = pObserverInfo;
 
 	CoAP_AppendResourceToList(&pResList, pRes);
 
@@ -365,7 +368,7 @@ void _rom CoAP_PrintResource(CoAP_Res_t* pRes) {
 	INFO("Observers:\r\n");
 	CoAP_Observer_t* pOpserver = pRes->pListObservers; //point to ListStart
 	while (pOpserver != NULL) {
-		INFO("Token:%llx - ", (uint64_t)pOpserver->Token.Token[0]);
+		INFO("Token (%"PRIu8"): %016"PRIx64" - ", pOpserver->Token.Length, (uint64_t)pOpserver->Token.Token[0]);
 		PrintEndpoint(&(pOpserver->Ep));
 		INFO("\n");
 		CoAP_printUriOptionsList(pOpserver->pOptList);

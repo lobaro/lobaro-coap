@@ -19,12 +19,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
+#include <inttypes.h>
 #include "../../coap.h"
 
 void _rom PrintRawPacket(NetPacket_t* pckt)
 {
 
-	INFO("Packet size:%d rssi:%d hops: %d \r\nRawData (hex) :", pckt->size, pckt->metaInfo.Dat.RfPath.RSSI, pckt->metaInfo.Dat.RfPath.HopCount);
+	INFO("Packet size:%d rssi:%" PRIi32 " hops: %d \r\nRawData (hex) :", pckt->size, pckt->metaInfo.Dat.RfPath.RSSI, pckt->metaInfo.Dat.RfPath.HopCount);
 	int i;
 	for(i=0; i<pckt->size; i++)
 	{
