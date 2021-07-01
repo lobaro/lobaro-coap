@@ -226,7 +226,6 @@ CoAP_Result_t _rom CoAP_SetPayload(CoAP_Message_t* pMsgResp, uint8_t* pPayload, 
 			coap_memcpy(pMsgResp->Payload, pPayload, BytesToSend);
 			pMsgResp->PayloadBufSize = BytesToSend;
 		} else {
-			CoAP_free_MsgPayload(&pMsgResp);
 			pMsgResp->Payload = pPayload; //use external set buffer (will not be freed, MUST be static!!!)
 			pMsgResp->PayloadBufSize = 0; //protect external buf from unwanted overwrite
 		}
