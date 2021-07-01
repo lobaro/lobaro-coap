@@ -27,7 +27,6 @@
 
 //on addition of an option also change coap_options.C (array initializer) and count
 //Proxy-Uri
-extern uint32_t KNOWN_OPTIONS_COUNT;
 extern uint16_t KNOWN_OPTIONS[];
 
 #define OPT_FLAG_CRITICAL 	(1u<<0u)
