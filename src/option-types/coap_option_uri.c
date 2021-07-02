@@ -150,7 +150,7 @@ bool _rom CoAP_UriOptionsAreEqual(CoAP_option_t* OptListA, CoAP_option_t* OptLis
 
 void _rom CoAP_printUriOptionsList(CoAP_option_t* pOptListBegin) {
 	bool queryPos = false;
-	int j;
+
 	while (pOptListBegin != NULL) {
 		if (pOptListBegin->Number == OPT_NUM_URI_PATH) {
 		        LOG_DEBUG_ARRAY("", pOptListBegin->Value, pOptListBegin->Length);

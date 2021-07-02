@@ -382,7 +382,6 @@ CoAP_Result_t _rom CoAP_SendEmptyRST(uint16_t MessageID, SocketHandle_t socketHa
 
 CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle, NetEp_t receiver) {
 	INFO("Sending CoAP msg\r\n");
-	int i;
 	uint16_t bytesToSend = 0;
 	CoAP_Socket_t* pSocket = RetrieveSocket(socketHandle);
 
