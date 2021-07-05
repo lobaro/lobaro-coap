@@ -675,7 +675,7 @@ void _rom CoAP_printOptionsList(CoAP_option_t* pOptListBegin) {
 				INFO("  [0x00]");
 			}
 		}*/
-		INFO("\n");
+		INFO("\n\r");
 		pOptListBegin = pOptListBegin->next;
 	}
 }

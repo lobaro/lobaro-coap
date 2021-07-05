@@ -50,7 +50,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 	INFO("\r\no<<<<<<<<<<<<<<<<<<<<<<\r\nNew Datagram received [%d Bytes], Interface #%p\r\n", pPacket->size, socketHandle); //PrintRawPacket(pckt);
 	INFO("Sending Endpoint: ");
 	PrintEndpoint(&(pPacket->remoteEp));
-	INFO("\n");
+	INFO("\n\r");
 
 	if ((res = CoAP_ParseMessageFromDatagram(pPacket->pData, pPacket->size, &pMsg)) == COAP_OK) {
 		CoAP_PrintMsg(pMsg); // allocates the needed amount of ram
@@ -706,7 +706,7 @@ void _rom CoAP_doWork() {
 	}
 
 	// DEBUG output all interactions
-	//INFO("\n");
+	//INFO("\n\r");
 	//PrintInteractions(CoAP.pInteractions);
 	//coap_mem_stats();
 

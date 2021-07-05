@@ -82,7 +82,7 @@ bool _rom CoAP_MsgIsOlderThan(CoAP_Message_t* pMsg, uint32_t timespan) {
 }
 
 CoAP_Result_t _rom CoAP_free_Message(CoAP_Message_t** Msg) {
-	DEBUG("Free message %p\n", *Msg);
+	DEBUG("Free message %p\n\r", *Msg);
 	if (*Msg == NULL) {
 		return COAP_OK; //nothing to free
 	}
@@ -160,7 +160,7 @@ CoAP_Message_t* _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
 			coap_memcpy((void*) ((pMsg)->Payload), (const void*) pPayloadInitialContent, PayloadInitialContentLength);
 		}
 	}
-	INFO("Created message %p\n", pMsg);
+	INFO("Created message %p\n\r", pMsg);
 
 	pMsg->Type = Type;
 	pMsg->Code = Code;
@@ -422,10 +422,9 @@ CoAP_Result_t _rom CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle
 	INFO("\r\no>>>>>>>>>>>>>>>>>>>>>>\r\nSend Message [%d Bytes], Interface #%p\r\n", bytesToSend, socketHandle);
 	INFO("Receiving Endpoint: ");
 	PrintEndpoint(&(pked.remoteEp));
-	INFO("\n");
-
-        LOG_DEBUG_ARRAY("HEX: ", pked.pData, pked.size);
-        DEBUG("\"\r\n");
+	INFO("\n\r");
+	LOG_DEBUG_ARRAY("HEX: ", pked.pData, pked.size);
+	DEBUG("\r\n");
 
 	bool sendResult;
 #if DEBUG_RANDOM_DROP_OUTGOING_PERCENTAGE > 0
@@ -527,7 +526,7 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 		LOG_INFO(" MsgId=%"PRIu16, msg->MessageID);
 		LOG_INFO(" Timestamp=%"PRIu32, msg->Timestamp);
 		LOG_INFO(" PayloadLen=%"PRIu16, msg->PayloadLength);
-		LOG_INFO("\n");
+		LOG_INFO("\n\r");
 		return;
 #endif
 

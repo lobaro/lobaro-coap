@@ -179,7 +179,7 @@ void _rom PrintInteractions(CoAP_Interaction_t *pInteractions) {
 		INFO("RetransCnt: %u, SleepUntil %"PRIu32", AckTimeout: %"PRIu32"\n", pIA->RetransCounter, pIA->SleepUntil, pIA->AckTimeout);
 		INFO("Socket: %p, RemoteEp: ", pIA->socketHandle);
 		PrintEndpoint(&pIA->RemoteEp);
-		INFO("\n");
+		INFO("\n\r");
 		INFO("ReqReliabilityState: %s\n", ReliabilityStateToString(pIA->ReqConfirmState));
 		INFO("RespReliabilityState: %s\n", ReliabilityStateToString(pIA->ResConfirmState));
 
@@ -188,7 +188,7 @@ void _rom PrintInteractions(CoAP_Interaction_t *pInteractions) {
 			PrintEndpoint(&pIA->pObserver->Ep);
 			INFO(", Socket: %p, FailCnt: %d, Token: ", pIA->pObserver->socketHandle, pIA->pObserver->FailCount);
 			PrintToken(&pIA->pObserver->Token);
-			INFO("\n");
+			INFO("\n\r");
 		} else {
 			INFO("NONE\n");
 		}

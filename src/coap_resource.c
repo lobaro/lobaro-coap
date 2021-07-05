@@ -370,7 +370,7 @@ void _rom CoAP_PrintResource(CoAP_Res_t* pRes) {
 	while (pOpserver != NULL) {
 		INFO("Token (%"PRIu8"): %016"PRIx64" - ", pOpserver->Token.Length, (uint64_t)pOpserver->Token.Token[0]);
 		PrintEndpoint(&(pOpserver->Ep));
-		INFO("\n");
+		INFO("\n\r");
 		CoAP_printUriOptionsList(pOpserver->pOptList);
 		CoAP_printOptionsList(pOpserver->pOptList);
 		INFO("---\r\n");
