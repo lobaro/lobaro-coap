@@ -60,7 +60,7 @@ typedef enum {
 	RST_SEND
 } CoAP_ConfirmationState_t;
 
-typedef CoAP_Result_t ( * CoAP_RespHandler_fn_t )(CoAP_Message_t* pRespMsg, NetEp_t* Sender);
+typedef CoAP_Result_t ( * CoAP_RespHandler_fn_t )(CoAP_Message_t* pRespMsg, CoAP_Message_t* pReqMsg, NetEp_t* Sender);
 
 
 /*
