@@ -293,7 +293,7 @@ CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 		cnt++;
 		pObserver = pObserver->next;
 	}
-	INFO("Notify %d observers for res %s\n", cnt, pRes->pDescription);
+	INFO("Notify %d observers for res at %p, description: %s\n", cnt,pRes, (pRes->pDescription == NULL)?"N/A":pRes->pDescription);
 
 
 
