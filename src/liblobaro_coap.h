@@ -361,11 +361,28 @@ typedef struct {
 void CoAP_Init(CoAP_API_t api);
 
 /**
+ * Uninitialize the CoAP stack.
+ * @param None.
+ * @return COAP_OK            Coap uninitialized succesfully.
+ * @return COAP_ERR_NOT_FOUND Failed to unlink resources.
+ */
+CoAP_Result_t CoAP_Uninit(void);
+
+/**
  * Each CoAP implementation
  * @param handle
  * @return
  */
 CoAP_Socket_t *CoAP_NewSocket(SocketHandle_t handle);
+
+/**
+ * Remove socket.
+ * @param socket Network socket previously created using @ref CoAP_NewSocket.
+ * @return COAP_OK            Socket has been succesfully removed.
+ * @return COAP_ERR_ARGUMENT  Null pointer provided.
+ * @return COAP_ERR_NOT_FOUND Socket not found.
+ */
+CoAP_Result_t CoAP_RemoveSocket(CoAP_Socket_t *socket);
 
 /**
  * All resources must be created explicitly.
@@ -379,6 +396,15 @@ CoAP_Socket_t *CoAP_NewSocket(SocketHandle_t handle);
  */
 CoAP_Res_t *CoAP_CreateResource(const char *Uri, const char *Descr, CoAP_ResOpts_t Options, CoAP_ResourceHandler_fPtr_t pHandlerFkt,
 								CoAP_ResourceNotifier_fPtr_t pNotifierFkt, CoAP_ResourceObserverInfo_t pObserverInfo);
+
+/**
+ * Removes resource.
+ * @param pResource Resource previously created using @ref CoAP_CreateResource.
+ * @return COAP_OK            Resource has been succesfully removed.
+ * @return COAP_ERR_ARGUMENT  Null pointer provided.
+ * @return COAP_ERR_NOT_FOUND Resource not found.
+ */
+CoAP_Result_t CoAP_RemoveResource(CoAP_Res_t *pResource);
 
 //#####################
 // Message API

@@ -21,26 +21,16 @@
  *******************************************************************************/
 #include "../../coap.h"
 
-typedef struct {
-	CoAP_Socket_t SocketMemory[MAX_ACTIVE_SOCKETS];
-	bool initDone;
-} CoAP_SocketCtrl_t;
+#define LAST_SOCKET_IDX ( MAX_ACTIVE_SOCKETS - 1 )
 
-static CoAP_SocketCtrl_t SocketCtrl = {.initDone = false};
+CoAP_Socket_t SocketMemory[MAX_ACTIVE_SOCKETS] = {0} ;
 
 CoAP_Socket_t* _rom AllocSocket() {
 	int i;
-	if (!SocketCtrl.initDone) {
-		for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {
-			SocketCtrl.SocketMemory[i].Alive = false;
-		}
-		SocketCtrl.initDone = true;
-	}
 
 	for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {
-		CoAP_Socket_t* socket = &(SocketCtrl.SocketMemory[i]);
+		CoAP_Socket_t* socket = &SocketMemory[i];
 		if (socket->Alive == false) {
-			memset(socket, 0, sizeof(*socket));
 			socket->Alive = true;
 			return socket;
 		}
@@ -49,13 +39,25 @@ CoAP_Socket_t* _rom AllocSocket() {
 	return NULL; //no free memory
 }
 
+CoAP_Result_t _rom FreeSocket(CoAP_Socket_t *socket) {
+    int i;
+
+    for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {
+        if (socket == &SocketMemory[i]) {
+            memset(socket, 0, sizeof(*socket));
+            return COAP_OK;
+        }
+    }
+    return COAP_ERR_NOT_FOUND;
+}
+
 CoAP_Socket_t* _rom RetrieveSocket(SocketHandle_t handle) {
 	int i;
 	for (i = 0; i < MAX_ACTIVE_SOCKETS; i++) {
-		if (SocketCtrl.SocketMemory[i].Alive &&
-			SocketCtrl.SocketMemory[i].Handle == handle) //corresponding socket found!
+		if (SocketMemory[i].Alive &&
+			SocketMemory[i].Handle == handle) //corresponding socket found!
 		{
-			return &(SocketCtrl.SocketMemory[i]);
+			return &SocketMemory[i];
 		}
 
 	}

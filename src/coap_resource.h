@@ -29,13 +29,12 @@ typedef bool (* WriteBuf_fn)(uint8_t* data, uint32_t len);
 
 CoAP_Res_t* CoAP_FindResourceByUri(CoAP_Res_t* pResListToSearchIn, CoAP_option_t* pOptionsToMatch);
 CoAP_Result_t CoAP_NotifyResourceObservers(CoAP_Res_t* pRes);
-CoAP_Result_t CoAP_FreeResource(CoAP_Res_t** pResource);
 
 void CoAP_PrintResource(CoAP_Res_t* pRes);
 void CoAP_PrintAllResources();
 
 void CoAP_InitResources();
-
+CoAP_Result_t CoAP_UninitResources();
 CoAP_Result_t CoAP_NVsaveObservers(WriteBuf_fn writeBufFn);
 CoAP_Result_t CoAP_NVloadObservers(uint8_t* pRawPage);
 

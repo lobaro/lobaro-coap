@@ -253,47 +253,57 @@ static CoAP_Result_t _rom CoAP_AppendResourceToList(CoAP_Res_t** pListStart, CoA
 	return COAP_OK;
 }
 
-CoAP_Result_t _rom CoAP_FreeResource(CoAP_Res_t** pResource) {
-	CoAP_FreeOptionList(&(*pResource)->pUri);
+CoAP_Result_t _rom CoAP_FreeResource(CoAP_Res_t **pResource) {
+    CoAP_FreeOptionList(&(*pResource)->pUri);
+    while (NULL != (*pResource)->pListObservers) {
+        CoAP_UnlinkObserverFromList(&(*pResource)->pListObservers, (*pResource)->pListObservers, true);
+    }
 
-	CoAP.api.free((*pResource)->pDescription);
-	CoAP.api.free((void*) (*pResource));
-	*pResource = NULL;
-	return COAP_OK;
+    CoAP.api.free((*pResource)->pDescription);
+    CoAP.api.free((void*) (*pResource));
+    *pResource = NULL;
+    return COAP_OK;
 }
 
-//static CoAp_Result_t CoAP_UnlinkResourceFromList(CoAP_Res_t** pListStart, CoAP_Res_t* pResToRemove, bool FreeUnlinked)
-//{
-//	CoAP_Res_t* currP;
-//	CoAP_Res_t* prevP;
-//
-//  // For 1st node, indicate there is no previous.
-//  prevP = NULL;
-//
-//   //Visit each node, maintaining a pointer to
-//   //the previous node we just visited.
-//  for (currP = *pListStart; currP != NULL;
-//		  prevP = currP, currP = currP->next) {
-//
-//    if (currP == pResToRemove) {  // Found it.
-//      if (prevP == NULL) {
-//        //Fix beginning pointer.
-//        *pListStart = currP->next;
-//      } else {
-//        //Fix previous node's next to
-//        //skip over the removed node.
-//        prevP->next = currP->next;
-//      }
-//
-//      // Deallocate the node.
-//      if(FreeUnlinked) CoAP_FreeResource(&currP);
-//      //Done searching.
-//      ResListMembers--;
-//      return COAP_OK;
-//    }
-//  }
-//  return COAP_OK;
-//}
+static CoAP_Result_t CoAP_UnlinkResourceFromList(CoAP_Res_t **pListStart, CoAP_Res_t *pResToRemove, bool FreeUnlinked) {
+    CoAP_Res_t *currP;
+    CoAP_Res_t *prevP;
+
+    // For 1st node, indicate there is no previous.
+    prevP = NULL;
+
+    //Visit each node, maintaining a pointer to
+    //the previous node we just visited.
+    for (currP = *pListStart; currP != NULL; prevP = currP, currP = currP->next) {
+
+        if (currP == pResToRemove) { // Found it.
+            if (prevP == NULL) {
+                //Fix beginning pointer.
+                *pListStart = currP->next;
+            } else {
+                //Fix previous node's next to
+                //skip over the removed node.
+                prevP->next = currP->next;
+            }
+
+            // Deallocate the node.
+            if (FreeUnlinked) {
+                CoAP_FreeResource(&currP);
+            }
+            //Done searching.
+            ResListMembers--;
+            return COAP_OK;
+        }
+    }
+    return COAP_ERR_NOT_FOUND;
+}
+
+CoAP_Result_t _rom CoAP_RemoveResource(CoAP_Res_t *pResource) {
+    if (NULL == pResource) {
+        return COAP_ERR_ARGUMENT;
+    }
+    return CoAP_UnlinkResourceFromList(&pResList, pResource, true);
+}
 
 CoAP_Res_t* _rom CoAP_FindResourceByUri(CoAP_Res_t* pResListToSearchIn, CoAP_option_t* pOptionsToMatch) {
 	CoAP_Res_t* pList = pResList;
@@ -404,4 +414,15 @@ CoAP_Result_t _rom CoAP_RemoveObserverFromResource(CoAP_Observer_t** pObserverLi
 		pObserver = pObserver->next;
 	}
 	return COAP_ERR_NOT_FOUND;
+}
+
+CoAP_Result_t _rom CoAP_UninitResources() {
+    CoAP_Result_t retval = COAP_ERR_NOT_FOUND;
+    while (NULL != pResList) {
+        retval = CoAP_UnlinkResourceFromList(&pResList, pResList, true);
+        if (COAP_OK != retval) {
+            return retval;
+        }
+    }
+    return COAP_OK;
 }

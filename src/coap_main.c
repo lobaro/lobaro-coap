@@ -363,6 +363,14 @@ CoAP_Socket_t* CoAP_NewSocket(SocketHandle_t handle) {
 	return socket;
 }
 
+CoAP_Result_t CoAP_RemoveSocket(CoAP_Socket_t *socket) {
+    if (NULL == socket) {
+        return COAP_ERR_ARGUMENT;
+    }
+
+    return FreeSocket(socket);
+}
+
 static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 	if (pIA->State == COAP_STATE_HANDLE_REQUEST ||
 			pIA->State == COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT ||

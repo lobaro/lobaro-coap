@@ -31,6 +31,7 @@
 #define MAX_ACTIVE_SOCKETS (5)
 
 CoAP_Socket_t *AllocSocket();
+CoAP_Result_t FreeSocket(CoAP_Socket_t *socket);
 CoAP_Socket_t *RetrieveSocket(SocketHandle_t handle);
 
 #endif

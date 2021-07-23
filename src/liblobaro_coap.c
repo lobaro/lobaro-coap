@@ -64,3 +64,27 @@ void CoAP_Init(CoAP_API_t api) {
 
 	CoAP_InitResources();
 }
+
+CoAP_Result_t CoAP_Uninit(void) {
+    CoAP_Result_t retval = COAP_ERR_NOT_FOUND;
+
+    /* Unlink all interactions. */
+    while (1) {
+        CoAP_Interaction_t *interaction = CoAP_GetLongestPendingInteraction();
+        if (interaction) {
+            CoAP_DeleteInteraction(interaction);
+        } else {
+            break;
+        }
+    }
+
+    retval = CoAP_UninitResources();
+    if (COAP_OK != retval) {
+        return retval;
+    }
+
+    /* Clear pinned API functions. */
+    memset(&CoAP.api, 0, sizeof(CoAP_API_t));
+
+    return retval;
+}
