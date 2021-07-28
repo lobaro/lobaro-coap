@@ -94,7 +94,7 @@ CoAP_Result_t _rom CoAP_NVsaveObservers(WriteBuf_fn writeBufFn) {
 	}
 
 	pTempPage = TempPage;
-	INFO("writing: %ld bytes to flash\r\n", TotalPageBytes);
+	INFO("writing: %"PRIu32" bytes to flash\r\n", TotalPageBytes);
 	writeBufFn(pTempPage, TotalPageBytes);
 	return COAP_OK;
 }
