@@ -112,6 +112,7 @@ typedef struct {
 	NetInterfaceType_t NetType;
 	NetAddr_t NetAddr;
 	uint16_t NetPort;
+	void *session;
 } NetEp_t;
 
 //################################
@@ -255,6 +256,7 @@ typedef struct {
 	uint32_t Timestamp; //set by parse/send network routines
 	//VER is implicit = 1
 	//TKL (Token Length) is calculated dynamically
+	bool is_secured;                            // [1] Indication that msg is secured.
 	CoAP_MessageType_t Type;                    // [1] T
 	CoAP_MessageCode_t Code;                    // [1] Code
 	uint16_t MessageID;                         // [2] Message ID (maps ACK msg to coresponding CON msg)

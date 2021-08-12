@@ -25,5 +25,5 @@
 #include "../../liblobaro_coap.h"
 
 void PrintRawPacket(NetPacket_t* pckt);
-
+bool isPacketSecured(NetPacket_t* pckt);
 #endif

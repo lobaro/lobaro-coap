@@ -62,6 +62,10 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 		return; //very early parsing fail, coap parse was a total fail can't do anything for remote user, complete ignore of packet
 	}
 
+	if (isPacketSecured(pPacket)) {
+	    pMsg->is_secured = true;
+	}
+
 #if DEBUG_RANDOM_DROP_INCOMING_PERCENTAGE > 0
 	if (CoAP.api.rand() % 100 < DEBUG_RANDOM_DROP_INCOMING_PERCENTAGE) {
 		INFO("!!!FAIL!!! on purpose, dropping incoming message (%d%% chance)\n", DEBUG_RANDOM_DROP_INCOMING_PERCENTAGE);
