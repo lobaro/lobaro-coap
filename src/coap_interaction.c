@@ -455,6 +455,11 @@ CoAP_Result_t _rom CoAP_RemoveInteractionsObserver(CoAP_Interaction_t* pIA, CoAP
 	return CoAP_RemoveObserverFromResource(&((pIA->pRes)->pListObservers), pIA->socketHandle, &(pIA->RemoteEp), token);
 }
 
+CoAP_Result_t _rom CoAP_GetInteractionsObserver(CoAP_Interaction_t* pIA, CoAP_Observer_t** pObserver, CoAP_Token_t token) {
+
+	return CoAP_MatchObserverFromList(&((pIA->pRes)->pListObservers), pObserver,pIA->socketHandle, &(pIA->RemoteEp), token);
+}
+
 CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 	if (pIA == NULL || pIA->pReqMsg == NULL) {
 		return COAP_ERR_ARGUMENT;    //safety checks
@@ -523,7 +528,12 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 		//Client cancels observation actively (this is an alternative to simply forget the req token and send rst on next notification)
 	} else if (obsVal == OBSERVE_OPT_DEREGISTER) { // val == 1
 		//find matching observer in resource observers-list
-		CoAP_RemoveInteractionsObserver(pIA, pIA->pReqMsg->Token); //remove observer identified by token, socketHandle and remote EP from resource
+		res = CoAP_GetInteractionsObserver(pIA, &pObserver, pIA->pReqMsg->Token);
+		if((COAP_OK == res) && (NULL != pIA->pRes->ObserverInfo)) {
+			INFO("Abort of pending notificaton interaction\r\n");
+			pIA->pRes->ObserverInfo(pObserver, false, pIA->pRes);
+		}
+		CoAP_RemoveInteractionsObserver(pIA, pIA->pReqMsg->Token);
 
 		//delete/abort any pending notification interaction
 		CoAP_Interaction_t* pIApending;
@@ -532,16 +542,12 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 				if (CoAP_TokenEqual(pIApending->pRespMsg->Token, pIA->pReqMsg->Token)
 						&& pIApending->socketHandle == pIA->socketHandle
 						&& EpAreEqual(&(pIApending->RemoteEp), &(pIA->RemoteEp))) {
-					INFO("Abort of pending notificaton interaction\r\n");
 					res = CoAP_DeleteInteraction(pIApending);
-			        if((COAP_OK == res) && (NULL != pIA->pRes->ObserverInfo)) {
-			            pIA->pRes->ObserverInfo(pObserver, false, pIA->pRes);
-			        }
 					break;
 				}
 			}
 		}
-
+		return res;
 	} else {
 		return COAP_BAD_OPTION_VAL;
 	}

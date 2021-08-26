@@ -133,7 +133,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 	//INFO("Prechecks done. Handle message by type\r\n");
 	// try to include message into new or existing server/client interaction
 
-	CoAP_Interaction_t* pIA = CoAP_FindInteractionByMessageIdAndEp(CoAP.pInteractions, pMsg->MessageID, &(pPacket->remoteEp));
+	CoAP_Interaction_t* pIA = CoAP_FindInteractionByMessageIdAndEp(CoAP.pInteractions, pMsg->MessageID -1, &(pPacket->remoteEp));
 
 	if (pIA != NULL) {
 		pIA->SleepUntil = 0; // Wakeup interaction
@@ -546,6 +546,8 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 }
 
 static void handleNotifyInteraction(CoAP_Interaction_t* pIA) {
+	CoAP_Result_t res;
+	CoAP_Observer_t* pObserver = NULL;
 	if (pIA->State == COAP_STATE_READY_TO_NOTIFY) {
 		//o>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		INFO("Sending Notification\n");
@@ -626,6 +628,11 @@ static void handleNotifyInteraction(CoAP_Interaction_t* pIA) {
 
 		case COAP_ERR_OUT_OF_ATTEMPTS: //check is resource is a lazy observe delete one
 		case COAP_ERR_REMOTE_RST:
+			res = CoAP_GetInteractionsObserver(pIA, &pObserver, pIA->pReqMsg->Token);
+			if((COAP_OK == res) && (NULL != pIA->pRes->ObserverInfo)) {
+				INFO("Abort of pending notificaton interaction\r\n");
+				pIA->pRes->ObserverInfo(pObserver, false, pIA->pRes);
+			}
 			CoAP_RemoveInteractionsObserver(pIA, pIA->pRespMsg->Token);  //remove observer from resource
 			CoAP_DeleteInteraction(pIA);
 			break;

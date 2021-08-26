@@ -416,6 +416,23 @@ CoAP_Result_t _rom CoAP_RemoveObserverFromResource(CoAP_Observer_t** pObserverLi
 	return COAP_ERR_NOT_FOUND;
 }
 
+
+CoAP_Result_t _rom CoAP_MatchObserverFromList(CoAP_Observer_t** pObserverList, CoAP_Observer_t** pMatchingObserver, SocketHandle_t socketHandle, NetEp_t* pRemoteEP, CoAP_Token_t token) {
+	CoAP_Observer_t* pObserver = *pObserverList;
+
+	while (pObserver != NULL) { //found right existing observation -> get it
+
+		if (CoAP_TokenEqual(token, pObserver->Token) && socketHandle == pObserver->socketHandle && EpAreEqual(pRemoteEP, &(pObserver->Ep))) {
+
+			*pMatchingObserver = pObserver;
+			return COAP_OK;
+
+		}
+		pObserver = pObserver->next;
+	}
+	return COAP_ERR_NOT_FOUND;
+}
+
 CoAP_Result_t _rom CoAP_UninitResources() {
     CoAP_Result_t retval = COAP_ERR_NOT_FOUND;
     while (NULL != pResList) {
