@@ -305,7 +305,7 @@ static CoAP_Result_t _rom append_OptionToListEnd(CoAP_option_t** pOptionsListBeg
 		(*pOptionsListBegin)->Length = length;
 		(*pOptionsListBegin)->Number = OptNumber;
 		(*pOptionsListBegin)->Value = ((uint8_t*) (*pOptionsListBegin)) + sizeof(CoAP_option_t);
-		if(NULL != ((*pOptionsListBegin)->Value))
+		if(NULL != ((*pOptionsListBegin)->Value) && buf != NULL)
 		{
 		    coap_memcpy((void*) ((*pOptionsListBegin)->Value), (const void*) buf, length);
 		}
