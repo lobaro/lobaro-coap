@@ -133,7 +133,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 	//INFO("Prechecks done. Handle message by type\r\n");
 	// try to include message into new or existing server/client interaction
 
-	CoAP_Interaction_t* pIA = CoAP_FindInteractionByMessageIdAndEp(CoAP.pInteractions, pMsg->MessageID -1, &(pPacket->remoteEp));
+	CoAP_Interaction_t* pIA = CoAP_FindInteractionByMessageIdAndEp(CoAP.pInteractions, pMsg->MessageID, &(pPacket->remoteEp));
 
 	if (pIA != NULL) {
 		pIA->SleepUntil = 0; // Wakeup interaction
