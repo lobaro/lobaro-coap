@@ -55,6 +55,21 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 	if ((res = CoAP_ParseMessageFromDatagram(pPacket->pData, pPacket->size, &pMsg)) == COAP_OK) {
 		CoAP_PrintMsg(pMsg); // allocates the needed amount of ram
 		INFO("o<<<<<<<<<<<<<<<<<<<<<<\r\n");
+	} else if(res == COAP_PARSE_TOO_MUCH_PAYLOAD){
+		// RFC 7252, section 5.9.2.9.
+		CoAP_option_t *pOptionsList = NULL;
+		if(COAP_OK != CoAP_AppendUintOptionToList(&pOptionsList, OPT_NUM_SIZE1, MAX_PAYLOAD_SIZE))
+		{
+			ERROR("Failed to create option SIZE1\r\n");
+			//not a critical error, continue
+		}
+		if(COAP_OK != CoAP_SendResponseWithoutPayload(RESP_REQUEST_ENTITY_TOO_LARGE_4_13, pMsg, socketHandle, pPacket->remoteEp, pOptionsList))
+		{
+			ERROR("Failed to send response 4.13.\r\n");
+			//can't do anything to repair/cleanup the problem - continue.
+		}
+		CoAP_FreeOptionList(&pOptionsList);
+		goto END;
 	} else {
 		ERROR("ParseResult: ");
 		CoAP_PrintResultValue(res);

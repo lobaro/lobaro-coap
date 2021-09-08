@@ -175,7 +175,7 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 	//we use local mem and copy afterwards because we dont know yet the size of payload buffer
 	//but want to allocate one block for complete final "rxedMsg" memory without realloc the buf size later.
 	static CoAP_Message_t Msg;
-
+	CoAP_Result_t result = COAP_OK;
 	uint8_t TokenLength = 0;
 
 	*rxedMsg = NULL;
@@ -249,10 +249,13 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 	if (pPayloadBegin != NULL) {
 		Msg.PayloadLength = srcArrLength - (pPayloadBegin - srcArr);
 		if (Msg.PayloadLength > MAX_PAYLOAD_SIZE) {
-			CoAP_FreeOptionList(&(Msg.pOptionsList));
-			return COAP_PARSE_TOO_MUCH_PAYLOAD;
+		    // do not return early - this problem can be handled gracefully.
+			result = COAP_PARSE_TOO_MUCH_PAYLOAD;
+			Msg.Payload = NULL;
+			Msg.PayloadLength = 0;
+		} else {
+	        Msg.Payload = pPayloadBegin;
 		}
-		Msg.Payload = pPayloadBegin;
 	} else
 		Msg.PayloadLength = 0;
 
@@ -277,7 +280,7 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
         (*rxedMsg )->pOptionsList = Msg.pOptionsList;
 	(*rxedMsg)->Timestamp = CoAP.api.rtc1HzCnt();
 
-	return COAP_OK;
+	return result;
 }
 
 int CoAP_GetRawSizeOfMessage(CoAP_Message_t* Msg) {
@@ -358,6 +361,23 @@ CoAP_Result_t _rom CoAP_SendEmptyAck(uint16_t MessageID, SocketHandle_t socketHa
 	CoAP_InitToEmptyResetMsg(&Msg);
 	Msg.Type = ACK;
 	Msg.MessageID = MessageID;
+	return CoAP_SendMsg(&Msg, socketHandle, receiver);
+}
+
+CoAP_Result_t _rom CoAP_SendResponseWithoutPayload(CoAP_MessageCode_t Code, CoAP_Message_t *request, SocketHandle_t socketHandle, NetEp_t receiver, CoAP_option_t *pOptionsList){
+	CoAP_Message_t Msg;
+	CoAP_InitToEmptyResetMsg(&Msg);
+	if(request->Type == CON)
+	{
+		Msg.Type = ACK;
+		Msg.MessageID = request->MessageID;
+	} else {
+		Msg.Type = NON;
+		Msg.MessageID = CoAP_GetNextMid();
+	}
+	Msg.Code = request->Code;
+	Msg.Token = request->Token;
+	Msg.pOptionsList = pOptionsList;
 	return CoAP_SendMsg(&Msg, socketHandle, receiver);
 }
 

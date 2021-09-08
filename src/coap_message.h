@@ -49,6 +49,7 @@ CoAP_Result_t CoAP_SendEmptyAck(uint16_t MessageID, SocketHandle_t socketHandle,
 CoAP_Result_t CoAP_SendEmptyRST(uint16_t MessageID, SocketHandle_t socketHandle, NetEp_t receiver);
 CoAP_Result_t CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, CoAP_Token_t token, SocketHandle_t socketHandle, NetEp_t receiver);
 CoAP_Message_t* CoAP_AllocRespMsg(CoAP_Message_t* ReqMsg, CoAP_MessageCode_t Code, uint16_t PayloadMaxSize);
+CoAP_Result_t CoAP_SendResponseWithoutPayload(CoAP_MessageCode_t Code, CoAP_Message_t *request, SocketHandle_t socketHandle, NetEp_t receiver, CoAP_option_t *pOptionsList);
 
 CoAP_Result_t CoAP_free_Message(CoAP_Message_t** Msg);
 void CoAP_free_MsgPayload(CoAP_Message_t** Msg);
