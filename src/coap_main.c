@@ -628,7 +628,7 @@ static void handleNotifyInteraction(CoAP_Interaction_t* pIA) {
 
 		case COAP_ERR_OUT_OF_ATTEMPTS: //check is resource is a lazy observe delete one
 		case COAP_ERR_REMOTE_RST:
-			res = CoAP_GetInteractionsObserver(pIA, &pObserver, pIA->pReqMsg->Token);
+			res = CoAP_GetInteractionsObserver(pIA, &pObserver, pIA->pRespMsg->Token);
 			if((COAP_OK == res) && (NULL != pIA->pRes->ObserverInfo)) {
 				INFO("Abort of pending notificaton interaction\r\n");
 				pIA->pRes->ObserverInfo(pObserver, false, pIA->pRes, pIA->RemoteEp.session);
