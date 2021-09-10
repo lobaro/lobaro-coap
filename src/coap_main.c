@@ -32,9 +32,9 @@ void hal_debug_puts(char* s) {
 }
 
 void hal_debug_array(const char *s, const uint8_t *array, size_t size) {
-    if (CoAP.api.debugArray != NULL) {
-        CoAP.api.debugArray(s, array, size);
-    }
+	if (CoAP.api.debugArray != NULL) {
+		CoAP.api.debugArray(s, array, size);
+	}
 }
 
 // Called by network interfaces to pass rawData which is parsed to CoAP messages.
@@ -78,7 +78,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 	}
 
 	if (isPacketSecured(pPacket)) {
-	    pMsg->is_secured = true;
+		pMsg->is_secured = true;
 	}
 
 #if DEBUG_RANDOM_DROP_INCOMING_PERCENTAGE > 0
@@ -383,11 +383,11 @@ CoAP_Socket_t* CoAP_NewSocket(SocketHandle_t handle) {
 }
 
 CoAP_Result_t CoAP_RemoveSocket(CoAP_Socket_t *socket) {
-    if (NULL == socket) {
-        return COAP_ERR_ARGUMENT;
-    }
+	if (NULL == socket) {
+		return COAP_ERR_ARGUMENT;
+	}
 
-    return FreeSocket(socket);
+	return FreeSocket(socket);
 }
 
 static void handleServerInteraction(CoAP_Interaction_t* pIA) {

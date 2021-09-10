@@ -249,12 +249,12 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 	if (pPayloadBegin != NULL) {
 		Msg.PayloadLength = srcArrLength - (pPayloadBegin - srcArr);
 		if (Msg.PayloadLength > MAX_PAYLOAD_SIZE) {
-		    // do not return early - this problem can be handled gracefully.
+			// do not return early - this problem can be handled gracefully.
 			result = COAP_PARSE_TOO_MUCH_PAYLOAD;
 			Msg.Payload = NULL;
 			Msg.PayloadLength = 0;
 		} else {
-	        Msg.Payload = pPayloadBegin;
+			Msg.Payload = pPayloadBegin;
 		}
 	} else
 		Msg.PayloadLength = 0;
@@ -264,20 +264,20 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 //Get memory for total message data and copy parsed data
 	START_MSG_COPY_LABEL:
 	*rxedMsg = CoAP_CreateMessage( Msg.Type,
-                                       Msg.Code,
-                                       Msg.MessageID,
-                                       Msg.Payload,
-                                       Msg.PayloadLength,
-                                       Msg.PayloadBufSize,
-                                       Msg.Token );
+									   Msg.Code,
+									   Msg.MessageID,
+									   Msg.Payload,
+									   Msg.PayloadLength,
+									   Msg.PayloadBufSize,
+									   Msg.Token );
 
-        if (*rxedMsg == NULL ) //out of memory
-        {
-            CoAP_FreeOptionList( &( Msg.pOptionsList ) );
-            return COAP_ERR_OUT_OF_MEMORY;
-        }
+		if (*rxedMsg == NULL ) //out of memory
+		{
+			CoAP_FreeOptionList( &( Msg.pOptionsList ) );
+			return COAP_ERR_OUT_OF_MEMORY;
+		}
 
-        (*rxedMsg )->pOptionsList = Msg.pOptionsList;
+		(*rxedMsg )->pOptionsList = Msg.pOptionsList;
 	(*rxedMsg)->Timestamp = CoAP.api.rtc1HzCnt();
 
 	return result;
