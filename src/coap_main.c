@@ -426,7 +426,7 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 
 		// Call of external set resource handler
 		// could change type and code of message (ACK & EMPTY above only a guess!)
-		CoAP_HandlerResult_t Res = pIA->pRes->Handler(pIA->pReqMsg, pIA->pRespMsg);
+		CoAP_HandlerResult_t Res = pIA->pRes->Handler(pIA->pReqMsg, pIA->pRespMsg, pIA->RemoteEp.session);
 
 		// make sure the handler returned valid response (either already allocated OR allocated by handler itself)
 		if (pIA->pRespMsg == NULL)
@@ -631,7 +631,7 @@ static void handleNotifyInteraction(CoAP_Interaction_t* pIA) {
 			res = CoAP_GetInteractionsObserver(pIA, &pObserver, pIA->pReqMsg->Token);
 			if((COAP_OK == res) && (NULL != pIA->pRes->ObserverInfo)) {
 				INFO("Abort of pending notificaton interaction\r\n");
-				pIA->pRes->ObserverInfo(pObserver, false, pIA->pRes);
+				pIA->pRes->ObserverInfo(pObserver, false, pIA->pRes, pIA->RemoteEp.session);
 			}
 			CoAP_RemoveInteractionsObserver(pIA, pIA->pRespMsg->Token);  //remove observer from resource
 			CoAP_DeleteInteraction(pIA);

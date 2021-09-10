@@ -303,11 +303,11 @@ typedef enum {
 	HANDLER_SKIPPED = 3
 } CoAP_HandlerResult_t;
 
-typedef CoAP_HandlerResult_t (*CoAP_ResourceHandler_fPtr_t)(CoAP_Message_t *pReq, CoAP_Message_t *pResp);
+typedef CoAP_HandlerResult_t (*CoAP_ResourceHandler_fPtr_t)(CoAP_Message_t *pReq, CoAP_Message_t *pResp, void *clientCtx);
 // TODO: Can we use the CoAP_ResourceHandler_fPtr_t signature also for notifiers?
 typedef CoAP_HandlerResult_t (*CoAP_ResourceNotifier_fPtr_t)(CoAP_Observer_t *pObserver, CoAP_Message_t *pResp);
 
-typedef void (*CoAP_ResourceObserverInfo_t)(CoAP_Observer_t *pObserver, bool active, struct CoAP_Res *pResource);
+typedef void (*CoAP_ResourceObserverInfo_t)(CoAP_Observer_t *pObserver, bool active, struct CoAP_Res *pResource, void *clientCtx);
 
 typedef struct {
 	uint16_t Cf;    // Content-Format

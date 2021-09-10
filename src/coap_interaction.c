@@ -521,7 +521,7 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 		//attach/update observer to resource
 		res = CoAP_AppendObserverToList(&((pIA->pRes)->pListObservers), pObserver);
 		if((COAP_OK == res) && (NULL != pIA->pRes->ObserverInfo)){
-		    pIA->pRes->ObserverInfo(pObserver, true, pIA->pRes);
+		    pIA->pRes->ObserverInfo(pObserver, true, pIA->pRes, pIA->RemoteEp.session);
 		}
 		return res;
 
@@ -531,7 +531,7 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 		res = CoAP_GetInteractionsObserver(pIA, &pObserver, pIA->pReqMsg->Token);
 		if((COAP_OK == res) && (NULL != pIA->pRes->ObserverInfo)) {
 			INFO("Abort of pending notificaton interaction\r\n");
-			pIA->pRes->ObserverInfo(pObserver, false, pIA->pRes);
+			pIA->pRes->ObserverInfo(pObserver, false, pIA->pRes, pIA->RemoteEp.session);
 		}
 		CoAP_RemoveInteractionsObserver(pIA, pIA->pReqMsg->Token);
 

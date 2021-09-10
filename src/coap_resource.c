@@ -168,9 +168,10 @@ CoAP_Result_t _rom CoAP_NVloadObservers(uint8_t* pRawPage) {
 }
 
 
-CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Message_t* pResp) {
+CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Message_t* pResp, void *c_ctx) {
 //	static uint8_t wellknownStr[500];
 //	uint8_t* pWr = wellknownStr;
+	(void)c_ctx;
 
 	if (pReq->Code != REQ_GET) {
 		uint8_t errMsg[] = {"CoAP GET only!"};
