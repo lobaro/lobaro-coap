@@ -364,7 +364,7 @@ CoAP_Result_t _rom CoAP_SendEmptyAck(uint16_t MessageID, SocketHandle_t socketHa
 	return CoAP_SendMsg(&Msg, socketHandle, receiver);
 }
 
-CoAP_Result_t _rom CoAP_SendResponseWithoutPayload(CoAP_MessageCode_t Code, CoAP_Message_t *request, SocketHandle_t socketHandle, NetEp_t receiver, CoAP_option_t *pOptionsList){
+CoAP_Result_t _rom CoAP_SendResponseWithoutPayload(CoAP_MessageCode_t code, CoAP_Message_t *request, SocketHandle_t socketHandle, NetEp_t receiver, CoAP_option_t *pOptionsList){
 	CoAP_Message_t Msg;
 	CoAP_InitToEmptyResetMsg(&Msg);
 	if(request->Type == CON)
@@ -375,7 +375,7 @@ CoAP_Result_t _rom CoAP_SendResponseWithoutPayload(CoAP_MessageCode_t Code, CoAP
 		Msg.Type = NON;
 		Msg.MessageID = CoAP_GetNextMid();
 	}
-	Msg.Code = request->Code;
+	Msg.Code = code;
 	Msg.Token = request->Token;
 	Msg.pOptionsList = pOptionsList;
 	return CoAP_SendMsg(&Msg, socketHandle, receiver);
