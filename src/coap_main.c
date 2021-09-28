@@ -522,7 +522,6 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 			CoAP_DeleteInteraction(pIA);
 		}
 	}
-	return;
 }
 
 static void handleNotifyInteraction(CoAP_Interaction_t* pIA) {
@@ -614,7 +613,6 @@ static void handleNotifyInteraction(CoAP_Interaction_t* pIA) {
 			break;
 		}
 	}
-	return;
 }
 
 static void handleClientInteraction(CoAP_Interaction_t* pIA) {
@@ -721,7 +719,9 @@ void _rom CoAP_doWork() {
 	default:
 		ERROR("Unknown Notification Role: %d", pIA->Role);
 	}
-
-	return;
 }
 
+
+void _rom CoAP_ClearPendingInteractions() {
+    CoAP_ClearInteractions(&CoAP.pInteractions);
+}

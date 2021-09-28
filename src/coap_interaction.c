@@ -430,7 +430,6 @@ CoAP_Result_t _rom CoAP_StartNewServerInteraction(CoAP_Message_t* pMsgReq, CoAP_
 }
 
 CoAP_Result_t _rom CoAP_RemoveInteractionsObserver(CoAP_Interaction_t* pIA, CoAP_Token_t token) {
-
 	return CoAP_RemoveObserverFromResource(&((pIA->pRes)->pListObservers), pIA->socketHandle, &(pIA->RemoteEp), token);
 }
 
@@ -507,7 +506,7 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 				if (CoAP_TokenEqual(pIApending->pRespMsg->Token, pIA->pReqMsg->Token)
 						&& pIApending->socketHandle == pIA->socketHandle
 						&& EpAreEqual(&(pIApending->RemoteEp), &(pIA->RemoteEp))) {
-					INFO("Abort of pending notificaton interaction\r\n");
+					INFO("Abort of pending notification interaction\r\n");
 					CoAP_DeleteInteraction(pIApending);
 					break;
 				}
@@ -519,4 +518,17 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 	}
 
 	return COAP_ERR_NOT_FOUND;
+}
+
+void _rom CoAP_ClearInteractions(CoAP_Interaction_t **pIA) {
+    CoAP_Interaction_t *p = *pIA;
+    *pIA = NULL;
+    size_t cnt = 0;
+    while (p != NULL) {
+        cnt++;
+        CoAP_Interaction_t *next = p->next;
+        CoAP_FreeInteraction(&p);
+        p = next;
+    }
+    INFO("CoAP Interactions dropped: %u\r\n", cnt);
 }
