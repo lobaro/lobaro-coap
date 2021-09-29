@@ -26,7 +26,8 @@ typedef enum {
 	COAP_ROLE_NOT_SET,
 	COAP_ROLE_SERVER,        //[server]
 	COAP_ROLE_NOTIFICATION,  //[notificator]
-	COAP_ROLE_CLIENT         //[client]
+	COAP_ROLE_CLIENT,        //[client]
+    COAP_ROLE_OBSERVATION    //[client observation]
 } CoAP_InteractionRole_t;
 
 typedef enum {
@@ -48,6 +49,7 @@ typedef enum {
 	COAP_STATE_READY_TO_REQUEST,                // request is ready to send
 	COAP_STATE_WAITING_RESPONSE,                // resend request after some time if no response or ack has been received for some time
 	COAP_STATE_HANDLE_RESPONSE,                    // call client callback and delete after some time, ack maybe send too
+    COAP_STATE_HANDLE_NOTIFICATION,                // call client callback and delete after some time, ack maybe send too
 
 	//[server]+[notificator]+[client]
 	COAP_STATE_FINISHED                            // can be deleted / freed

@@ -316,7 +316,7 @@ int CoAP_GetRawSizeOfMessage(CoAP_Message_t* Msg) {
 	return TotalMsgBytes;
 }
 
-static CoAP_Result_t _rom CoAP_BuildDatagram(uint8_t* destArr, uint16_t* pDestArrSize, CoAP_Message_t* Msg) {
+CoAP_Result_t _rom CoAP_BuildDatagram(uint8_t* destArr, uint16_t* pDestArrSize, CoAP_Message_t* Msg) {
 	uint16_t offset = 0;
 	uint8_t TokenLength;
 

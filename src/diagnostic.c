@@ -11,6 +11,8 @@ char* InteractionRoleToString(CoAP_InteractionRole_t role) {
 		return "NOTIFICATION";
 	case COAP_ROLE_CLIENT:
 		return "CLIENT";
+    case COAP_ROLE_OBSERVATION:
+        return "OBSERVATION";
 	default:
 		return "UNKNOWN_ROLE";
 	}

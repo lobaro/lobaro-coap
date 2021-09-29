@@ -38,6 +38,7 @@
 		TOKEN_BYTE(7,token)
 
 bool CoAP_TokenEqual(CoAP_Token_t a, CoAP_Token_t b);
+CoAP_Result_t CoAP_BuildDatagram(uint8_t* destArr, uint16_t* pDestArrSize, CoAP_Message_t* Msg);
 
 CoAP_Message_t* CoAP_CreateMessage(CoAP_MessageType_t Type, CoAP_MessageCode_t Code,
 		uint16_t MessageID, const uint8_t* pPayloadInitialContent, uint16_t PayloadInitialContentLength, uint16_t PayloadMaxSize, CoAP_Token_t Token);

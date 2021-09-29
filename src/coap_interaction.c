@@ -251,8 +251,19 @@ CoAP_Result_t _rom CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, Socke
 	newIA->socketHandle = socketHandle;
 	CopyEndpoints(&(newIA->RemoteEp), ServerEp);
 	newIA->RespCB = cb;
-
-	newIA->Role = COAP_ROLE_CLIENT;
+    
+    // Check Observation Option
+    CoAP_option_t* observeOption = CoAP_FindOptionByNumber(pMsgReq, OPT_NUM_OBSERVE);
+    
+    if (observeOption != NULL && observeOption->Length > 0 && observeOption->Value[0] == 0x00) {
+        newIA->Role = COAP_ROLE_OBSERVATION;
+    }
+    else {
+        newIA->Role = COAP_ROLE_CLIENT;
+    }
+    
+    printf("StartNewClientInteraction for pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", newIA, newIA->pReqMsg->MessageID, newIA->pReqMsg->Code, newIA->pReqMsg->Type, newIA->Role);
+    
 	newIA->State = COAP_STATE_READY_TO_REQUEST;
 
 	CoAP_AppendInteractionToList(&(CoAP.pInteractions), newIA);

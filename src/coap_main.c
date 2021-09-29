@@ -240,14 +240,16 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 		} else { // pMsg carries a separate response (=no piggyback!) to our client request...
 			// find in interaction list request with same token & endpoint
 			for (pIA = CoAP.pInteractions; pIA != NULL; pIA = pIA->next) {
-				if (pIA->Role == COAP_ROLE_CLIENT && CoAP_TokenEqual(pIA->pReqMsg->Token, pMsg->Token) && EpAreEqual(&(pPacket->remoteEp), &(pIA->RemoteEp))) {
+                printf("LOOPING UP pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pReqMsg->Code, pIA->pReqMsg->Type, pIA->Role);
+                if (pIA->Role == COAP_ROLE_CLIENT && CoAP_TokenEqual(pIA->pReqMsg->Token, pMsg->Token) && EpAreEqual(&(pPacket->remoteEp), &(pIA->RemoteEp))) {
+                    printf("PICKING UP pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pReqMsg->Code, pIA->pReqMsg->Type, pIA->Role);
 					// 2nd case "updates" received response
 					if (pIA->State == COAP_STATE_WAITING_RESPONSE || pIA->State == COAP_STATE_HANDLE_RESPONSE) {
 						if (pIA->pRespMsg != NULL) {
 							CoAP_free_Message(&(pIA->pRespMsg)); //free eventually present older response (todo: check if this is possible!?)
 						}
 						pIA->pRespMsg = pMsg; //attach just received message for further actions in IA [client] state-machine & return
-						pIA->State = COAP_STATE_HANDLE_RESPONSE;
+                        pIA->State = COAP_STATE_HANDLE_RESPONSE;
 					}
 
 					if (pMsg->Type == CON) {
@@ -255,8 +257,28 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 							pIA->ResConfirmState = ACK_SEND;
 						}
 					}
-					return;
+                    return;
 				}
+                
+                if (pIA->Role == COAP_ROLE_OBSERVATION && CoAP_TokenEqual(pIA->pReqMsg->Token, pMsg->Token) && EpAreEqual(&(pPacket->remoteEp), &(pIA->RemoteEp))) {
+                    printf("PICKING UP pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pReqMsg->Code, pIA->pReqMsg->Type, pIA->Role);
+                    // 2nd case "updates" received response
+                    if (pIA->State == COAP_STATE_WAITING_RESPONSE || pIA->State == COAP_STATE_HANDLE_RESPONSE) {
+                        if (pIA->pRespMsg != NULL) {
+                            CoAP_free_Message(&(pIA->pRespMsg)); //free eventually present older response (todo: check if this is possible!?)
+                        }
+                        pIA->pRespMsg = pMsg; //attach just received message for further actions in IA [client] state-machine & return
+                        pIA->State = COAP_STATE_HANDLE_NOTIFICATION;
+                    }
+
+                    if (pMsg->Type == CON) {
+                        if (CoAP_SendShortResp(ACK, EMPTY, pMsg->MessageID, pMsg->Token, socketHandle, pPacket->remoteEp) == COAP_OK) {
+                            pIA->ResConfirmState = ACK_SEND;
+                        }
+                    }
+                    return;
+                }
+
 			} // for loop
 
 			// no active interaction found to match remote msg to...
@@ -425,7 +447,7 @@ static CoAP_Result_t _rom CheckReqStatus(CoAP_Interaction_t* pIA) {
 		//todo: call failure callback to user
 		return COAP_ERR_REMOTE_RST;
 	}
-
+        
 	if (pIA->pReqMsg->Type == CON) { // We send a CON
 		if (pIA->ReqConfirmState == ACK_SEND) {
 			if (CoAP_MsgIsOlderThan(pIA->pReqMsg, CLIENT_MAX_RESP_WAIT_TIME)) {
@@ -449,7 +471,9 @@ static CoAP_Result_t _rom CheckReqStatus(CoAP_Interaction_t* pIA) {
 			}
 		}
 	} else { // request type = NON
-		if (CoAP_MsgIsOlderThan(pIA->pReqMsg, CLIENT_MAX_RESP_WAIT_TIME)) {
+        
+		if (CoAP_MsgIsOlderThan(pIA->pReqMsg, CLIENT_MAX_RESP_WAIT_TIME) && pIA->Role != COAP_ROLE_OBSERVATION) {
+            
 			INFO("- [NON request]: Giving up to wait for actual response data\r\n");
 			return COAP_ERR_TIMEOUT;
 		} else
@@ -786,6 +810,7 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 				INFO("(!!!) Internal socket error on sending request retry! MiD: %d\r\n",
 						pIA->pReqMsg->MessageID);
 				if (pIA->RespCB != NULL) {
+                    printf("Calling RespCB for pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pRespMsg->Code, pIA->pRespMsg->Type, pIA->Role);
 					pIA->RespCB(NULL, pIA->pReqMsg, &pIA->RemoteEp);
 				}
 				CoAP_DeleteInteraction(pIA);
@@ -801,18 +826,27 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 			}
 			CoAP_DeleteInteraction(pIA);
 		}
-		//--------------------------------------------------
-	} else if (pIA->State == COAP_STATE_HANDLE_RESPONSE) {
+    } else if (pIA->State == COAP_STATE_HANDLE_RESPONSE) {
+        //--------------------------------------------------
+        DEBUG("- Got Response to Client request! -> calling Handler!\r\n");
+        if (pIA->RespCB != NULL) {
+            printf("Calling RespCB for pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pRespMsg->Code, pIA->pRespMsg->Type, pIA->Role);
+            pIA->RespCB(pIA->pRespMsg, &(pIA->RemoteEp)); //call callback
+        }
+        
+        CoAP_DeleteInteraction(pIA); //direct delete, todo: eventually wait some time to send ACK instead of RST if out ACK to remote reponse was lost
+
+        //--------------------------------------------------
+	} else if (pIA->State == COAP_STATE_HANDLE_NOTIFICATION) {
 		//--------------------------------------------------
 		DEBUG("- Got Response to Client request! -> calling Handler!\r\n");
 		if (pIA->RespCB != NULL) {
+            printf("Calling RespCB for pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pRespMsg->Code, pIA->pRespMsg->Type, pIA->Role);
 			pIA->RespCB(pIA->pRespMsg, pIA->pReqMsg, &(pIA->RemoteEp)); //call callback
+            
 		}
-
-//			pIA->State = COAP_STATE_FINISHED;
-//			CoAP_EnqueueLastInteraction(pIA);
-		CoAP_DeleteInteraction(
-				pIA); //direct delete, todo: eventually wait some time to send ACK instead of RST if out ACK to remote reponse was lost
+        
+        pIA->State = COAP_STATE_WAITING_RESPONSE;
 
 	} else {
 		if (pIA->RespCB != NULL) {
@@ -871,7 +905,8 @@ void _rom CoAP_doWork() {
 	case COAP_ROLE_NOTIFICATION:
 		handleNotifyInteraction(pIA);
 		break;
-	case COAP_ROLE_CLIENT:
+	case COAP_ROLE_OBSERVATION:
+    case COAP_ROLE_CLIENT:
 		handleClientInteraction(pIA);
 		break;
 	default:
