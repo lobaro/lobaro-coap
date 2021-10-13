@@ -297,10 +297,10 @@ typedef struct CoAP_Observer {
 #define RES_OPT_IPATCH (1 << REQ_IPATCH) // 1<<7
 
 typedef enum {
-	HANDLER_OK = 0,
-	HANDLER_POSTPONE = 1,
-	HANDLER_ERROR = 2,
-	HANDLER_SKIPPED = 3
+	HANDLER_OK = 0,			// everything fine - we got an response to send
+	HANDLER_POSTPONE = 1,	// Handler needs more time to fulfill request, send ACK and separate response
+	HANDLER_ERROR = 2,		// handler has no result and will not deliver
+	HANDLER_SKIPPED = 3,	// do not send confirm message if possible - NON request case
 } CoAP_HandlerResult_t;
 
 typedef CoAP_HandlerResult_t (*CoAP_ResourceHandler_fPtr_t)(CoAP_Message_t *pReq, CoAP_Message_t *pResp, void *clientCtx);
