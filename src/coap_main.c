@@ -182,7 +182,12 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 				pIA->pRespMsg = pMsg; //attach just received message for further actions in IA [client] state-machine & return
 				pIA->State = COAP_STATE_HANDLE_RESPONSE;
 				return;
-			} else {
+			} else if(pIA->Role == COAP_ROLE_NOTIFICATION && CoAP_TokenEqual(pIA->pRespMsg->Token, pMsg->Token) && pIA->State == COAP_STATE_NOTIFICATION_SENT){
+				INFO("- received acknowledgement on notification\r\n");
+				return;
+			}
+			else {
+
 				INFO("- could not piggybacked response to any request!\r\n");
 			}
 		}
