@@ -385,6 +385,9 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 				|| ((pIA->pReqMsg->Code == REQ_POST) && !((pIA->pRes->Options).AllowedMethods & RES_OPT_POST))
 				|| ((pIA->pReqMsg->Code == REQ_PUT) && !((pIA->pRes->Options).AllowedMethods & RES_OPT_PUT))
 				|| ((pIA->pReqMsg->Code == REQ_DELETE) && !((pIA->pRes->Options).AllowedMethods & RES_OPT_DELETE))
+				|| ((pIA->pReqMsg->Code == REQ_FETCH) && !((pIA->pRes->Options).AllowedMethods & RES_OPT_FETCH))
+				|| ((pIA->pReqMsg->Code == REQ_PATCH) && !((pIA->pRes->Options).AllowedMethods & RES_OPT_PATCH))
+				|| ((pIA->pReqMsg->Code == REQ_IPATCH) && !((pIA->pRes->Options).AllowedMethods & RES_OPT_IPATCH))
 				) {
 			pIA->pRespMsg = CoAP_AllocRespMsg(pIA->pReqMsg, RESP_METHOD_NOT_ALLOWED_4_05, 0); //matches also TYPE + TOKEN to request
 
@@ -480,7 +483,7 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 		}
 
 		//handle for GET observe option
-		if (pIA->pReqMsg->Code == REQ_GET && pIA->pRespMsg->Code == RESP_SUCCESS_CONTENT_2_05) {
+		if ((pIA->pReqMsg->Code == REQ_GET || pIA->pReqMsg->Code == REQ_FETCH) && pIA->pRespMsg->Code == RESP_SUCCESS_CONTENT_2_05) {
 			CoAP_Result_t result = CoAP_HandleObservationInReq(pIA);
 			if (result == COAP_OK) { //<---- attach OBSERVER to resource
 				AddObserveOptionToMsg(pIA->pRespMsg, 0);  //= ACK observation to client

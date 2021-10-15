@@ -609,8 +609,14 @@ const char _rom *CoAP_CodeName(CoAP_MessageCode_t code) {
 		case REQ_PUT:
 			return "REQ_PUT";
 		case REQ_DELETE:
-			// DELETE and LAST both 0.04
-			return "REQ_DELETE/REQ_LAST";
+			return "REQ_DELETE";
+		case REQ_FETCH:
+			return "REQ_FETCH";
+		case REQ_PATCH:
+			return "REQ_PATCH";
+		case REQ_IPATCH:
+			// iPATCH and LAST both 0.07
+			return "REQ_IPATCH/REQ_LAST";
 		case RESP_FIRST_2_00:
 			return "RESP_FIRST_2_00";
 		case RESP_SUCCESS_CREATED_2_01:
