@@ -212,7 +212,10 @@ typedef enum {
 	REQ_POST = CODE(0u, 2u),
 	REQ_PUT = CODE(0u, 3u),
 	REQ_DELETE = CODE(0u, 4u),
-	REQ_LAST = CODE(0u, 4u),
+	REQ_FETCH = CODE(0u, 5u),
+	REQ_PATCH = CODE(0u, 6u),
+	REQ_IPATCH = CODE(0u, 7u),
+	REQ_LAST = CODE(0u, 7u),
 	RESP_FIRST_2_00 = CODE(2u, 0u),
 	RESP_SUCCESS_CREATED_2_01 = CODE(2u, 1u),    // only used on response to "POST" and "PUT" like HTTP 201
 	RESP_SUCCESS_DELETED_2_02 = CODE(2u, 2u),    // only used on response to "DELETE" and "POST" like HTTP 204
@@ -286,6 +289,9 @@ typedef struct CoAP_Observer {
 #define RES_OPT_POST   (1 << REQ_POST)   // 1<<2
 #define RES_OPT_PUT    (1 << REQ_PUT)    // 1<<3
 #define RES_OPT_DELETE (1 << REQ_DELETE) // 1<<4
+#define RES_OPT_FETCH  (1 << REQ_FETCH)  // 1<<5
+#define RES_OPT_PATCH  (1 << REQ_PATCH)  // 1<<6
+#define RES_OPT_IPATCH (1 << REQ_IPATCH) // 1<<7
 
 typedef enum {
 	HANDLER_OK = 0,
