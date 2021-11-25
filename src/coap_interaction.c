@@ -180,7 +180,7 @@ CoAP_Result_t _rom CoAP_EnableAckTimeout(CoAP_Interaction_t* pIA, uint8_t retryN
 	uint32_t waitTime = ACK_TIMEOUT;
 	int i;
 	for (i = 0; i < retryNum; i++) { //"exponential backoff"
-		waitTime *= ACK_TIMEOUT;
+		waitTime *= 2;
 	}
 
 	pIA->AckTimeout = CoAP.api.rtc1HzCnt() + waitTime;

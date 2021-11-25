@@ -34,7 +34,7 @@
 
 #define ACK_TIMEOUT (4)
 #define ACK_RANDOM_FACTOR (1.5)
-#define MAX_RETRANSMIT (3)
+#define MAX_RETRANSMIT (2)
 #define NSTART (1) //todo implement
 #define DEFAULT_LEISURE (5) //todo implement
 #define PROBING_RATE (1)        //[client]
