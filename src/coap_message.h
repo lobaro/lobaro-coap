@@ -1,4 +1,5 @@
-/*******************************************************************************
+/**************************CoAP_Result_t CoAP_RespHandler_fn_t(CoAP_Message_t* pRespMsg, CoAP_Message_t* pReqMsg, NetEp_t* Sender);
+*****************************************************
  * Copyright (c)  2015  Dipl.-Ing. Tobias Rohde, http://www.lobaro.com
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
