@@ -831,7 +831,7 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
         DEBUG("- Got Response to Client request! -> calling Handler!\r\n");
         if (pIA->RespCB != NULL) {
             printf("Calling RespCB for pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pRespMsg->Code, pIA->pRespMsg->Type, pIA->Role);
-            pIA->RespCB(pIA->pRespMsg, &(pIA->RemoteEp)); //call callback
+            pIA->RespCB(pIA->pRespMsg, pIA->pReqMsg, &(pIA->RemoteEp)); //call callback
         }
         
         CoAP_DeleteInteraction(pIA); //direct delete, todo: eventually wait some time to send ACK instead of RST if out ACK to remote reponse was lost
