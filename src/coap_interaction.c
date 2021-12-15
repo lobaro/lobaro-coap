@@ -197,7 +197,7 @@ CoAP_Result_t _rom CoAP_EnableAckTimeout(CoAP_Interaction_t* pIA, uint8_t retryN
 	for (i = 0; i < retryNum; i++) { //"exponential backoff"
 		waitTime *= 2;
 	}
-    INFO("CoAP timeout: %lus\n", waitTime);
+    INFO("CoAP timeout: %us\n", waitTime);
 	pIA->AckTimeout = CoAP.api.rtc1HzCnt() + waitTime;
 	return COAP_OK;
 #endif
@@ -262,7 +262,7 @@ CoAP_Result_t _rom CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, Socke
         newIA->Role = COAP_ROLE_CLIENT;
     }
     
-    printf("StartNewClientInteraction for pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", newIA, newIA->pReqMsg->MessageID, newIA->pReqMsg->Code, newIA->pReqMsg->Type, newIA->Role);
+    DEBUG("StartNewClientInteraction for pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", newIA, newIA->pReqMsg->MessageID, newIA->pReqMsg->Code, newIA->pReqMsg->Type, newIA->Role);
     
 	newIA->State = COAP_STATE_READY_TO_REQUEST;
 
@@ -597,5 +597,5 @@ void _rom CoAP_ClearInteractions(CoAP_Interaction_t **pIA) {
         CoAP_FreeInteraction(&p);
         p = next;
     }
-    INFO("CoAP Interactions dropped: %u\r\n", cnt);
+    INFO("CoAP Interactions dropped: %zu\r\n", cnt);
 }

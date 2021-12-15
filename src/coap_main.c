@@ -194,7 +194,22 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 			goto END;
 		}
 		pIA->ResConfirmState = ACK_SEND;
-
+        
+        // Check Observation Option
+        CoAP_option_t* observeOption = CoAP_FindOptionByNumber(pIA->pReqMsg, OPT_NUM_OBSERVE);
+        if (pIA->Role == COAP_ROLE_CLIENT && observeOption != NULL && observeOption->Length > 0 && observeOption->Value[0] == 0x01) {
+            pIA->State = COAP_STATE_FINISHED;
+            
+            INFO("- Searching for original observe subscription interaction");
+            for (CoAP_Interaction_t* pOIA = CoAP.pInteractions; pOIA != NULL; pOIA = pOIA->next) {
+                INFO("compare token: %d message id: %d\r\n", CoAP_TokenEqual(pOIA->pReqMsg->Token, pIA->pReqMsg->Token), pOIA->pReqMsg->MessageID);
+                if (pOIA->Role == COAP_ROLE_OBSERVATION && CoAP_TokenEqual(pOIA->pReqMsg->Token, pIA->pReqMsg->Token) && EpAreEqual(&(pIA->RemoteEp), &(pOIA->RemoteEp))) {
+                    INFO("- Found original observe subscription interaction message id: %d\r\n", pOIA->pReqMsg->MessageID);
+                    pOIA->State = COAP_STATE_FINISHED;
+                }
+            }
+        }
+        
 		//piA is NOT NULL in every case here
 		DEBUG("- piggybacked response received\r\n");
 		if (pMsg->Code != EMPTY) {
@@ -211,10 +226,20 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 				return;
 			}
 			else {
-
 				INFO("- could not piggybacked response to any request!\r\n");
 			}
 		}
+        else {
+            if (pIA->pReqMsg->MessageID == pMsg->MessageID && pIA->State == COAP_STATE_WAITING_RESPONSE) {
+                if (pIA->Role == COAP_ROLE_CLIENT) {
+                    pIA->ReqConfirmState = ACK_SEND;
+                }
+                else if (pIA->Role == COAP_ROLE_OBSERVATION) {
+                    pIA->State = COAP_STATE_WAITING_NOTIFICATION;
+                }
+                return;
+            }
+        }
 		break;
 	}
 	case NON:
@@ -240,9 +265,9 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 		} else { // pMsg carries a separate response (=no piggyback!) to our client request...
 			// find in interaction list request with same token & endpoint
 			for (pIA = CoAP.pInteractions; pIA != NULL; pIA = pIA->next) {
-                printf("LOOPING UP pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pReqMsg->Code, pIA->pReqMsg->Type, pIA->Role);
+                DEBUG("LOOPING UP pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pReqMsg->Code, pIA->pReqMsg->Type, pIA->Role);
                 if (pIA->Role == COAP_ROLE_CLIENT && CoAP_TokenEqual(pIA->pReqMsg->Token, pMsg->Token) && EpAreEqual(&(pPacket->remoteEp), &(pIA->RemoteEp))) {
-                    printf("PICKING UP pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pReqMsg->Code, pIA->pReqMsg->Type, pIA->Role);
+                    DEBUG("PICKING UP pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pReqMsg->Code, pIA->pReqMsg->Type, pIA->Role);
 					// 2nd case "updates" received response
 					if (pIA->State == COAP_STATE_WAITING_RESPONSE || pIA->State == COAP_STATE_HANDLE_RESPONSE) {
 						if (pIA->pRespMsg != NULL) {
@@ -261,9 +286,9 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 				}
                 
                 if (pIA->Role == COAP_ROLE_OBSERVATION && CoAP_TokenEqual(pIA->pReqMsg->Token, pMsg->Token) && EpAreEqual(&(pPacket->remoteEp), &(pIA->RemoteEp))) {
-                    printf("PICKING UP pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pReqMsg->Code, pIA->pReqMsg->Type, pIA->Role);
+                    DEBUG("PICKING UP pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pReqMsg->Code, pIA->pReqMsg->Type, pIA->Role);
                     // 2nd case "updates" received response
-                    if (pIA->State == COAP_STATE_WAITING_RESPONSE || pIA->State == COAP_STATE_HANDLE_RESPONSE) {
+                    if (pIA->State == COAP_STATE_WAITING_NOTIFICATION) {
                         if (pIA->pRespMsg != NULL) {
                             CoAP_free_Message(&(pIA->pRespMsg)); //free eventually present older response (todo: check if this is possible!?)
                         }
@@ -790,7 +815,12 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 	if (pIA->State == COAP_STATE_READY_TO_REQUEST) {
 		//------------------------------------------
 		//o>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-		SendReq(pIA, COAP_STATE_WAITING_RESPONSE); //transmit response & move to next state
+        if (pIA->Role == COAP_ROLE_OBSERVATION) {
+            SendReq(pIA, COAP_STATE_WAITING_RESPONSE); //transmit response & move to next state
+        }
+        else if (pIA->Role == COAP_ROLE_CLIENT) {
+            SendReq(pIA, COAP_STATE_WAITING_RESPONSE); //transmit response & move to next state
+        }
 		//o>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		//--------------------------------------------------
 	} else if (pIA->State == COAP_STATE_WAITING_RESPONSE) {
@@ -826,11 +856,15 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 			}
 			CoAP_DeleteInteraction(pIA);
 		}
+    } else if (pIA->State == COAP_STATE_WAITING_NOTIFICATION) {
+        
+        CoAP_EnqueueLastInteraction(pIA); //(re)enqueue interaction for further processing
+        
     } else if (pIA->State == COAP_STATE_HANDLE_RESPONSE) {
         //--------------------------------------------------
         DEBUG("- Got Response to Client request! -> calling Handler!\r\n");
         if (pIA->RespCB != NULL) {
-            printf("Calling RespCB for pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pRespMsg->Code, pIA->pRespMsg->Type, pIA->Role);
+            DEBUG("Calling RespCB for pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pRespMsg->Code, pIA->pRespMsg->Type, pIA->Role);
             pIA->RespCB(pIA->pRespMsg, pIA->pReqMsg, &(pIA->RemoteEp)); //call callback
         }
         
@@ -839,15 +873,20 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
         //--------------------------------------------------
 	} else if (pIA->State == COAP_STATE_HANDLE_NOTIFICATION) {
 		//--------------------------------------------------
-		DEBUG("- Got Response to Client request! -> calling Handler!\r\n");
+		DEBUG("- Got Notification! -> calling Handler!\r\n");
 		if (pIA->RespCB != NULL) {
             printf("Calling RespCB for pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pRespMsg->Code, pIA->pRespMsg->Type, pIA->Role);
 			pIA->RespCB(pIA->pRespMsg, pIA->pReqMsg, &(pIA->RemoteEp)); //call callback
             
 		}
-        
-        pIA->State = COAP_STATE_WAITING_RESPONSE;
-
+        // If there is an error code in Response Message remove Interaction
+        if (pIA->pRespMsg->Code > CODE(4u, 0u)) {
+            CoAP_DeleteInteraction(pIA);
+        }
+        // Wait for more notifications
+        else {
+            pIA->State = COAP_STATE_WAITING_NOTIFICATION;
+        }
 	} else {
 		if (pIA->RespCB != NULL) {
 			pIA->RespCB(NULL, pIA->pReqMsg, &pIA->RemoteEp);
@@ -913,7 +952,6 @@ void _rom CoAP_doWork() {
 		ERROR("Unknown Notification Role: %d", pIA->Role);
 	}
 }
-
 
 void _rom CoAP_ClearPendingInteractions() {
     CoAP_ClearInteractions(&CoAP.pInteractions);
