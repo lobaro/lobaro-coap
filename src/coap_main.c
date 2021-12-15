@@ -198,7 +198,8 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
         // Check Observation Option
         CoAP_option_t* observeOption = CoAP_FindOptionByNumber(pIA->pReqMsg, OPT_NUM_OBSERVE);
         if (pIA->Role == COAP_ROLE_CLIENT && observeOption != NULL && observeOption->Length > 0 && observeOption->Value[0] == 0x01) {
-            pIA->State = COAP_STATE_FINISHED;
+            pIA->pRespMsg = pMsg; //attach just received message for further actions in IA [client] state-machine & return
+            pIA->State = COAP_STATE_HANDLE_RESPONSE;
             
             INFO("- Searching for original observe subscription interaction");
             for (CoAP_Interaction_t* pOIA = CoAP.pInteractions; pOIA != NULL; pOIA = pOIA->next) {
@@ -208,6 +209,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
                     pOIA->State = COAP_STATE_FINISHED;
                 }
             }
+            return;
         }
         
 		//piA is NOT NULL in every case here
