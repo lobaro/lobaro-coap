@@ -28,11 +28,3 @@ void _rom PrintRawPacket(NetPacket_t* pckt)
 	INFO("Packet size:%d rssi:%" PRIi32 " hops: %d \r\nRawData (hex) :", pckt->size, pckt->metaInfo.Dat.RfPath.RSSI, pckt->metaInfo.Dat.RfPath.HopCount);
 	LOG_DEBUG_ARRAY("\r\nHex :", pckt->pData, pckt->size);
 }
-
-bool isPacketSecured(NetPacket_t *pckt)
-{
-    if (pckt->remoteEp.session) {
-        return true;
-    }
-    return false;
-}

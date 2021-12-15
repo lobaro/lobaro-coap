@@ -309,11 +309,18 @@ typedef CoAP_HandlerResult_t (*CoAP_ResourceNotifier_fPtr_t)(CoAP_Observer_t *pO
 
 typedef void (*CoAP_ResourceObserverInfo_t)(CoAP_Observer_t *pObserver, bool active, struct CoAP_Res *pResource, void *clientCtx);
 
+typedef enum {
+    ENC_END_POINT_ENC   = 0,	// endpoint for encrypted messages only
+    ENC_END_POINT_COAP  = 1,	// endpoint for unencrypted messages only
+    ENC_END_POINT_MIXED = 2,	// endpoint for both encrypted and unencrypted messages
+} CoAP_EncEndPoint_t;
+
 typedef struct {
 	uint16_t Cf;    // Content-Format
 	uint16_t AllowedMethods; // Bitwise resource options //todo: Send Response as CON or NON
 	uint16_t ETag;
 	CoAP_MessageType_t NotificationType;
+	CoAP_EncEndPoint_t EncEndPoint;
 } CoAP_ResOpts_t;
 
 typedef struct CoAP_Res {
@@ -349,6 +356,8 @@ typedef struct {
 	void *(*malloc)(size_t size);
 	void (*free)(void *p);
 	int (*rand)();
+	// callback function for user that validates session
+	bool (*is_session_valid)(void *session);
 } CoAP_API_t;
 
 //################################

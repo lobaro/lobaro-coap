@@ -77,10 +77,6 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 		return; //very early parsing fail, coap parse was a total fail can't do anything for remote user, complete ignore of packet
 	}
 
-	if (isPacketSecured(pPacket)) {
-		pMsg->is_secured = true;
-	}
-
 #if DEBUG_RANDOM_DROP_INCOMING_PERCENTAGE > 0
 	if (CoAP.api.rand() % 100 < DEBUG_RANDOM_DROP_INCOMING_PERCENTAGE) {
 		INFO("!!!FAIL!!! on purpose, dropping incoming message (%d%% chance)\n", DEBUG_RANDOM_DROP_INCOMING_PERCENTAGE);
@@ -446,7 +442,17 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 
 		// Call of external set resource handler
 		// could change type and code of message (ACK & EMPTY above only a guess!)
-		CoAP_HandlerResult_t Res = pIA->pRes->Handler(pIA->pReqMsg, pIA->pRespMsg, pIA->RemoteEp.session);
+		CoAP_HandlerResult_t Res = HANDLER_ERROR;
+		if((( ENC_END_POINT_ENC == pIA->pRes->Options.EncEndPoint ) && ( true == CoAP.api.is_session_valid( pIA->RemoteEp.session ))) ||
+			(( ENC_END_POINT_COAP == pIA->pRes->Options.EncEndPoint ) && (NULL == pIA->RemoteEp.session )) ||
+			( ENC_END_POINT_MIXED == pIA->pRes->Options.EncEndPoint ))
+		{
+			Res = pIA->pRes->Handler(pIA->pReqMsg, pIA->pRespMsg, pIA->RemoteEp.session);
+		}
+		else
+		{
+			pIA->pRespMsg->Code = RESP_METHOD_NOT_ACCEPTABLE_4_06; // TODO: verify if can jump to function end
+		}
 
 		// make sure the handler returned valid response (either already allocated OR allocated by handler itself)
 		if (pIA->pRespMsg == NULL)

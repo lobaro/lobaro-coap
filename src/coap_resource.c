@@ -215,6 +215,11 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 				pStr += coap_sprintf((char*) pStr, ";obs");
 			}
 		}
+
+		if(ENC_END_POINT_ENC == pList->Options.EncEndPoint){
+			pStr += coap_sprintf((char*) pStr, ";osc");
+		}
+
 		*pStr++ = ',';
 
 		pList = pList->next;
