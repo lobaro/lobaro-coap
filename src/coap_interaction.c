@@ -360,7 +360,7 @@ CoAP_Result_t _rom CoAP_StartNotifyInteractions(CoAP_Res_t* pRes) {
 		}
 
 		//Create fresh response message
-		newIA->pRespMsg = CoAP_CreateMessage(CON, RESP_SUCCESS_CONTENT_2_05, CoAP_GetNextMid(), NULL, 0, PREFERED_PAYLOAD_SIZE, pObserver->Token);
+		newIA->pRespMsg = CoAP_CreateMessage(pRes->Options.NotificationType, RESP_SUCCESS_CONTENT_2_05, CoAP_GetNextMid(), NULL, 0, PREFERED_PAYLOAD_SIZE, pObserver->Token);
 
 		//Call Notify Handler of resource and add to interaction list
 		if (NULL == newIA->pRespMsg || NULL == pRes->Notifier)

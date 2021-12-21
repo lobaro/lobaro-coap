@@ -313,6 +313,7 @@ typedef struct {
 	uint16_t Cf;    // Content-Format
 	uint16_t AllowedMethods; // Bitwise resource options //todo: Send Response as CON or NON
 	uint16_t ETag;
+	CoAP_MessageType_t NotificationType;
 } CoAP_ResOpts_t;
 
 typedef struct CoAP_Res {
