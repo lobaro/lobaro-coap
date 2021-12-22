@@ -223,7 +223,16 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 				pIA->pRespMsg = pMsg; //attach just received message for further actions in IA [client] state-machine & return
 				pIA->State = COAP_STATE_HANDLE_RESPONSE;
 				return;
-			} else if(pIA->Role == COAP_ROLE_NOTIFICATION && CoAP_TokenEqual(pIA->pRespMsg->Token, pMsg->Token) && pIA->State == COAP_STATE_NOTIFICATION_SENT){
+            }
+            else if (pIA->Role == COAP_ROLE_OBSERVATION && CoAP_TokenEqual(pIA->pReqMsg->Token, pMsg->Token) && pIA->State == COAP_STATE_WAITING_RESPONSE) {
+                if (pIA->pRespMsg != NULL) {
+                    CoAP_free_Message(&(pIA->pRespMsg)); //free eventually present older response (todo: check if this is possible!?)
+                }
+                pIA->pRespMsg = pMsg; //attach just received message for further actions in IA [client] state-machine & return
+                pIA->State = COAP_STATE_HANDLE_NOTIFICATION;
+                return;
+            }
+            else if(pIA->Role == COAP_ROLE_NOTIFICATION && CoAP_TokenEqual(pIA->pRespMsg->Token, pMsg->Token) && pIA->State == COAP_STATE_NOTIFICATION_SENT){
 				INFO("- received acknowledgement on notification\r\n");
 				return;
 			}
@@ -290,7 +299,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
                 if (pIA->Role == COAP_ROLE_OBSERVATION && CoAP_TokenEqual(pIA->pReqMsg->Token, pMsg->Token) && EpAreEqual(&(pPacket->remoteEp), &(pIA->RemoteEp))) {
                     DEBUG("PICKING UP pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pReqMsg->Code, pIA->pReqMsg->Type, pIA->Role);
                     // 2nd case "updates" received response
-                    if (pIA->State == COAP_STATE_WAITING_NOTIFICATION) {
+                    if (pIA->State == COAP_STATE_WAITING_RESPONSE ||pIA->State == COAP_STATE_WAITING_NOTIFICATION) {
                         if (pIA->pRespMsg != NULL) {
                             CoAP_free_Message(&(pIA->pRespMsg)); //free eventually present older response (todo: check if this is possible!?)
                         }

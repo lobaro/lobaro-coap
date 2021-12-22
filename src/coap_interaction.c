@@ -237,7 +237,7 @@ CoAP_Result_t _rom CoAP_EnqueueLastInteraction(CoAP_Interaction_t* pInteractionT
 }
 
 //we act as a CoAP Client (sending requests) in this interaction
-CoAP_Result_t _rom CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, SocketHandle_t socketHandle, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb) {
+CoAP_Result_t _rom CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, SocketHandle_t socketHandle, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb, CoAP_InteractionRole_t role) {
 	if (pMsgReq == NULL || CoAP_MsgIsRequest(pMsgReq) == false)
 		return COAP_ERR_ARGUMENT;
 
@@ -251,16 +251,7 @@ CoAP_Result_t _rom CoAP_StartNewClientInteraction(CoAP_Message_t* pMsgReq, Socke
 	newIA->socketHandle = socketHandle;
 	CopyEndpoints(&(newIA->RemoteEp), ServerEp);
 	newIA->RespCB = cb;
-    
-    // Check Observation Option
-    CoAP_option_t* observeOption = CoAP_FindOptionByNumber(pMsgReq, OPT_NUM_OBSERVE);
-    
-    if (observeOption != NULL && observeOption->Length > 0 && observeOption->Value[0] == 0x00) {
-        newIA->Role = COAP_ROLE_OBSERVATION;
-    }
-    else {
-        newIA->Role = COAP_ROLE_CLIENT;
-    }
+    newIA->Role = role;
     
     DEBUG("StartNewClientInteraction for pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", newIA, newIA->pReqMsg->MessageID, newIA->pReqMsg->Code, newIA->pReqMsg->Type, newIA->Role);
     
@@ -277,7 +268,7 @@ CoAP_Result_t _rom CoAP_StartNewGetRequest(char* UriString, SocketHandle_t socke
 
 	if (pReqMsg != NULL) {
 		CoAP_AppendUriOptionsFromString(&(pReqMsg->pOptionsList), UriString);
-		return CoAP_StartNewClientInteraction(pReqMsg, socketHandle, ServerEp, cb);
+		return CoAP_StartNewClientInteraction(pReqMsg, socketHandle, ServerEp, cb, COAP_ROLE_CLIENT);
 	}
 
 	INFO("- New GetRequest failed: Out of Memory\r\n");
@@ -295,7 +286,7 @@ CoAP_Result_t _rom CoAP_StartNewRequest(CoAP_MessageCode_t type, const char* Uri
 
 	if (pReqMsg != NULL) {
 		CoAP_AppendUriOptionsFromString(&(pReqMsg->pOptionsList), UriString);
-		return CoAP_StartNewClientInteraction(pReqMsg, socketHandle, ServerEp, cb);
+		return CoAP_StartNewClientInteraction(pReqMsg, socketHandle, ServerEp, cb, COAP_ROLE_CLIENT);
 	}
 
 	INFO("- New GetRequest failed: Out of Memory\r\n");
