@@ -558,7 +558,8 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 
 		LOG_INFO(" Code=%s", CoAP_CodeName(msg->Code));
 		LOG_INFO(" MsgId=%"PRIu16, msg->MessageID);
-		LOG_INFO(" Timestamp=%"PRIu32, msg->Timestamp);
+        LOG_INFO(" Token=0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x", msg->Token.Token[0], msg->Token.Token[1], msg->Token.Token[2], msg->Token.Token[3], msg->Token.Token[4], msg->Token.Token[5], msg->Token.Token[6], msg->Token.Token[7]);
+		LOG_INFO(" Timestamp=%"PRIu16, msg->Timestamp);
 		LOG_INFO(" PayloadLen=%"PRIu16, msg->PayloadLength);
 		LOG_INFO("\n\r");
 		return;
