@@ -315,12 +315,19 @@ typedef enum {
     ENC_END_POINT_MIXED = 2,	// endpoint for both encrypted and unencrypted messages
 } CoAP_EncEndPoint_t;
 
+typedef enum {
+    COAP_RESP_NO_NON    = 0,	// no response for NON confirmable request
+    COAP_RESP_NON_NON   = 1,	// NON confirmable response for NON confirmable request
+} CoAP_ResponseType_t;
+
+
 typedef struct {
 	uint16_t Cf;    // Content-Format
 	uint16_t AllowedMethods; // Bitwise resource options //todo: Send Response as CON or NON
 	uint16_t ETag;
 	CoAP_MessageType_t NotificationType;
 	CoAP_EncEndPoint_t EncEndPoint;
+	CoAP_ResponseType_t ResponseType;
 } CoAP_ResOpts_t;
 
 typedef struct CoAP_Res {

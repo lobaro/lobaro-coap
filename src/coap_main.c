@@ -464,7 +464,7 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 
 		// Check return value of handler:
 		// a) everything fine - we got an response to send or observe option to check when HANDLER_SKIPPED
-		if ((Res == HANDLER_OK || Res == HANDLER_SKIPPED ) && pIA->pRespMsg->Code == EMPTY) {
+		if (Res == HANDLER_OK && pIA->pRespMsg->Code == EMPTY) {
 			pIA->pRespMsg->Code = RESP_SUCCESS_CONTENT_2_05; //handler forgot to set code?
 
 			// b) handler has no result and will not deliver	in the future
@@ -542,7 +542,7 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 
 		//handle non sendable NON and response send cases. Left in the end intentionally due to possibile
 		//GET request with NON type that starts observation
-		if (Res == HANDLER_SKIPPED && pIA->pRespMsg->Type == NON) {
+		if (COAP_RESP_NO_NON == pIA->pRes->Options.ResponseType && pIA->pRespMsg->Type == NON) {
 			CoAP_DeleteInteraction(pIA);
 			return;
 		}
