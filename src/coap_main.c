@@ -463,7 +463,7 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 		}
 
 		// Check return value of handler:
-		// a) everything fine - we got an response to send or observe option to check when HANDLER_SKIPPED
+		// a) everything fine - we got an response to send
 		if (Res == HANDLER_OK && pIA->pRespMsg->Code == EMPTY) {
 			pIA->pRespMsg->Code = RESP_SUCCESS_CONTENT_2_05; //handler forgot to set code?
 
