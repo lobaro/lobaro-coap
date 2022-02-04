@@ -425,6 +425,16 @@ CoAP_Res_t *CoAP_CreateResource(const char *Uri, const char *Descr, CoAP_ResOpts
  */
 CoAP_Result_t CoAP_RemoveResource(CoAP_Res_t *pResource);
 
+/**
+ * Updates resource.
+ * @param pResource Resource previously created using @ref CoAP_CreateResource.
+ * @param options   Valid set of options.
+ * @return COAP_OK            Resource has been succesfully updated.
+ * @return COAP_ERR_ARGUMENT  Null pointer provided.
+ * @return COAP_ERR_NOT_FOUND Resource not found.
+ */
+CoAP_Result_t CoAP_UpdateResource(CoAP_Res_t *pResource, CoAP_ResOpts_t options);
+
 //#####################
 // Message API
 //#####################

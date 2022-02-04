@@ -311,6 +311,33 @@ CoAP_Result_t _rom CoAP_RemoveResource(CoAP_Res_t *pResource) {
     return CoAP_UnlinkResourceFromList(&pResList, pResource, true);
 }
 
+static CoAP_Result_t CoAP_UpdateResourceInList(CoAP_Res_t **pListStart, CoAP_Res_t *pResToUpdate, CoAP_ResOpts_t options) {
+    CoAP_Res_t *currP;
+    CoAP_Res_t *prevP;
+
+    // For 1st node, indicate there is no previous.
+    prevP = NULL;
+
+    //Visit each node, maintaining a pointer to
+    //the previous node we just visited.
+    for (currP = *pListStart; currP != NULL; prevP = currP, currP = currP->next) {
+
+        if (currP == pResToUpdate) { // Found it.
+			currP->Options.ResponseType = options.ResponseType;
+			currP->Options.NotificationType = options.NotificationType;
+            return COAP_OK;
+        }
+    }
+    return COAP_ERR_NOT_FOUND;
+}
+
+CoAP_Result_t _rom CoAP_UpdateResource(CoAP_Res_t *pResource, CoAP_ResOpts_t options) {
+    if (NULL == pResource) {
+        return COAP_ERR_ARGUMENT;
+    }
+	return CoAP_UpdateResourceInList(&pResList, pResource, options);
+}
+
 CoAP_Res_t* _rom CoAP_FindResourceByUri(CoAP_Res_t* pResListToSearchIn, CoAP_option_t* pOptionsToMatch) {
 	CoAP_Res_t* pList = pResList;
 	if (pResListToSearchIn != NULL) {
