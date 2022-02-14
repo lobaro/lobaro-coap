@@ -542,7 +542,7 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 
 		//handle non sendable NON and response send cases. Left in the end intentionally due to possibile
 		//GET request with NON type that starts observation
-		if (COAP_RESP_NO_NON == pIA->pRes->Options.ResponseType && pIA->pRespMsg->Type == NON) {
+		if (COAP_RESP_NO_NON == pIA->pRes->Options.ResponseType && pIA->pReqMsg->Type == NON && pIA->pReqMsg->Code != REQ_GET) {
 			CoAP_DeleteInteraction(pIA);
 			return;
 		}
