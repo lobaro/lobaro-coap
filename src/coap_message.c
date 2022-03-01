@@ -171,67 +171,73 @@ CoAP_Message_t* _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
 	return pMsg;
 }
 
-CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcArrLength, CoAP_Message_t** rxedMsg) {
-	//we use local mem and copy afterwards because we dont know yet the size of payload buffer
-	//but want to allocate one block for complete final "rxedMsg" memory without realloc the buf size later.
-	static CoAP_Message_t Msg;
+CoAP_Result_t _rom CoAP_ParseDatagramUpToToken(uint8_t* srcArr, uint16_t srcArrLength, CoAP_Message_t* Msg, uint16_t *optionsOfsset) {
 	CoAP_Result_t result = COAP_OK;
 	uint8_t TokenLength = 0;
-
-	*rxedMsg = NULL;
 
 	if (srcArrLength < 4)
 		return COAP_PARSE_DATAGRAM_TOO_SHORT; // Minimum Size of CoAP Message = 4 Bytes
 
-	CoAP_InitToEmptyResetMsg(&Msg);
+	CoAP_InitToEmptyResetMsg(Msg);
 
 //1st Header Byte
 	uint8_t Version = srcArr[0] >> 6u;
 	if (Version != COAP_VERSION)
 		return COAP_PARSE_UNKOWN_COAP_VERSION;
 
-	Msg.Type = (srcArr[0] & 0x30u) >> 4u;
+	Msg->Type = (srcArr[0] & 0x30u) >> 4u;
 	TokenLength = srcArr[0] & 0xFu;
 	if (TokenLength > 8) {
 		INFO("CoAP-Parse Byte1 Error\r\n");
 		return COAP_PARSE_MESSAGE_FORMAT_ERROR;
-	} // return COAP_PARSE_MESSAGE_FORMAT_ERROR;
+	} 
 
 //2nd & 3rd Header Byte
-	Msg.Code = srcArr[1];
+	Msg->Code = srcArr[1];
 
 	//"Hack" to support early version of "myCoAP" iOS app which sends malformed "CoAP-pings" containing a token...
-	//if(Msg.Code == EMPTY && (TokenLength != 0 || srcArrLength != 4))	{INFO("err2\r\n");return COAP_PARSE_MESSAGE_FORMAT_ERROR;}// return COAP_PARSE_MESSAGE_FORMAT_ERROR;
+	//if(Msg->Code == EMPTY && (TokenLength != 0 || srcArrLength != 4))	{INFO("err2\r\n");return COAP_PARSE_MESSAGE_FORMAT_ERROR;}// return COAP_PARSE_MESSAGE_FORMAT_ERROR;
 
-	uint8_t codeClass = ((uint8_t) Msg.Code) >> 5u;
+	uint8_t codeClass = ((uint8_t) Msg->Code) >> 5u;
 	if (codeClass == 1 || codeClass == 6 || codeClass == 7) {
 		INFO("CoAP-Parse Byte2/3 Error\r\n");
 		return COAP_PARSE_MESSAGE_FORMAT_ERROR;
-	}	//  return COAP_PARSE_MESSAGE_FORMAT_ERROR; //reserved classes
+	}
 
 //4th Header Byte
-	Msg.MessageID = (uint16_t) srcArr[2] << 8u | srcArr[3];
+	Msg->MessageID = (uint16_t) srcArr[2] << 8u | srcArr[3];
 
 //further parsing locations depend on parsed 4Byte CoAP Header -> use of offset addressing
 	uint16_t offset = 4;
 	if (srcArrLength == offset) //no more data -> maybe a CoAP Ping
-			{
-		goto START_MSG_COPY_LABEL;
+	{
 		//quick end of parsing...
+		*optionsOfsset = offset;
+		return COAP_OK;
 	}
 
 //Token (if any)
 	CoAP_Token_t tok = {.Token = {0,0,0,0,0,0,0,0}, .Length = TokenLength};
-	Msg.Token = tok;
+	Msg->Token = tok;
 	int i;
 	for (i = 0; i < TokenLength; i++) {
-		Msg.Token.Token[i] = srcArr[offset + i];
+		Msg->Token.Token[i] = srcArr[offset + i];
 	}
 
 	offset += TokenLength;
-	if (srcArrLength == offset)
-		goto START_MSG_COPY_LABEL;
+	*optionsOfsset = offset;
+	return COAP_OK;
+}
 
+CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcArrLength, CoAP_Message_t** rxedMsg) {
+	//we use local mem and copy afterwards because we dont know yet the size of payload buffer
+	//but want to allocate one block for complete final "rxedMsg" memory without realloc the buf size later.
+	static CoAP_Message_t Msg;
+	uint16_t offset=0;
+	CoAP_Result_t result = CoAP_ParseDatagramUpToToken(srcArr, srcArrLength, &Msg, &offset);
+	if(COAP_OK != result){
+		return result;
+	}
 //Options (if any)
 	uint8_t* pPayloadBegin = NULL;
 
@@ -262,7 +268,6 @@ CoAP_Result_t _rom CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcAr
 	Msg.PayloadBufSize = Msg.PayloadLength;
 
 //Get memory for total message data and copy parsed data
-	START_MSG_COPY_LABEL:
 	*rxedMsg = CoAP_CreateMessage( Msg.Type,
 									   Msg.Code,
 									   Msg.MessageID,

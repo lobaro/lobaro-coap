@@ -481,6 +481,15 @@ void CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t *pPacket
  */
 CoAP_Result_t CoAP_handleDisconnectEvt(uint32_t transport_ctx);
 
+/*
+ * @brief Handle an error that happened in a lower layer - eg. transport layer. Send an error response withg provied CoAP code.
+ * 
+ * @param socketHandle Socket to send the response throught.
+ * @param pPacket      Offending request.
+ * @param responseCode CoAP Response code to send to the 
+ */
+void CoAP_HandleLowerLayerReceiverError(SocketHandle_t socketHandle, NetPacket_t* pPacket, CoAP_MessageCode_t responseCode);
+
 // doWork must be called regularly to process pending interactions
 void CoAP_doWork();
 

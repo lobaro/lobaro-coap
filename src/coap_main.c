@@ -37,6 +37,19 @@ void hal_debug_array(const char *s, const uint8_t *array, size_t size) {
 	}
 }
 
+void _ram CoAP_HandleLowerLayerReceiverError(SocketHandle_t socketHandle, NetPacket_t* pPacket, 
+                                             CoAP_MessageCode_t responseCode) {
+	CoAP_Message_t Msg;
+	uint16_t optionsOfsset=0;
+	if(COAP_OK != CoAP_ParseDatagramUpToToken(pPacket->pData, pPacket->size, &Msg, &optionsOfsset))
+	{
+		ERROR("CoAP_HandleLowerLayerError failed. Dropping packet.");
+		return;
+	}
+	CoAP_SendResponseWithoutPayload(responseCode, &Msg, socketHandle, pPacket->remoteEp, NULL);
+}
+
+
 // Called by network interfaces to pass rawData which is parsed to CoAP messages.
 // lifetime of pckt only during function invoke
 // can be called from irq since more expensive work is done in CoAP_doWork loop

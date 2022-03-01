@@ -50,6 +50,19 @@ CoAP_Result_t CoAP_SendEmptyRST(uint16_t MessageID, SocketHandle_t socketHandle,
 CoAP_Result_t CoAP_SendShortResp(CoAP_MessageType_t Type, CoAP_MessageCode_t Code, uint16_t MessageID, CoAP_Token_t token, SocketHandle_t socketHandle, NetEp_t receiver);
 CoAP_Message_t* CoAP_AllocRespMsg(CoAP_Message_t* ReqMsg, CoAP_MessageCode_t Code, uint16_t PayloadMaxSize);
 CoAP_Result_t CoAP_SendResponseWithoutPayload(CoAP_MessageCode_t code, CoAP_Message_t *request, SocketHandle_t socketHandle, NetEp_t receiver, CoAP_option_t *pOptionsList);
+/**
+ * @brief Parse only message type, message id, token - fields required to send response to a message.
+ * 
+ * @param srcArr             array containing message to be parsed.
+ * @param srcArrLength       size of the message in bytes.
+ * @param Msg[out]           allocated mesage.
+ * @param optionsOfsset[out] offset at witch CoAP options starts. 
+ * @return COAP_OK
+ * @return COAP_PARSE_DATAGRAM_TOO_SHORT
+ * @return COAP_PARSE_UNKOWN_COAP_VERSION
+ * @return COAP_PARSE_MESSAGE_FORMAT_ERROR
+ */
+CoAP_Result_t CoAP_ParseDatagramUpToToken(uint8_t* srcArr, uint16_t srcArrLength, CoAP_Message_t* Msg, uint16_t *optionsOfsset);
 
 CoAP_Result_t CoAP_free_Message(CoAP_Message_t** Msg);
 void CoAP_free_MsgPayload(CoAP_Message_t** Msg);
