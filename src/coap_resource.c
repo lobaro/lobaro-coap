@@ -313,14 +313,10 @@ CoAP_Result_t _rom CoAP_RemoveResource(CoAP_Res_t *pResource) {
 
 static CoAP_Result_t CoAP_UpdateResourceInList(CoAP_Res_t **pListStart, CoAP_Res_t *pResToUpdate, CoAP_ResOpts_t options) {
     CoAP_Res_t *currP;
-    CoAP_Res_t *prevP;
-
-    // For 1st node, indicate there is no previous.
-    prevP = NULL;
 
     //Visit each node, maintaining a pointer to
     //the previous node we just visited.
-    for (currP = *pListStart; currP != NULL; prevP = currP, currP = currP->next) {
+    for (currP = *pListStart; currP != NULL; currP = currP->next) {
 
         if (currP == pResToUpdate) { // Found it.
 			currP->Options.ResponseType = options.ResponseType;
