@@ -460,6 +460,26 @@ CoAP_Result_t _rom CoAP_GetInteractionsObserver(CoAP_Interaction_t* pIA, CoAP_Ob
 	return CoAP_MatchObserverFromList(&((pIA->pRes)->pListObservers), pObserver,pIA->socketHandle, &(pIA->RemoteEp), token);
 }
 
+CoAP_Result_t CoAP_RemoveObserverInteractions(CoAP_Observer_t * pObserver)
+{
+	CoAP_Result_t res = COAP_OK;
+
+	/* Delete/abort any pending notification interaction. */
+	CoAP_Interaction_t *pIApending;
+	for (pIApending = CoAP.pInteractions; pIApending != NULL; pIApending = pIApending->next) {
+		if (pIApending->Role == COAP_ROLE_NOTIFICATION) {
+			if (CoAP_TokenEqual(pIApending->pRespMsg->Token, pObserver->Token) &&
+			    (pIApending->socketHandle == pObserver->socketHandle) &&
+				(EpAreEqual(&(pIApending->RemoteEp), &(pObserver->Ep)))) {
+				res = CoAP_DeleteInteraction(pIApending);
+				break;
+			}
+		}
+	}
+
+	return res;
+}
+
 CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 	if (pIA == NULL || pIA->pReqMsg == NULL) {
 		return COAP_ERR_ARGUMENT;    //safety checks
@@ -533,6 +553,7 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 			INFO("Abort of pending notificaton interaction\r\n");
 			pIA->pRes->ObserverInfo(pObserver, false, pIA->pRes, pIA->RemoteEp.session);
 		}
+		pIA->RemoteEp.session = NULL;
 		CoAP_RemoveInteractionsObserver(pIA, pIA->pReqMsg->Token);
 
 		//delete/abort any pending notification interaction

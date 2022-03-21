@@ -462,6 +462,47 @@ CoAP_Result_t _rom CoAP_MatchObserverFromList(CoAP_Observer_t** pObserverList, C
 	return COAP_ERR_NOT_FOUND;
 }
 
+CoAP_Result_t _rom CoAP_MatchObserverUsingTransportCtxFromList(CoAP_Observer_t **pObserverList,
+															   CoAP_Observer_t **pMatchingObserver,
+															   uint32_t transport_ctx) {
+	CoAP_Observer_t *pObserver = *pObserverList;
+
+	while (pObserver != NULL) { //found right existing observation -> get it
+
+		if (pObserver->Ep.transport_ctx == transport_ctx) {
+			*pMatchingObserver = pObserver;
+			return COAP_OK;
+
+		}
+		pObserver = pObserver->next;
+	}
+	return COAP_ERR_NOT_FOUND;
+}
+
+
+CoAP_Result_t _rom CoAP_FindObserverAndResourceByTransportCtx(uint32_t transport_ctx,
+															  CoAP_Observer_t **pObserver,
+															  CoAP_Res_t **pRes) {
+	CoAP_Result_t res;
+	CoAP_Res_t *pList = pResList;
+
+	for (; pList != NULL; pList = pList->next) {
+		/* Iterate over all observers in the resource. */
+		if (pList->pListObservers) {
+			res = CoAP_MatchObserverUsingTransportCtxFromList(&pList->pListObservers,
+															  pObserver,
+															  transport_ctx);
+
+			if (res == COAP_OK) {
+				*pRes = pList;
+				return res;
+			}
+		}
+	}
+
+	return COAP_ERR_NOT_FOUND;
+}
+
 CoAP_Result_t _rom CoAP_UninitResources() {
     CoAP_Result_t retval = COAP_ERR_NOT_FOUND;
     while (NULL != pResList) {

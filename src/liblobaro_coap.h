@@ -113,6 +113,7 @@ typedef struct {
 	NetAddr_t NetAddr;
 	uint16_t NetPort;
 	void *session;
+	uint32_t transport_ctx;
 } NetEp_t;
 
 //################################
@@ -463,6 +464,22 @@ CoAP_Result_t CoAP_AddOption(CoAP_Message_t *pMsg, uint16_t OptNumber, uint8_t *
 // "socketHandle" can be chosen arbitrary by calling network driver,
 // but can be considered constant over runtime.
 void CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t *pPacket);
+
+/**
+ * @brief Handle disconnect event from the transport layer.
+ *		  When such event occurs, it means that transport has lost connection
+ *		  with the device.
+ *		  This function removes all observers and interactions that were
+ *		  used by @ref transport_ctx.
+ *
+ * @param transport_ctx Transport context.
+ * @retval COAP_OK			  Disconnect event handled successfully.
+ * 		   COAP_ERR_NOT_FOUND Interaction correlated to the transport ctx
+ * 							  has not been found. Such error can happen when
+ * 							  observers were removed before disconnect event
+ * 							  occured.
+ */
+CoAP_Result_t CoAP_handleDisconnectEvt(uint32_t transport_ctx);
 
 // doWork must be called regularly to process pending interactions
 void CoAP_doWork();

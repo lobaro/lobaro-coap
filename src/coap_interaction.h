@@ -131,6 +131,7 @@ CoAP_Result_t CoAP_EnqueueLastInteraction(CoAP_Interaction_t* pInteractionToEnqu
 CoAP_Result_t CoAP_SetSleepInteraction(CoAP_Interaction_t* pIA, uint32_t seconds);
 CoAP_Result_t CoAP_EnableAckTimeout(CoAP_Interaction_t* pIA, uint8_t retryNum);
 void CoAP_ClearInteractions(CoAP_Interaction_t** pInteraction);
+CoAP_Result_t CoAP_RemoveObserverInteractions(CoAP_Observer_t * pObserver);
 
 //client
 CoAP_Interaction_t* CoAP_FindInteractionByMessageIdAndEp(CoAP_Interaction_t* pList, uint16_t mID, NetEp_t* fromEp);
