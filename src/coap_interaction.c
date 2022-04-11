@@ -553,7 +553,7 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 			INFO("Abort of pending notificaton interaction\r\n");
 			pIA->pRes->ObserverInfo(pObserver, false, pIA->pRes, pIA->RemoteEp.session);
 		}
-		pIA->RemoteEp.session = NULL;
+		// pIA->RemoteEp.session = NULL;
 		CoAP_RemoveInteractionsObserver(pIA, pIA->pReqMsg->Token);
 
 		//delete/abort any pending notification interaction
