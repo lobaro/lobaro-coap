@@ -36,7 +36,7 @@ const NetEp_t NetEp_IPv4_mulitcast = { .NetType = IPV4, .NetPort = 5683, .NetAdd
  {
 	if (!ep_A || !ep_B) { return false; }
 	if (ep_A->NetType != ep_B->NetType) { return false; }
-	if (ep_A->NetPort != ep_B->NetPort) { return false; }
+	/* Don't compare net ports, as they're randomly generated. */ 
 
 	if (ep_A->NetType == IPV6) {
 		if (ep_A->NetAddr.IPv6.u32[0] != ep_B->NetAddr.IPv6.u32[0]
