@@ -32,9 +32,17 @@
 
 #define USE_RFC7641_ADVANCED_TRANSMISSION (1) //Update representation of resource during retry of observe sendout
 
-#define ACK_TIMEOUT (4)
+#ifdef COAP_ACK_TIMEOUT
+#define ACK_TIMEOUT (COAP_ACK_TIMEOUT)
+#else
+#define ACK_TIMEOUT (8)
+#endif
 #define ACK_RANDOM_FACTOR (1.5)
-#define MAX_RETRANSMIT (2)
+#ifdef COAP_MAX_RETRANSMIT
+#define MAX_RETRANSMIT (COAP_MAX_RETRANSMIT)
+#else
+#define MAX_RETRANSMIT (3)
+#endif
 #define NSTART (1) //todo implement
 #define DEFAULT_LEISURE (5) //todo implement
 #define PROBING_RATE (1)        //[client]

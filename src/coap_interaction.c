@@ -176,15 +176,31 @@ CoAP_Result_t _rom CoAP_SetSleepInteraction(CoAP_Interaction_t* pIA, uint32_t se
 	return COAP_OK;
 }
 
+#ifdef COAP_EXPLICIT_TIMEOUTS
+const uint8_t TIMEOUTS[] = COAP_EXPLICIT_TIMEOUTS;
+#endif
+
 CoAP_Result_t _rom CoAP_EnableAckTimeout(CoAP_Interaction_t* pIA, uint8_t retryNum) {
+#ifdef COAP_EXPLICIT_TIMEOUTS
+    uint32_t waitTime;
+    if (retryNum < sizeof(TIMEOUTS)) {
+        waitTime = TIMEOUTS[retryNum];
+    } else {
+        waitTime = TIMEOUTS[sizeof(TIMEOUTS) - 1];
+    }
+    INFO("CoAP timeout: %lus\n", waitTime);
+    pIA->AckTimeout = CoAP.api.rtc1HzCnt() + waitTime;
+    return COAP_OK;
+#else
 	uint32_t waitTime = ACK_TIMEOUT;
 	int i;
 	for (i = 0; i < retryNum; i++) { //"exponential backoff"
 		waitTime *= 2;
 	}
-
+    INFO("CoAP timeout: %lus\n", waitTime);
 	pIA->AckTimeout = CoAP.api.rtc1HzCnt() + waitTime;
 	return COAP_OK;
+#endif
 }
 
 CoAP_Interaction_t* _rom CoAP_GetLongestPendingInteraction() {

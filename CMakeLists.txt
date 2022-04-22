@@ -4,6 +4,14 @@ if (DEFINED __INIT_LOBARO_BUILD)
 
     include(${CPATH}/src/github.com/lobaro/c-build/build.cmake)
 
+    add_definitions(
+            # this must be an array, e.g. {5,10,15} or {20}
+            # no quotes
+            # if there are more retries than entries, last entry of array will be used
+            -DCOAP_EXPLICIT_TIMEOUTS={20}
+            -DCOAP_MAX_RETRANSMIT=2
+    )
+
     cbuild_module("lobaro/lobaro-coap/test")
 
     # cbuild_dependency(_ github.com/lobaro/cpp-utils)
