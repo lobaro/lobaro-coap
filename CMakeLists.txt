@@ -9,7 +9,7 @@ if (DEFINED __INIT_LOBARO_BUILD)
             # no quotes
             # if there are more retries than entries, last entry of array will be used
             -DCOAP_EXPLICIT_TIMEOUTS={20}
-            -DCOAP_MAX_RETRANSMIT=3
+            -DCOAP_MAX_RETRANSMIT=2
     )
 
     cbuild_module("lobaro/lobaro-coap/test")
