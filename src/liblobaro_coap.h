@@ -36,6 +36,8 @@ extern "C" {
 // Function Results
 //################################
 
+#define COAP_WAIT_FOREVER UINT32_MAX
+
 typedef enum {
 	COAP_OK = 0,
 	COAP_NOT_FOUND, //not found but no error
@@ -495,6 +497,13 @@ void CoAP_doWork();
 
 // drop all unfinished work
 void CoAP_ClearPendingInteractions();
+
+/*
+ * @biref Calculate next interaction time in seconds.
+ *        Can be used to put the device into sleep while waiting for the next interaction.
+ * @retval Time of the next interaction or COAP_WAIT_FOREVER.
+ */
+uint32_t CoAP_getNextInteractionTime();
 
 // Endpoint api
 NetInterfaceType_t CoAP_ParseNetAddress(NetAddr_t *addr, const char *s);

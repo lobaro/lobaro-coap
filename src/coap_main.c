@@ -782,6 +782,19 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 	}
 }
 
+uint32_t _rom CoAP_getNextInteractionTime( void )
+{
+	CoAP_Interaction_t* pIA = CoAP.pInteractions;
+	uint32_t nextInteractionTime = COAP_WAIT_FOREVER;
+	while (NULL != pIA) {
+		if (pIA->SleepUntil < nextInteractionTime) {
+			nextInteractionTime = pIA->SleepUntil;
+		}
+		pIA = pIA->next;
+	}
+	return nextInteractionTime;
+}
+
 //must be called regularly
 void _rom CoAP_doWork() {
 	CoAP_Interaction_t* pIA = CoAP_GetLongestPendingInteraction();
