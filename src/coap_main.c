@@ -260,6 +260,31 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 	CoAP_free_Message(&pMsg); // free if not used inside interaction
 }
 
+CoAP_Result_t _rom CoAP_removeObserver(uint32_t transport_ctx) {
+    CoAP_Observer_t *pObserver = NULL;
+    CoAP_Res_t *pRes = NULL;
+    CoAP_Result_t res = CoAP_FindObserverAndResourceByTransportCtx(transport_ctx,
+                                                                   &pObserver,
+                                                                   &pRes);
+    if (res != COAP_OK) {
+        return res;
+    }
+
+    /* Notify resource about unlinking of the observer. */
+    pRes->ObserverInfo(pObserver, false, pRes, pObserver->Ep.session);
+
+    /* Remove observer from the resource. */
+    res = CoAP_RemoveObserverFromResource(&pRes->pListObservers,
+                                          pObserver->socketHandle,
+                                          &pObserver->Ep,
+                                          pObserver->Token);
+    if (res != COAP_REMOVED) {
+        return res;
+    }
+    return COAP_OK;
+}
+
+
 CoAP_Result_t _rom CoAP_handleDisconnectEvt(uint32_t transport_ctx) {
 	CoAP_Observer_t *pObserver = NULL;
 	CoAP_Res_t *pRes = NULL;

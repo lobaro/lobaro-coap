@@ -484,6 +484,15 @@ void CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t *pPacket
 CoAP_Result_t CoAP_handleDisconnectEvt(uint32_t transport_ctx);
 
 /*
+ * @brief Remove observer. Pending notifications will not be removed.
+ * @param transport_ctx Transport context.
+ * @retval COAP_OK
+ * @retval COAP_ERR_NOT_FOUND Observer with provided transport does not exist.
+ */
+
+CoAP_Result_t CoAP_removeObserver(uint32_t transport_ctx);
+
+/*
  * @brief Handle an error that happened in a lower layer - eg. transport layer. Send an error response withg provied CoAP code.
  * 
  * @param socketHandle Socket to send the response throught.
