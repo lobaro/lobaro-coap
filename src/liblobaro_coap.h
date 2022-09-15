@@ -105,7 +105,7 @@ typedef union {
 } NetAddr_t;
 
 typedef enum {
-	EP_NONE, IPV6, IPV4, BTLE, UART
+	EP_NONE, IPV6, IPV4, BTLE, UART, USB
 } NetInterfaceType_t;
 
 // general network endpoint

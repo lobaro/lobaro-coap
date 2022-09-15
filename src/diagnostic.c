@@ -148,6 +148,9 @@ void _rom PrintEndpoint(const NetEp_t* ep) {
 	case UART:
 		INFO("UART, COM%d", ep->NetAddr.Uart.ComPortID);
 		break;
+	case USB:
+		INFO("USB");
+		break;
 	default:
 		INFO("UNKNOWN_EP (%d)", ep->NetType);
 	}
