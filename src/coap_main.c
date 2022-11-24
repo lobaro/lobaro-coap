@@ -49,6 +49,21 @@ void _ram CoAP_HandleLowerLayerReceiverError(SocketHandle_t socketHandle, NetPac
 	CoAP_SendResponseWithoutPayload(responseCode, &Msg, socketHandle, pPacket->remoteEp, NULL);
 }
 
+void _ram CoAP_HandleResponseWithEcho(SocketHandle_t socketHandle, NetPacket_t* pPacket, 
+                                      uint8_t *echoValue, size_t echoValueLength) {
+	CoAP_Message_t msg;
+	uint16_t optionsOfsset=0;
+	if(COAP_OK != CoAP_ParseDatagramUpToToken(pPacket->pData, pPacket->size, &msg, &optionsOfsset))
+	{
+		ERROR("CoAP_HandleResponseWithEcho failed. Dropping packet.");
+		return;
+	}
+
+	CoAP_PrepareResponseWithEcho(&msg, echoValue, echoValueLength);
+	CoAP_SendMsg(&msg, socketHandle, pPacket->remoteEp);
+	CoAP_FreeOptionList(&(msg.pOptionsList));
+}
+
 
 // Called by network interfaces to pass rawData which is parsed to CoAP messages.
 // lifetime of pckt only during function invoke

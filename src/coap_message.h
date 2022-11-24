@@ -44,6 +44,20 @@ CoAP_Message_t* CoAP_CreateMessage(CoAP_MessageType_t Type, CoAP_MessageCode_t C
 
 CoAP_Result_t CoAP_ParseMessageFromDatagram(uint8_t* srcArr, uint16_t srcArrLength, CoAP_Message_t** rxedMsg);
 
+/**
+ * @brief Prepares reponse with additional echo option based on corresponding request (parsed with CoAP_ParseDatagramUpToToken).
+ *        Modifies inner fields accordingly (see RFC8613 appendix B.1.2).
+ * 
+ * @note  ECHO option is dynamically allocated inside, it must be freed after use with CoAP_FreeOptionList.
+ * 
+ * @param Msg               Request message - modified in place.
+ * @param echoValue         Echo value to be added.
+ * @param echoValueLength   Length of echo value (in bytes).
+ * @return Result code.
+ * 
+ */
+CoAP_Result_t CoAP_PrepareResponseWithEcho(CoAP_Message_t* msg, uint8_t* echoValue, size_t echoValueLength);
+
 CoAP_Result_t CoAP_SendMsg(CoAP_Message_t* Msg, SocketHandle_t socketHandle, NetEp_t receiver);
 CoAP_Result_t CoAP_SendEmptyAck(uint16_t MessageID, SocketHandle_t socketHandle, NetEp_t receiver);
 CoAP_Result_t CoAP_SendEmptyRST(uint16_t MessageID, SocketHandle_t socketHandle, NetEp_t receiver);
