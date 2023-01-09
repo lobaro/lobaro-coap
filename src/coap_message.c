@@ -231,10 +231,9 @@ CoAP_Result_t _rom CoAP_ParseDatagramUpToToken(uint8_t* srcArr, uint16_t srcArrL
 
 CoAP_Result_t CoAP_PrepareResponseWithEcho(CoAP_Message_t* msg, uint8_t* echoValue, size_t echoValueLength) {
 	msg->Type = CoAP_getRespMsgType(msg);
-	msg->MessageID = CoAP_getRespMsgID(msg);
 	msg->Code = RESP_ERROR_UNAUTHORIZED_4_01;
 	// CoAP_ParseDatagramUpToToken doesn't parse options and payload - they are initialized as 0, as required by this response
-	// Token is copied from the request, as required.
+	// Message ID and Token are copied from the request, as required.
 
 	return CoAP_AddOption(msg, OPT_NUM_ECHO, echoValue, echoValueLength);
 }
