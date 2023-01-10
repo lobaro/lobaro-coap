@@ -669,9 +669,20 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 
 //			pIA->State = COAP_STATE_FINISHED;
 //			CoAP_EnqueueLastInteraction(pIA);
-		CoAP_DeleteInteraction(
-				pIA); //direct delete, todo: eventually wait some time to send ACK instead of RST if out ACK to remote reponse was lost
-
+	//Unused obsVal, required to call GetObservOptionFromMessage
+	int obsVal = 0;
+	//Required to support client Observe functionality
+	//If client request contains observe option, the interaction should not be deleted as it is ongoing.
+	//The Client State Machine returns to COAP_STATE_WAITING_RESPONSE and the interaction is requeued.
+ 	if (GetObserveOptionFromMsg(pIA->pRespMsg,&obsVal) == COAP_OK )
+ 	{
+         	pIA->State= COAP_STATE_WAITING_RESPONSE;
+         	CoAP_EnqueueLastInteraction(pIA);
+ 	}
+ 	else
+ 	{
+  		CoAP_DeleteInteraction(pIA); //direct delete, todo: eventually wait some time to send ACK instead of RST if out ACK to remote reponse was lost
+ 	}
 	} else {
 		if (pIA->RespCB != NULL) {
 			pIA->RespCB(NULL, pIA->pReqMsg, &pIA->RemoteEp);
