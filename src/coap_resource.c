@@ -167,10 +167,72 @@ CoAP_Result_t _rom CoAP_NVloadObservers(uint8_t* pRawPage) {
 	return COAP_OK;
 }
 
+/**
+ * @brief Safely appends a single character to the buffer at given index.
+ * 
+ * @param buffer buffer to be modified
+ * @param bufferSize buffer size in bytes
+ * @param index position inside the buffer
+ * @param character data to be appended
+ * @return true if appended correctly
+ * @return false if new data would be out of bands
+ */
+static bool appendChar(uint8_t* buffer, size_t bufferSize, size_t* index, char character)
+{
+	//check if character would fit in the output buffer
+	//last character of the output buffer is reserved for null termination
+	if (*index >= (bufferSize - 1))
+	{
+		return false;
+	}
+
+	buffer[*index] = (uint8_t)character;
+	(*index)++;
+	return true;
+}
+
+/**
+ * @brief Safely appends a sub-buffer to the buffer starting at given index.
+ * 
+ * @param buffer buffer to be modified
+ * @param bufferSize buffer size in bytes
+ * @param index starting position inside the buffer
+ * @param subBuffer data buffer to be appended
+ * @param subBufferSize size of data buffer in bytes
+ * @return true if appended correctly
+ * @return false if new data would be out of bands
+ */
+static bool appendBuffer(uint8_t* buffer, size_t bufferSize, size_t* index, const uint8_t* subBuffer, size_t subBufferSize)
+{
+	//check if subbuffer would fit in the output buffer
+	//last character of the output buffer is reserved for null termination; -1 on both sides left for clarity
+	if (((*index) + subBufferSize - 1) >= (bufferSize - 1))
+	{
+		return false;
+	}
+
+	coap_memcpy(&buffer[*index], subBuffer, subBufferSize);
+	*index += subBufferSize;
+	return true;
+}
+
+/**
+ * @brief Safely appends a string to the buffer starting at given index.
+ * 
+ * @param buffer buffer to be modified
+ * @param bufferSize buffer size in bytes
+ * @param index starting position inside the buffer
+ * @param string string buffer to be appended (must end with null termination)
+ * @return true if appended correctly
+ * @return false if new data would be out of bands
+ */
+static bool appendString(uint8_t* buffer, size_t bufferSize, size_t* index, const char* string)
+{
+	size_t length = strlen(string);
+	return appendBuffer(buffer, bufferSize, index, (const uint8_t*)string, length);
+}
 
 CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Message_t* pResp, void *c_ctx) {
-//	static uint8_t wellknownStr[500];
-//	uint8_t* pWr = wellknownStr;
 	(void)c_ctx;
 
 	if (pReq->Code != REQ_GET) {
@@ -181,54 +243,63 @@ CoAP_HandlerResult_t _rom WellKnown_GetHandler(CoAP_Message_t* pReq, CoAP_Messag
 	}
 
 	CoAP_Res_t* pList = pResList; //List of internal resources
-	uint8_t* pStr = (uint8_t*) CoAP.api.malloc((ResListMembers + 1) * 64); //first estimation of needed memory
-	uint8_t* pStrStart = pStr;
+	size_t allocatedSize = (ResListMembers + 1) * 64; //first estimation of needed memory
+	size_t currentSize = 0;
+	uint8_t* pStr = (uint8_t*) CoAP.api.malloc(allocatedSize);
 
 	if (pStr == NULL) {
 		INFO("- WellKnown_GetHandler(): Ouf memory error!\r\n");
 		return HANDLER_ERROR;
 	}
-	memset(pStr, 0, (ResListMembers + 1) * 64);
+	memset(pStr, 0, allocatedSize);
 
-	INFO("- WellKnown_GetHandler(): res cnt:%u temp alloc:%u\r\n", (unsigned int) ResListMembers, (unsigned int) (ResListMembers + 2) * 64);
+	INFO("- WellKnown_GetHandler(): res cnt:%u temp alloc:%u\r\n", (unsigned int) ResListMembers, (unsigned int) allocatedSize);
 
 	//TODO: Implement non ram version, e.g. write to memory to eeprom
-	while (pList != NULL) {
+	bool isBufferOk = true;
+	while ((isBufferOk) && (pList != NULL)) {
 		CoAP_option_t* pUriOpt = pList->pUri;
 
-		*pStr++ = '<';
+		isBufferOk &= appendChar(pStr, allocatedSize, &currentSize, '<');
 		while (pUriOpt != NULL) {
-			*pStr++ = '/';
-			coap_memcpy(pStr, pUriOpt->Value, pUriOpt->Length);
-			pStr += pUriOpt->Length;
+			isBufferOk &= appendChar(pStr, allocatedSize, &currentSize, '/');
+			isBufferOk &= appendBuffer(pStr, allocatedSize, &currentSize, pUriOpt->Value, pUriOpt->Length);
 			pUriOpt = pUriOpt->next;
 		}
-		*pStr++ = '>';
+		isBufferOk &= appendChar(pStr, allocatedSize, &currentSize, '>');
 		if (pList->Options.Cf != COAP_CF_LINK_FORMAT) {
 			if( pList->pDescription != NULL ) {
-				pStr += coap_sprintf((char *) pStr, ";title=\"%s\"", pList->pDescription);
+				isBufferOk &= appendString(pStr, allocatedSize, &currentSize, ";title=\"");
+				isBufferOk &= appendString(pStr, allocatedSize, &currentSize, pList->pDescription);
+				isBufferOk &= appendChar(pStr, allocatedSize, &currentSize, '\"');
 			}
 			
-			pStr += coap_sprintf((char *) pStr, ";ct=%d", pList->Options.Cf);
+			char contentFormat[6]; //the field is uint16_t (up to 5 digits) + 1 byte for null termination
+			coap_sprintf(contentFormat, "%d", pList->Options.Cf);
+			isBufferOk &= appendString(pStr, allocatedSize, &currentSize, ";ct=");
+			isBufferOk &= appendString(pStr, allocatedSize, &currentSize, contentFormat);
 			
 			if (pList->Notifier != NULL) {
-				pStr += coap_sprintf((char*) pStr, ";obs");
+				isBufferOk &= appendString(pStr, allocatedSize, &currentSize, ";obs");
 			}
 		}
 
 		if(ENC_END_POINT_ENC == pList->Options.EncEndPoint){
-			pStr += coap_sprintf((char*) pStr, ";osc");
+			isBufferOk &= appendString(pStr, allocatedSize, &currentSize, ";osc");
 		}
 
-		*pStr++ = ',';
+		isBufferOk &= appendChar(pStr, allocatedSize, &currentSize, ',');
 
 		pList = pList->next;
-
-		//TODO: implement growing of buf/overwrite check
 	}
 
-	CoAP_SetPayload(pResp, pStrStart, (uint16_t) coap_strlen((char*) pStrStart), true);
-	CoAP.api.free(pStrStart);
+	if (!isBufferOk)
+	{
+		ERROR("Wellknown buffer too small, the output is truncated.");
+	}
+
+	CoAP_SetPayload(pResp, pStr, (uint16_t) coap_strlen((char*) pStr), true);
+	CoAP.api.free(pStr);
 
 	CoAP_AddCfOptionToMsg(pResp, COAP_CF_LINK_FORMAT);
 
