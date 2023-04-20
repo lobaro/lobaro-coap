@@ -194,24 +194,25 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 			goto END;
 		}
 		pIA->ResConfirmState = ACK_SEND;
-        
-        // Check Observation Option
-        CoAP_option_t* observeOption = CoAP_FindOptionByNumber(pIA->pReqMsg, OPT_NUM_OBSERVE);
-        if (pIA->Role == COAP_ROLE_CLIENT && observeOption != NULL && observeOption->Length > 0 && observeOption->Value[0] == 0x01) {
-            pIA->pRespMsg = pMsg; //attach just received message for further actions in IA [client] state-machine & return
-            pIA->State = COAP_STATE_HANDLE_RESPONSE;
-            
-            INFO("- Searching for original observe subscription interaction");
-            for (CoAP_Interaction_t* pOIA = CoAP.pInteractions; pOIA != NULL; pOIA = pOIA->next) {
-                INFO("compare token: %d message id: %d\r\n", CoAP_TokenEqual(pOIA->pReqMsg->Token, pIA->pReqMsg->Token), pOIA->pReqMsg->MessageID);
-                if (pOIA->Role == COAP_ROLE_OBSERVATION && CoAP_TokenEqual(pOIA->pReqMsg->Token, pIA->pReqMsg->Token) && EpAreEqual(&(pIA->RemoteEp), &(pOIA->RemoteEp))) {
-                    INFO("- Found original observe subscription interaction message id: %d\r\n", pOIA->pReqMsg->MessageID);
-                    pOIA->State = COAP_STATE_FINISHED;
-                }
-            }
-            return;
-        }
-        
+
+		// Check Observation Option
+		if (pIA->pReqMsg) {
+			CoAP_option_t* observeOption = CoAP_FindOptionByNumber(pIA->pReqMsg, OPT_NUM_OBSERVE);
+			if (pIA->Role == COAP_ROLE_CLIENT && observeOption != NULL && observeOption->Length > 0 && observeOption->Value[0] == 0x01) {
+				pIA->pRespMsg = pMsg; //attach just received message for further actions in IA [client] state-machine & return
+				pIA->State = COAP_STATE_HANDLE_RESPONSE;
+
+				INFO("- Searching for original observe subscription interaction");
+				for (CoAP_Interaction_t* pOIA = CoAP.pInteractions; pOIA != NULL; pOIA = pOIA->next) {
+					INFO("compare token: %d message id: %d\r\n", CoAP_TokenEqual(pOIA->pReqMsg->Token, pIA->pReqMsg->Token), pOIA->pReqMsg->MessageID);
+					if (pOIA->Role == COAP_ROLE_OBSERVATION && CoAP_TokenEqual(pOIA->pReqMsg->Token, pIA->pReqMsg->Token) && EpAreEqual(&(pIA->RemoteEp), &(pOIA->RemoteEp))) {
+						INFO("- Found original observe subscription interaction message id: %d\r\n", pOIA->pReqMsg->MessageID);
+						pOIA->State = COAP_STATE_FINISHED;
+					}
+				}
+				return;
+			}
+		}
 		//piA is NOT NULL in every case here
 		DEBUG("- piggybacked response received\r\n");
 		if (pMsg->Code != EMPTY) {
@@ -241,7 +242,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 			}
 		}
         else {
-            if (pIA->pReqMsg->MessageID == pMsg->MessageID && pIA->State == COAP_STATE_WAITING_RESPONSE) {
+            if (pIA->pReqMsg && pIA->pReqMsg->MessageID == pMsg->MessageID && pIA->State == COAP_STATE_WAITING_RESPONSE) {
                 if (pIA->Role == COAP_ROLE_CLIENT) {
                     pIA->ReqConfirmState = ACK_SEND;
                 }
