@@ -852,7 +852,7 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 				INFO("(!!!) Internal socket error on sending request retry! MiD: %d\r\n",
 						pIA->pReqMsg->MessageID);
 				if (pIA->RespCB != NULL) {
-                    printf("Calling RespCB for pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pRespMsg->Code, pIA->pRespMsg->Type, pIA->Role);
+                    DEBUG("Calling RespCB for pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pRespMsg->Code, pIA->pRespMsg->Type, pIA->Role);
 					pIA->RespCB(NULL, pIA->pReqMsg, &pIA->RemoteEp);
 				}
 				CoAP_DeleteInteraction(pIA);
@@ -887,7 +887,7 @@ static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 		//--------------------------------------------------
 		DEBUG("- Got Notification! -> calling Handler!\r\n");
 		if (pIA->RespCB != NULL) {
-            printf("Calling RespCB for pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pRespMsg->Code, pIA->pRespMsg->Type, pIA->Role);
+            DEBUG("Calling RespCB for pIA Req %p, MessageID: %d, Code: %d, Type: %d; Role: %d\n", pIA, pIA->pReqMsg->MessageID, pIA->pRespMsg->Code, pIA->pRespMsg->Type, pIA->Role);
 			pIA->RespCB(pIA->pRespMsg, pIA->pReqMsg, &(pIA->RemoteEp)); //call callback
             
 		}

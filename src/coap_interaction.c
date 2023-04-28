@@ -23,6 +23,7 @@
 #include "coap_main.h"
 #include "liblobaro_coap.h"
 #include "coap_mem.h"
+#include <inttypes.h>
 
 CoAP_Result_t CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA);
 
@@ -197,7 +198,7 @@ CoAP_Result_t _rom CoAP_EnableAckTimeout(CoAP_Interaction_t* pIA, uint8_t retryN
 	for (i = 0; i < retryNum; i++) { //"exponential backoff"
 		waitTime *= 2;
 	}
-    INFO("CoAP timeout: %us\n", waitTime);
+    INFO("CoAP timeout: %"PRIu32"s\n", waitTime);
 	pIA->AckTimeout = CoAP.api.rtc1HzCnt() + waitTime;
 	return COAP_OK;
 #endif
