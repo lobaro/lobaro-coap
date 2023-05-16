@@ -1,3 +1,4 @@
+# CMakeLists.txt for Zephyr project is located in zephyr folder
 if (DEFINED __INIT_LOBARO_BUILD)
     # cmake configuration used in lobaro's internal build configuration
     project(lobaro-coap)

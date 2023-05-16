@@ -1,0 +1,16 @@
+config LOBARO_COAP
+    bool "LOBARO_COAP library"
+    help
+     This option enables the LOBARO_COAP library.
+
+if LOBARO_COAP
+
+config LOBARO_COAP_DEBUG_LEVEL
+    int "Log level"
+    default 1
+    range 0 3
+    depends on LOBARO_COAP
+    help
+      Default lobaro_coap debug logging level for Zephyr integration code
+
+endif #LOBARO_COAP

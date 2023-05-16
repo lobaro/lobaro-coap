@@ -117,16 +117,16 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 
 	DEBUG("Filter out bad CODE/TYPE combinations\r\n");
 	// Filter out bad CODE/TYPE combinations (Table 1, RFC7252 4.3.) by silently ignoring them
-	if (pMsg->Type == CON && pMsg->Code == EMPTY) {
+	if (pMsg->Type == CON && pMsg->Code == MSG_EMPTY) {
 		CoAP_SendEmptyRST(pMsg->MessageID, socketHandle, pPacket->remoteEp); //a.k.a "CoAP Ping"
 		CoAP_free_Message(&pMsg); //free if not used inside interaction
 		// coap_mem_stats();
 		return;
 	} else if (pMsg->Type == ACK && isRequest) {
 		goto END;
-	} else if (pMsg->Type == RST && pMsg->Code != EMPTY) {
+	} else if (pMsg->Type == RST && pMsg->Code != MSG_EMPTY) {
 		goto END;
-	} else if (pMsg->Type == NON && pMsg->Code == EMPTY) {
+	} else if (pMsg->Type == NON && pMsg->Code == MSG_EMPTY) {
 		goto END;
 	}
 
@@ -215,7 +215,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 		}
 		//piA is NOT NULL in every case here
 		DEBUG("- piggybacked response received\r\n");
-		if (pMsg->Code != EMPTY) {
+		if (pMsg->Code != MSG_EMPTY) {
 			//no "simple" ACK => must be piggybacked RESPONSE to our [client] request. corresponding Interaction has been found before
 			if (pIA->Role == COAP_ROLE_CLIENT && CoAP_TokenEqual(pIA->pReqMsg->Token, pMsg->Token) && pIA->State == COAP_STATE_WAITING_RESPONSE) {
 				if (pIA->pRespMsg != NULL) {
@@ -290,7 +290,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 					}
 
 					if (pMsg->Type == CON) {
-						if (CoAP_SendShortResp(ACK, EMPTY, pMsg->MessageID, pMsg->Token, socketHandle, pPacket->remoteEp) == COAP_OK) {
+						if (CoAP_SendShortResp(ACK, MSG_EMPTY, pMsg->MessageID, pMsg->Token, socketHandle, pPacket->remoteEp) == COAP_OK) {
 							pIA->ResConfirmState = ACK_SEND;
 						}
 					}
@@ -309,7 +309,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
                     }
 
                     if (pMsg->Type == CON) {
-                        if (CoAP_SendShortResp(ACK, EMPTY, pMsg->MessageID, pMsg->Token, socketHandle, pPacket->remoteEp) == COAP_OK) {
+                        if (CoAP_SendShortResp(ACK, MSG_EMPTY, pMsg->MessageID, pMsg->Token, socketHandle, pPacket->remoteEp) == COAP_OK) {
                             pIA->ResConfirmState = ACK_SEND;
                         }
                     }
@@ -320,7 +320,7 @@ void _ram CoAP_HandleIncomingPacket(SocketHandle_t socketHandle, NetPacket_t* pP
 
 			// no active interaction found to match remote msg to...
 			// no matching IA has been found! can't do anything with this msg -> Rejecting it (also NON msg) (see RFC7252, 4.3.)
-			CoAP_SendShortResp(RST, EMPTY, pMsg->MessageID, pMsg->Token, socketHandle, pPacket->remoteEp);
+			CoAP_SendShortResp(RST, MSG_EMPTY, pMsg->MessageID, pMsg->Token, socketHandle, pPacket->remoteEp);
 			goto END;
 		}
 
@@ -637,11 +637,11 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 		// by resource handler with (ownstatic memory OR  "com_mem_get(...)" memory areas.
 		// Any non static memory will be freed along with message! see free_Payload(...) function, even if user overwrites payload pointer!
 		if (pIA->pRespMsg == NULL) { //if postponed before it would have been already allocated
-			pIA->pRespMsg = CoAP_AllocRespMsg(pIA->pReqMsg, EMPTY, PREFERED_PAYLOAD_SIZE); //matches also TYPE + TOKEN to request
+			pIA->pRespMsg = CoAP_AllocRespMsg(pIA->pReqMsg, MSG_EMPTY, PREFERED_PAYLOAD_SIZE); //matches also TYPE + TOKEN to request
 		}
 
 		// Call of external set resource handler
-		// could change type and code of message (ACK & EMPTY above only a guess!)
+		// could change type and code of message (ACK & MSG_EMPTY above only a guess!)
 		CoAP_HandlerResult_t Res = HANDLER_ERROR;
 		if((( ENC_END_POINT_ENC == pIA->pRes->Options.EncEndPoint ) && ( true == CoAP.api.is_session_valid( pIA->RemoteEp.session ))) ||
 			(( ENC_END_POINT_COAP == pIA->pRes->Options.EncEndPoint ) && (NULL == pIA->RemoteEp.session )) ||
@@ -664,11 +664,11 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 
 		// Check return value of handler:
 		// a) everything fine - we got an response to send
-		if (Res == HANDLER_OK && pIA->pRespMsg->Code == EMPTY) {
+		if (Res == HANDLER_OK && pIA->pRespMsg->Code == MSG_EMPTY) {
 			pIA->pRespMsg->Code = RESP_SUCCESS_CONTENT_2_05; //handler forgot to set code?
 
 			// b) handler has no result and will not deliver	in the future
-		} else if (Res == HANDLER_ERROR && pIA->pRespMsg->Code == EMPTY) {
+		} else if (Res == HANDLER_ERROR && pIA->pRespMsg->Code == MSG_EMPTY) {
 			pIA->pRespMsg->Code = RESP_INTERNAL_SERVER_ERROR_5_00; //handler forgot to set code?
 
 			// Don't respond with reset or empty messages to requests originating from multicast enpoints

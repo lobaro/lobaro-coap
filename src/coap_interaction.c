@@ -278,7 +278,7 @@ CoAP_Result_t _rom CoAP_StartNewGetRequest(char* UriString, SocketHandle_t socke
 }
 
 CoAP_Result_t _rom CoAP_StartNewRequest(CoAP_MessageCode_t type, const char* UriString, SocketHandle_t socketHandle, NetEp_t* ServerEp, CoAP_RespHandler_fn_t cb, uint8_t *buf, size_t size) {
-	if (type == EMPTY || type > REQ_LAST) {
+	if (type == MSG_EMPTY || type > REQ_LAST) {
 		ERROR("- Invalid request type\r\n");
 		return COAP_ERR_ARGUMENT;
 	}

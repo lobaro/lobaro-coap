@@ -586,6 +586,8 @@ uint8_t CoAP_EncodeSzx(uint16_t blocksize) {
 			return 0b000;
 	}
 }
+
+#if defined(CONFIG_LOBARO_COAP_DEBUG_LEVEL) && (CONFIG_LOBARO_COAP_DEBUG_LEVEL > 1)
 static const char *contentFormatMime(uint16_t c) {
 	switch (c) {
 		case 0:
@@ -608,6 +610,8 @@ static const char *contentFormatMime(uint16_t c) {
 			return "application/octet-stream";
 	}
 }
+#endif
+
 static void _rom printOption(const CoAP_option_t *op) {
 	if (op==NULL) {
 		return;

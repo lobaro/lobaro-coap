@@ -27,7 +27,7 @@
 
 static void _rom CoAP_InitToEmptyResetMsg(CoAP_Message_t* msg) {
 	msg->Type = RST;
-	msg->Code = EMPTY;
+	msg->Code = MSG_EMPTY;
 	msg->PayloadLength = 0;
 	msg->PayloadBufSize = 0;
 	msg->MessageID = 0;
@@ -61,13 +61,13 @@ void _rom CoAP_free_MsgPayload(CoAP_Message_t** Msg) {
 }
 
 bool _rom CoAP_MsgIsRequest(CoAP_Message_t* pMsg) {
-	if (pMsg->Code != EMPTY && pMsg->Code <= REQ_LAST)
+	if (pMsg->Code != MSG_EMPTY && pMsg->Code <= REQ_LAST)
 		return true;
 	return false;
 }
 
 bool _rom CoAP_MsgIsResponse(CoAP_Message_t* pMsg) {
-	if (pMsg->Code != EMPTY && pMsg->Code >= RESP_FIRST_2_00)
+	if (pMsg->Code != MSG_EMPTY && pMsg->Code >= RESP_FIRST_2_00)
 		return true;
 	return false;
 }
@@ -172,7 +172,6 @@ CoAP_Message_t* _rom CoAP_CreateMessage(CoAP_MessageType_t Type,
 }
 
 CoAP_Result_t _rom CoAP_ParseDatagramUpToToken(uint8_t* srcArr, uint16_t srcArrLength, CoAP_Message_t* Msg, uint16_t *optionsOfsset) {
-	CoAP_Result_t result = COAP_OK;
 	uint8_t TokenLength = 0;
 
 	if (srcArrLength < 4)
@@ -196,7 +195,7 @@ CoAP_Result_t _rom CoAP_ParseDatagramUpToToken(uint8_t* srcArr, uint16_t srcArrL
 	Msg->Code = srcArr[1];
 
 	//"Hack" to support early version of "myCoAP" iOS app which sends malformed "CoAP-pings" containing a token...
-	//if(Msg->Code == EMPTY && (TokenLength != 0 || srcArrLength != 4))	{INFO("err2\r\n");return COAP_PARSE_MESSAGE_FORMAT_ERROR;}// return COAP_PARSE_MESSAGE_FORMAT_ERROR;
+	//if(Msg->Code == MSG_EMPTY && (TokenLength != 0 || srcArrLength != 4))	{INFO("err2\r\n");return COAP_PARSE_MESSAGE_FORMAT_ERROR;}// return COAP_PARSE_MESSAGE_FORMAT_ERROR;
 
 	uint8_t codeClass = ((uint8_t) Msg->Code) >> 5u;
 	if (codeClass == 1 || codeClass == 6 || codeClass == 7) {
@@ -304,7 +303,7 @@ int CoAP_GetRawSizeOfMessage(CoAP_Message_t* Msg) {
 
 	TotalMsgBytes += CoAP_NeededMem4PackOptions(Msg->pOptionsList);
 
-	if (Msg->Code != EMPTY) {
+	if (Msg->Code != MSG_EMPTY) {
 
 		if (Msg->PayloadLength) {
 			TotalMsgBytes += Msg->PayloadLength + 1; //+1 = PayloadMarker
@@ -320,7 +319,7 @@ CoAP_Result_t _rom CoAP_BuildDatagram(uint8_t* destArr, uint16_t* pDestArrSize, 
 	uint16_t offset = 0;
 	uint8_t TokenLength;
 
-	if (Msg->Code == EMPTY) { //must send only 4 byte header overwrite upper layer in any case!
+	if (Msg->Code == MSG_EMPTY) { //must send only 4 byte header overwrite upper layer in any case!
 		Msg->PayloadLength = 0;
 		TokenLength = 0;
 	} else {
@@ -591,8 +590,8 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 		LOG_DEBUG("*Token: %u Byte -> 0", tokenBytes);
 	}
 
-	uint8_t code = msg->Code;
-	LOG_DEBUG("\r\n*Code: %d.%02d (0x%02x) [%s]\r\n", code >> 5u, code & 31u, code, CoAP_CodeName(code));
+	LOG_DEBUG("\r\n*Code: %d.%02d (0x%02x) [%s]\r\n",
+			msg->Code >> 5u, msg->Code & 31u, msg->Code, CoAP_CodeName(msg->Code));
 
 	LOG_DEBUG("*MessageId: %u\r\n", msg->MessageID);
 
@@ -615,7 +614,7 @@ void _rom CoAP_PrintMsg(CoAP_Message_t* msg) {
 
 const char _rom *CoAP_CodeName(CoAP_MessageCode_t code) {
 	switch (code) {
-		case EMPTY:
+		case MSG_EMPTY:
 			return "EMPTY";
 		case REQ_GET:
 			return "REQ_GET";
