@@ -89,7 +89,7 @@ CoAP_Result_t _rom GetObserveOptionFromMsg(CoAP_Message_t* msg, uint32_t* val) {
 
 		pOpts = pOpts->next;
 	}
-	return COAP_NOT_FOUND;
+	return COAP_OBSERVE_NOT_FOUND;
 }
 
 CoAP_Observer_t* _rom CoAP_AllocNewObserver()
