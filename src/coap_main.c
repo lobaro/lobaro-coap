@@ -535,6 +535,55 @@ CoAP_Result_t CoAP_RemoveSocket(CoAP_Socket_t *socket) {
 	return FreeSocket(socket);
 }
 
+/**
+ * Check if the response should be sent.
+ * 
+ * Based on No-Response option and message code, server can decide whether to send
+ * response or not [RFC7967]. If OSCORE option is available in request message,
+ * OSCORE library should handle No-Response option.
+ * 
+ * @param pIA		CoAP interaction.
+ * @return true   	The response should be sent.
+ * @return false  	The response should not be sent.
+ */
+static bool ShouldSendResponse( CoAP_Interaction_t* pIA )
+{
+	if( NULL != CoAP_FindOptionByNumber( pIA->pReqMsg, OPT_NUM_OSCORE ) )
+	{
+		// If message is OSCORE message, No-Response option should be handled by OSCORE library
+		return true;
+	}
+	
+	if( ACK == pIA->pRespMsg->Type )
+	{
+		// No-Response option does not apply for ACK messages
+		return true;
+	}
+	CoAP_option_t * noResponseOption = CoAP_FindOptionByNumber( pIA->pReqMsg, OPT_NUM_NO_RESPONSE );
+	if( NULL == noResponseOption )
+	{
+		return true;
+	}
+
+	uint32_t noResponseOptionValue = 0;
+	if( COAP_OK != CoAP_GetUintFromOption(noResponseOption, &noResponseOptionValue) )
+	{
+		return true;
+	}
+
+	uint8_t messageClass = GET_CLASS_FROM_MESSAGE_CODE( pIA->pRespMsg->Code );
+
+	// Granular control over response suppression (See section 2.1 of [RFC7967]).
+	if ( ( ( MESSAGE_CLASS_2 == messageClass ) && ( NO_RESPONSE_FOR_CLASS_2 & noResponseOptionValue ) ) ||
+			( ( MESSAGE_CLASS_4 == messageClass ) && ( NO_RESPONSE_FOR_CLASS_4 & noResponseOptionValue ) ) ||
+			( ( MESSAGE_CLASS_5 == messageClass ) && ( NO_RESPONSE_FOR_CLASS_5 & noResponseOptionValue ) ) )
+	{
+		return false;
+	}
+
+	return true;
+}
+
 static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 	if (pIA->State == COAP_STATE_HANDLE_REQUEST ||
 			pIA->State == COAP_STATE_RESOURCE_POSTPONE_EMPTY_ACK_SENT ||
@@ -569,10 +618,17 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 				) {
 			pIA->pRespMsg = CoAP_AllocRespMsg(pIA->pReqMsg, RESP_METHOD_NOT_ALLOWED_4_05, 0); //matches also TYPE + TOKEN to request
 
-			//o>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-			//transmit response & move to next state
-			SendResp(pIA, COAP_STATE_RESPONSE_SENT);
-			//o>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+			if (ShouldSendResponse(pIA))
+			{
+				//o>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+				//transmit response & move to next state
+				SendResp(pIA, COAP_STATE_RESPONSE_SENT);
+				//o>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+			}
+			else
+			{
+				CoAP_DeleteInteraction(pIA);
+			}
 			return;
 		}
 		// (else) request method supported by resource...:
@@ -694,6 +750,12 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 		//handle non sendable NON and response send cases. Left in the end intentionally due to possibile
 		//GET request with NON type that starts observation
 		if (COAP_RESP_NO_NON == pIA->pRes->Options.ResponseType && pIA->pReqMsg->Type == NON && pIA->pReqMsg->Code != REQ_GET) {
+			CoAP_DeleteInteraction(pIA);
+			return;
+		}
+
+		if( !ShouldSendResponse(pIA) )
+		{
 			CoAP_DeleteInteraction(pIA);
 			return;
 		}
