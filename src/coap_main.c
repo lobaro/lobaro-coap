@@ -728,23 +728,16 @@ static void handleServerInteraction(CoAP_Interaction_t* pIA) {
 
 		//handle for GET observe option
 		if ((pIA->pReqMsg->Code == REQ_GET || pIA->pReqMsg->Code == REQ_FETCH) && pIA->pRespMsg->Code == RESP_SUCCESS_CONTENT_2_05) {
-			switch ( CoAP_HandleObservationInReq(pIA) )
-			{
-				case COAP_OK:
-					AddObserveOptionToMsg(pIA->pRespMsg, 0);  //= ACK observation to client
-					INFO("- Observation activated\r\n");
-					break;
-				case COAP_REMOVED:
-					INFO("- Observation actively removed by client\r\n");
-					break;
-				case COAP_OBSERVE_NOT_FOUND:
-					INFO("- No Observe option in request message\r\n");
-					break;
-				default:
-					pIA->pRespMsg->Code = RESP_NOT_FOUND_4_04;
-					INFO("- Observation failed\r\n");
-					break;				
+			CoAP_Result_t result = CoAP_HandleObservationInReq(pIA);
+			if (result == COAP_OK) { //<---- attach OBSERVER to resource
+				AddObserveOptionToMsg(pIA->pRespMsg, 0);  //= ACK observation to client
+				INFO("- Observation activated\r\n");
+			} else if (result == COAP_REMOVED) {
+				INFO("- Observation actively removed by client\r\n");
+			} else {
+				INFO("- Observation failed\r\n");
 			}
+
 		}
 
 		//handle non sendable NON and response send cases. Left in the end intentionally due to possibile
