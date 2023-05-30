@@ -494,7 +494,7 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 	CoAP_Observer_t* pExistingObserver = (pIA->pRes)->pListObservers;
 
 	if (pIA->pRes->Notifier == NULL) {
-		return COAP_ERR_NOT_FOUND;            //resource does not support observe
+		return COAP_OBSERVE_NOT_FOUND;            //resource does not support observe
 	}
 	if ((res = GetObserveOptionFromMsg(pIA->pReqMsg, &obsVal)) != COAP_OK) {
 		return res; //if no observe option in req function can't do anything
@@ -576,7 +576,7 @@ CoAP_Result_t _rom CoAP_HandleObservationInReq(CoAP_Interaction_t* pIA) {
 		return COAP_BAD_OPTION_VAL;
 	}
 
-	return COAP_ERR_NOT_FOUND;
+	return COAP_OBSERVE_NOT_FOUND;
 }
 
 void _rom CoAP_ClearInteractions(CoAP_Interaction_t **pIA) {

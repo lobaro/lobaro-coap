@@ -41,6 +41,7 @@ extern "C" {
 typedef enum {
 	COAP_OK = 0,
 	COAP_NOT_FOUND, //not found but no error
+	COAP_OBSERVE_NOT_FOUND, //Observe not found but no error
 	COAP_PARSE_DATAGRAM_TOO_SHORT,
 	COAP_PARSE_UNKOWN_COAP_VERSION,
 	COAP_PARSE_MESSAGE_FORMAT_ERROR,

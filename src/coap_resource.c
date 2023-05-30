@@ -530,7 +530,7 @@ CoAP_Result_t _rom CoAP_MatchObserverFromList(CoAP_Observer_t** pObserverList, C
 		}
 		pObserver = pObserver->next;
 	}
-	return COAP_ERR_NOT_FOUND;
+	return COAP_OBSERVE_NOT_FOUND;
 }
 
 CoAP_Result_t _rom CoAP_MatchObserverUsingTransportCtxFromList(CoAP_Observer_t **pObserverList,
