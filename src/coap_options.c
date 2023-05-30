@@ -587,7 +587,7 @@ uint8_t CoAP_EncodeSzx(uint16_t blocksize) {
 	}
 }
 
-#if defined(CONFIG_LOBARO_COAP_DEBUG_LEVEL) && (CONFIG_LOBARO_COAP_DEBUG_LEVEL > 1)
+#if defined(COAP_LL_INFO) || defined(COAP_LL_DEBUG)
 static const char *contentFormatMime(uint16_t c) {
 	switch (c) {
 		case 0:
