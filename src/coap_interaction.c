@@ -176,12 +176,12 @@ CoAP_Result_t _rom CoAP_SetSleepInteraction(CoAP_Interaction_t* pIA, uint32_t se
 	return COAP_OK;
 }
 
-#ifdef COAP_EXPLICIT_TIMEOUTS
-const uint8_t TIMEOUTS[] = COAP_EXPLICIT_TIMEOUTS;
+#ifdef COAP_EXPLICIT_TIMEOUT0
+const uint8_t TIMEOUTS[] = {COAP_EXPLICIT_TIMEOUT0,COAP_EXPLICIT_TIMEOUT1,COAP_EXPLICIT_TIMEOUT2};
 #endif
 
 CoAP_Result_t _rom CoAP_EnableAckTimeout(CoAP_Interaction_t* pIA, uint8_t retryNum) {
-#ifdef COAP_EXPLICIT_TIMEOUTS
+#ifdef COAP_EXPLICIT_TIMEOUT0
     uint32_t waitTime;
     if (retryNum < sizeof(TIMEOUTS)) {
         waitTime = TIMEOUTS[retryNum];
