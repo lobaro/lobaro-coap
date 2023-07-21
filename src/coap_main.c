@@ -890,18 +890,59 @@ static void handleNotifyInteraction(CoAP_Interaction_t* pIA) {
 	}
 }
 
+/**
+ * Check if after sending request, client should wait for response.
+ * 
+ * Client should cease listening for response, if No-Response option is set to suppress all responses [RFC7967].
+ * 
+ * @param pIA		CoAP interaction.
+ * @return true   	Client should not wait for response.
+ * @return false  	Client should wait for response.
+ */
+static bool shouldStopListening( CoAP_Interaction_t* pIA )
+{
+	CoAP_option_t * noResponseOption = CoAP_FindOptionByNumber( pIA->pReqMsg, OPT_NUM_NO_RESPONSE );
+	if( NULL == noResponseOption )
+	{
+		return false;
+	}
+
+	uint32_t noResponseOptionValue = 0;
+	if( COAP_OK != CoAP_GetUintFromOption(noResponseOption, &noResponseOptionValue) )
+	{
+		return false;
+	}
+
+	return ( NO_RESPONSE_SUPPRESS_ALL == noResponseOptionValue );
+}
+
 static void handleClientInteraction(CoAP_Interaction_t* pIA) {
 
 	//------------------------------------------
 	if (pIA->State == COAP_STATE_READY_TO_REQUEST) {
 		//------------------------------------------
 		//o>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        
+        // Handle No-Response
+        CoAP_InteractionState_t state = COAP_STATE_WAITING_RESPONSE;
+
+        if (shouldStopListening(pIA))
+        {
+            state = COAP_STATE_FINISHED;
+        }
+        
+        // Send Request
         if (pIA->Role == COAP_ROLE_OBSERVATION) {
-            SendReq(pIA, COAP_STATE_WAITING_RESPONSE); //transmit response & move to next state
+            SendReq(pIA, state); //transmit response & move to next state
         }
         else if (pIA->Role == COAP_ROLE_CLIENT) {
-            SendReq(pIA, COAP_STATE_WAITING_RESPONSE); //transmit response & move to next state
+            SendReq(pIA, state); //transmit response & move to next state
         }
+        
+        if (state == COAP_STATE_FINISHED && pIA->pReqMsg->Type == NON) {
+            CoAP_DeleteInteraction(pIA);
+        }
+        
 		//o>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		//--------------------------------------------------
 	} else if (pIA->State == COAP_STATE_WAITING_RESPONSE) {
@@ -1007,16 +1048,6 @@ void _rom CoAP_doWork() {
 		CoAP_EnqueueLastInteraction(pIA);
 		return;
 	}
-
-	// DEBUG output all interactions
-	//INFO("\n\r");
-	//PrintInteractions(CoAP.pInteractions);
-	//coap_mem_stats();
-
-	//INFO("Now: %lu\n", now);
-
-	//	INFO("pending Transaction found! ReqTime: %u\r\n", pIA->ReqTime);
-	//	com_mem_stats();
 
 	switch (pIA->Role) {
 	case COAP_ROLE_SERVER:

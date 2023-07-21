@@ -234,7 +234,7 @@ typedef enum {
 	REQ_FETCH = CODE(MESSAGE_CLASS_0, 5u),
 	REQ_PATCH = CODE(MESSAGE_CLASS_0, 6u),
 	REQ_IPATCH = CODE(MESSAGE_CLASS_0, 7u),
-	REQ_LAST = CODE(MESSAGE_CLASS_0, 4u),
+	REQ_LAST = CODE(MESSAGE_CLASS_0, 7u),
 	RESP_FIRST_2_00 = CODE(MESSAGE_CLASS_2, 0u),
 	RESP_SUCCESS_CREATED_2_01 = CODE(MESSAGE_CLASS_2, 1u),    // only used on response to "POST" and "PUT" like HTTP 201
 	RESP_SUCCESS_DELETED_2_02 = CODE(MESSAGE_CLASS_2, 2u),    // only used on response to "DELETE" and "POST" like HTTP 204
@@ -262,9 +262,10 @@ typedef enum {
 } CoAP_MessageCode_t;
 
 // Granular control over response suppression (See section 2.1 of [RFC7967]).
-#define NO_RESPONSE_FOR_CLASS_2 ( 0b00000010 ) // Not interested in 2.xx responses
-#define NO_RESPONSE_FOR_CLASS_4 ( 0b00001000 ) // Not interested in 4.xx responses
-#define NO_RESPONSE_FOR_CLASS_5 ( 0b00010000 ) // Not interested in 5.xx responses
+#define NO_RESPONSE_FOR_CLASS_2 	( 0b00000010 ) // Not interested in 2.xx responses
+#define NO_RESPONSE_FOR_CLASS_4 	( 0b00001000 ) // Not interested in 4.xx responses
+#define NO_RESPONSE_FOR_CLASS_5 	( 0b00010000 ) // Not interested in 5.xx responses
+#define NO_RESPONSE_SUPPRESS_ALL	( 0b00011010 ) // Not interested in all responses
 
 typedef struct {
 	uint8_t Length;
